@@ -5,7 +5,6 @@ solidSolvers/linearGeometrySolid/linearGeometrySolid.C
 
 
 fvPatchFields = boundaryConditions/fvPatchFields
-$(fvPatchFields)/fixedDisplacement/fixedDisplacementFvPatchVectorField.C
 $(fvPatchFields)/solidTraction/solidTractionFvPatchVectorField.C
 $(fvPatchFields)/solidSymmetry/solidSymmetryFvPatchScalarField.C
 $(fvPatchFields)/solidSymmetry/solidSymmetryFvPatchVectorField.C

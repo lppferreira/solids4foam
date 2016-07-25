@@ -62,7 +62,8 @@ addToRunTimeSelectionTable(solidSolver, linearGeometrySolid, dictionary);
 bool linearGeometrySolid::converged
 (
     const int iCorr,
-    const lduMatrix::solverPerformance& solverPerfD
+    //const lduMatrix::solverPerformance& solverPerfD
+    const solverPerformance& solverPerfD
 )
 {
     // We will check a number of different residuals for convergence
@@ -210,9 +211,12 @@ linearGeometrySolid::linearGeometrySolid(fvMesh& mesh)
     rImpK_(1.0/impK_),
     DEqnRelaxFactor_
     (
-        mesh.solutionDict().relax("DEqn")
-      ? mesh.solutionDict().relaxationFactor("DEqn")
+        mesh.relaxEquation("DEqn")
+      ? mesh.equationRelaxationFactor("DEqn")
       : 1.0
+        //  mesh.solutionDict().relax("DEqn")
+        //? mesh.solutionDict().relaxationFactor("DEqn")
+        //: 1.0
     ),
     solutionTol_(lookupOrDefault<scalar>("solutionTolerance", 1e-06)),
     alternativeTol_(lookupOrDefault<scalar>("alternativeTolerance", 1e-07)),
@@ -832,8 +836,10 @@ bool linearGeometrySolid::evolve()
     // }
 
     int iCorr = 0;
-    lduMatrix::solverPerformance solverPerfD;
-    lduMatrix::debug = 0;
+    //lduMatrix::solverPerformance solverPerfD;
+    solverPerformance solverPerfD;
+    //lduMatrix::debug = 0;
+    solverPerformance::debug = 0;
 
     Info<< "Solving the momentum equation for D" << endl;
 

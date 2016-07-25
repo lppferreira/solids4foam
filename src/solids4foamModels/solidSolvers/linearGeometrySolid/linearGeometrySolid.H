@@ -142,7 +142,8 @@ class linearGeometrySolid
         bool converged
         (
             const int iCorr,
-            const lduMatrix::solverPerformance& solverPerfD
+            //const lduMatrix::solverPerformance& solverPerfD
+            const solverPerformance& solverPerfD
         );
 
         //- Disallow default bitwise copy construct
