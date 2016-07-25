@@ -209,15 +209,6 @@ linearGeometrySolid::linearGeometrySolid(fvMesh& mesh)
     impK_(mechanical().impK()),
     impKf_(mechanical().impKf()),
     rImpK_(1.0/impK_),
-    DEqnRelaxFactor_
-    (
-        mesh.relaxEquation("DEqn")
-      ? mesh.equationRelaxationFactor("DEqn")
-      : 1.0
-        //  mesh.solutionDict().relax("DEqn")
-        //? mesh.solutionDict().relaxationFactor("DEqn")
-        //: 1.0
-    ),
     solutionTol_(lookupOrDefault<scalar>("solutionTolerance", 1e-06)),
     alternativeTol_(lookupOrDefault<scalar>("alternativeTolerance", 1e-07)),
     materialTol_(lookupOrDefault<scalar>("materialTolerance", 1e-05)),
@@ -817,28 +808,8 @@ bool linearGeometrySolid::evolve()
 {
     Info << "Evolving solid solver" << endl;
 
-    // PC: we should store this rather than looking it up every time
-    // int nCorr
-    // (
-    //     readInt(solidProperties().lookup("nCorrectors"))
-    // );
-
-    // scalar convergenceTolerance
-    // (
-    //     readScalar(solidProperties().lookup("convergenceTolerance"))
-    // );
-
-    // scalar relConvergenceTolerance = 0;
-    // if (solidProperties().found("relConvergenceTolerance"))
-    // {
-    //     relConvergenceTolerance =
-    //         readScalar(solidProperties().lookup("relConvergenceTolerance"));
-    // }
-
     int iCorr = 0;
-    //lduMatrix::solverPerformance solverPerfD;
     solverPerformance solverPerfD;
-    //lduMatrix::debug = 0;
     solverPerformance::debug = 0;
 
     Info<< "Solving the momentum equation for D" << endl;
@@ -858,7 +829,7 @@ bool linearGeometrySolid::evolve()
         );
 
         // Under-relaxation the linear system
-        DEqn.relax(DEqnRelaxFactor_);
+        DEqn.relax();
 
         // Solve the linear system
         solverPerfD = DEqn.solve();

@@ -114,9 +114,6 @@ class linearGeometrySolid
         //  will store the reciprocal for effficiency
         const volScalarField rImpK_;
 
-        //- D equation under-relaxation factor
-        const scalar DEqnRelaxFactor_;
-
         //- Solution standard tolerance
         const scalar solutionTol_;
 
