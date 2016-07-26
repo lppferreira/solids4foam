@@ -13,7 +13,8 @@ EXE_INC = \
     -I$(LIB_SRC)/postProcessing/functionObjects/forces/lnInclude \
     -I$(LIB_SRC)/errorEstimation/lnInclude \
     -I$(LIB_SRC)/mesh/cfMesh/lnInclude \
-    -I$(LIB_SRC)/turbulenceModels/incompressible/turbulenceModel \
+    -I$(LIB_SRC)/TurbulenceModels/turbulenceModels/lnInclude \
+    -I$(LIB_SRC)/TurbulenceModels/incompressible/lnInclude \
     -I$(LIB_SRC)/transportModels \
     -I$(LIB_SRC)/transportModels/incompressible/singlePhaseTransportModel \
     -I$(LIB_SRC)/tetFiniteElement/lnInclude
@@ -32,7 +33,5 @@ EXE_LIBS = \
     -lforces \
     -lerrorEstimation \
     -lcfMesh \
-    -lincompressibleTurbulenceModel \
-    -lincompressibleRASModels \
-    -lincompressibleLESModels \
+    -lincompressibleTurbulenceModels \
     -lincompressibleTransportModels
