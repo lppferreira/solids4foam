@@ -10,38 +10,51 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      controlDict;
+    object      fvSchemes;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     fluidFoam;
+ddtSchemes
+{
+    default         Euler;
+}
 
-startFrom       startTime;
+gradSchemes
+{
+    default         Gauss linear;
+    grad(p)         Gauss linear;
+}
 
-startTime       0;
+divSchemes
+{
+    default         none;
+    div(phi,U)      Gauss linearUpwind grad(U);
+    div((nuEff*dev(grad(U).T()))) Gauss linear;
+}
 
-stopAt          endTime;
+laplacianSchemes
+{
+    default         none;
+    laplacian(nu,U) Gauss linear corrected;
+    laplacian((1|A(U)),p) Gauss linear corrected;
+    laplacian(nuEff,U) Gauss linear corrected;
+}
 
-endTime         0.5;
+interpolationSchemes
+{
+    default         linear;
+    interpolate(HbyA) linear;
+}
 
-deltaT          0.005;
+snGradSchemes
+{
+    default         corrected;
+}
 
-writeControl    timeStep;
-
-writeInterval   20;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  6;
-
-writeCompression uncompressed;
-
-timeFormat      general;
-
-timePrecision   6;
-
-runTimeModifiable yes;
+fluxRequired
+{
+    default         no;
+    p;
+}
 
 // ************************************************************************* //

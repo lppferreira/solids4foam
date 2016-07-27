@@ -14,10 +14,10 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-fluidSolver            icoFluid;
+//fluidSolver            icoFluid;
 //fluidSolver            newConsistentIcoFluid;
 //fluidSolver            consistentIcoFluid;
-//fluidSolver            pisoFluid;
+fluidSolver            pisoFluid;
 //fluidSolver            consistentPisoFluid;
 
 icoFluidCoeffs

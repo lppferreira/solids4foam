@@ -217,7 +217,7 @@ void consistentIcoFluid::evolve()
                 }
             }
 
-            phi() += fvc::ddtCorr(1.0/AU, U(), phi());
+            phi() += fvc::interpolate(1.0/AU)*fvc::ddtCorr(U(), phi());
 //            phi() += fvc::ddtPhiCorr(1.0/AU, U(), phi());
         }
 
