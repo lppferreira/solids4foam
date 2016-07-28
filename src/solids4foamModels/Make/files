@@ -8,9 +8,6 @@ fluidSolvers/fluidSolver/fluidSolver.C
 fluidSolvers/fluidSolver/newFluidSolver.C
 fluidSolvers/icoFluid/icoFluid.C
 fluidSolvers/pisoFluid/pisoFluid.C
-fluidSolvers/consistentIcoFluid/consistentIcoFluid.C
-fluidSolvers/newConsistentIcoFluid/newConsistentIcoFluid.C
-fluidSolvers/consistentPisoFluid/consistentPisoFluid.C
 
 mechanicalModel = materialModels/mechanicalModel
 $(mechanicalModel)/mechanicalModel.C

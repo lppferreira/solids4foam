@@ -26,7 +26,7 @@ Class
     pisoFluid
 
 Description
-    icoFoam fluid model
+    pisoFoam fluid model
 
 Author
     Hrvoje Jasak, Wikki Ltd.  All rights reserved.

@@ -15,28 +15,9 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 fluidSolver            icoFluid;
-//fluidSolver            newConsistentIcoFluid;
-//fluidSolver            consistentIcoFluid;
 //fluidSolver            pisoFluid;
-//fluidSolver            consistentPisoFluid;
 
 icoFluidCoeffs
-{
-    nCorrectors     2;
-    nNonOrthogonalCorrectors 0;
-    pRefCell        0;
-    pRefValue       0;
-}
-
-newConsistentIcoFluidCoeffs
-{
-    nCorrectors     2;
-    nNonOrthogonalCorrectors 0;
-    pRefCell        0;
-    pRefValue       0;
-}
-
-consistentIcoFluidCoeffs
 {
     nCorrectors     2;
     nNonOrthogonalCorrectors 0;
@@ -51,14 +32,5 @@ pisoFluidCoeffs
     pRefCell        0;
     pRefValue       0;
 }
-
-consistentPisoFluidCoeffs
-{
-    nCorrectors     2;
-    nNonOrthogonalCorrectors 0;
-    pRefCell        0;
-    pRefValue       0;
-}
-
 
 // ************************************************************************* //
