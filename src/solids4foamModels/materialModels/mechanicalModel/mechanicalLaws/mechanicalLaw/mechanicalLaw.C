@@ -172,6 +172,12 @@ Foam::tmp<Foam::surfaceScalarField> Foam::mechanicalLaw::impKf() const
     return fvc::interpolate(impK());
 }
 
+void Foam::mechanicalLaw::correct(surfaceSymmTensorField&)
+{
+    FatalErrorIn(type() + "::correct(surfaceSymmTensorField&)")
+        << "The correct(surfaceSymmTensorField&) function is not defined"
+        << " for the current mechanical law" << abort(FatalError);
+}
 
 const Foam::volScalarField& Foam::mechanicalLaw::curMaterial() const
 {

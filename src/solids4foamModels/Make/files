@@ -3,11 +3,21 @@ solidSolvers/solidSolver/newSolidSolver.C
 solidSolvers/linearGeometrySolid/linearGeometrySolid.C
 solidSolvers/nonLinGeomUpdatedLagrangian/nonLinGeomUpdatedLagrangian.C
 solidSolvers/nonLinGeomTotalLagrangian/nonLinGeomTotalLagrangian.C
+solidSolvers/unsLinGeomSolid/unsLinGeomSolid.C
+solidSolvers/unsNonLinGeomTotalLagSolid/unsNonLinGeomTotalLagSolid.C
 
 fluidSolvers/fluidSolver/fluidSolver.C
 fluidSolvers/fluidSolver/newFluidSolver.C
 fluidSolvers/icoFluid/icoFluid.C
 fluidSolvers/pisoFluid/pisoFluid.C
+
+/*fluidSolidInterfaces/fluidSolidInterface/fluidSolidInterface.C
+fluidSolidInterfaces/fluidSolidInterface/newFluidSolidInterface.C
+fluidSolidInterfaces/weakCouplingInterface/weakCouplingInterface.C
+fluidSolidInterfaces/fixedRelaxationCouplingInterface/fixedRelaxationCouplingInterface.C
+fluidSolidInterfaces/AitkenCouplingInterface/AitkenCouplingInterface.C
+fluidSolidInterfaces/IQNILSCouplingInterface/IQNILSCouplingInterface.C*/
+
 
 mechanicalModel = materialModels/mechanicalModel
 $(mechanicalModel)/mechanicalModel.C
@@ -18,11 +28,21 @@ $(mechanicalLaws)/mechanicalLaw/newMechanicalLaw.C
 $(mechanicalLaws)/linearElastic/linearElastic.C
 $(mechanicalLaws)/neoHookeanElastic/neoHookeanElastic.C
 
+fluidFvPatchFields = fluidSolvers/fvPatchFields
+$(fluidFvPatchFields)/transitionalParabolicVelocity/transitionalParabolicVelocityFvPatchVectorField.C
+$(fluidFvPatchFields)/extrapolatedPressure/extrapolatedPressureFvPatchScalarField.C
+
 fvPatchFields = boundaryConditions/fvPatchFields
+$(fvPatchFields)/fixedDisplacement/fixedDisplacementFvPatchVectorField.C
 $(fvPatchFields)/solidTraction/solidTractionFvPatchVectorField.C
 $(fvPatchFields)/solidSymmetry/solidSymmetryFvPatchScalarField.C
 $(fvPatchFields)/solidSymmetry/solidSymmetryFvPatchVectorField.C
 $(fvPatchFields)/solidWedge/solidWedgeFvPatchVectorField.C
 $(fvPatchFields)/solidWedge/solidWedgeFvPatchScalarField.C
+
+/*numerics/newLeastSquaresVolPointInterpolation/newLeastSquaresVolPointInterpolation.C
+numerics/newGGIInterpolation/newGGIInterpolationName.C
+numerics/newSkewCorrectedSnGrad/newSkewCorrectedSnGrads.C*/
+numerics/fvc/fvcGradf.C
 
 LIB = $(FOAM_USER_LIBBIN)/libsolids4FoamModels

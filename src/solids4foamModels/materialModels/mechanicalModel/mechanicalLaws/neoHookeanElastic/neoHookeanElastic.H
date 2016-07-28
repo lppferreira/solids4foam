@@ -132,7 +132,7 @@ public:
         virtual void correct(volSymmTensorField& sigma);
 
         //- Update stress based on the mechanical law (surface field)
-        //virtual void correct(surfaceSymmTensorField& sigma);
+        virtual void correct(surfaceSymmTensorField& sigma);
 
         //- Set current material index; this is only needed for multiMaterial
         //  analyses
