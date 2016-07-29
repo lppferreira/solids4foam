@@ -186,7 +186,7 @@ public:
     // Constructors
 
         //- Construct from components
-        nonLinGeomUpdatedLagrangian(fvMesh& mesh);
+        nonLinGeomUpdatedLagrangian(dynamicFvMesh& mesh);
 
 
     // Destructor

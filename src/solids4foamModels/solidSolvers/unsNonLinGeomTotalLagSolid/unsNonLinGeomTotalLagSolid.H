@@ -23,24 +23,28 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Class
-    linearGeometrySolid
+    nonLinGeomTotalLagSolid
 
 Description
-    Mathematical model where linear geometry is assumed i.e. small strains and
-    small rotations are assumed.
+    Mathematical model for finite strains and rotations, where a total
+    Lagrangian and total displacement approach is employed.
 
     The stress is calculated by the run-time selectable mechanical law.
 
+    "uns" in the class name refers to the "unstructured" and indicates that
+    the face tangential gradient are calculated using a face-Gauss approach.
+
 Author
+    Zeljko Tukovic, FSB Zagreb.  All rights reserved.
     Philip Cardiff, UCD.  All rights reserved.
 
 SourceFiles
-    linearGeometrySolid.C
+    unsNonLinGeomTotalLagSolid.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef linearGeometrySolid_H
-#define linearGeometrySolid_H
+#ifndef unsNonLinGeomTotalLagSolid_H
+#define unsNonLinGeomTotalLagSolid_H
 
 #include "solidSolver.H"
 #include "volFields.H"
@@ -59,46 +63,61 @@ namespace solidSolvers
 {
 
 /*---------------------------------------------------------------------------*\
-                        Class linearGeometrySolid Declaration
+                        Class unsNonLinGeomTotalLagSolid Declaration
 \*---------------------------------------------------------------------------*/
 
-class linearGeometrySolid
+class unsNonLinGeomTotalLagSolid
 :
     public solidSolver
 {
     // Private data
 
-        //- Displacement field
+        //- Total displacement field
         volVectorField D_;
 
         //- Velocity field
-        //volVectorField U_;
+        volVectorField U_;
 
         //- Point mesh
-        //pointMesh pMesh_;
+        pointMesh pMesh_;
 
         //- Point displacement field
-        //pointVectorField pointD_;
+        pointVectorField pointD_;
 
-        //- Strain field
-        volSymmTensorField epsilon_;
-
-        //- Stress field
+        //- Cauchy (true) stress volume field
         volSymmTensorField sigma_;
 
-        //- Mechanical model
-        //mechanicalModel mechanical_;
+        //- Cauchy (true) stress surface field
+        surfaceSymmTensorField sigmaf_;
 
-        //- Cell-to-point interpolation
-        //newLeastSquaresVolPointInterpolation volToPoint_;
-
-        //- Face displacement gradient
-        //surfaceTensorField gradDf_;
+        //- Cell-to-point interpolation for interpolating DD to pointDD
+//        newLeastSquaresVolPointInterpolation volToPoint_;
 
         //- Cell displacement gradient
         volTensorField gradD_;
 
-        //- Density
+        //- Surface displacement gradient
+        surfaceTensorField gradDf_;
+
+        //- Total deformation gradient
+        volTensorField F_;
+
+        //- Total deformation gradient surface field
+        surfaceTensorField Ff_;
+
+        //- Inverse of the total deformation gradient
+        volTensorField Finv_;
+
+        //- Inverse of the total deformation gradient surface field
+        surfaceTensorField Finvf_;
+
+        //- Jacobian of total deformation gradient
+        volScalarField J_;
+
+        //- Jacobian of total deformation gradient surface field
+        surfaceScalarField Jf_;
+
+        //- Density (reference configuration)
         const volScalarField rho_;
 
         //- Implicit stiffness; coefficient of the Laplacian term
@@ -120,8 +139,8 @@ class linearGeometrySolid
         //- Solution standard tolerance
         const scalar solutionTol_;
 
-        //- Solution tighter tolerance
-        const scalar alternativeTol_;
+        //- Solution relative tolerance
+        const scalar relativeTol_;
 
         //- Material law tolerance
         const scalar materialTol_;
@@ -132,41 +151,52 @@ class linearGeometrySolid
         //- Maximum number of momentum correctors
         const int nCorr_;
 
+        //- Switch to enable/disable nonlinear geometry
+        const Switch nonLinear_;
+
+        //- Switch to enable/disable enforce linear to help convergence
+        Switch enforceLinear_;
+
+        //- Debug switch for the print-out of residuals
+        const Switch debug_;
+
+        //- Viscosity/damping coefficient
+        const dimensionedScalar K_;
+
+        //- Gravity
+        const dimensionedVector g_;
+
         //- Number of times the maximum number of correctors was reached in the
         //  momentum equation
         int maxIterReached_;
 
+
     // Private Member Functions
 
-        //- Check if the momentum equation is converged
-        bool converged
-        (
-            const int iCorr,
-            //const lduMatrix::solverPerformance& solverPerfD
-            const solverPerformance& solverPerfD
-        );
+        //- Return the displacement residual
+        scalar residual() const;
 
         //- Disallow default bitwise copy construct
-        linearGeometrySolid(const linearGeometrySolid&);
+        unsNonLinGeomTotalLagSolid(const unsNonLinGeomTotalLagSolid&);
 
         //- Disallow default bitwise assignment
-        void operator=(const linearGeometrySolid&);
+        void operator=(const unsNonLinGeomTotalLagSolid&);
 
 
 public:
 
     //- Runtime type information
-    TypeName("linearGeometrySolid");
+    TypeName("unsNonLinearGeometryTotalLagrangian");
 
     // Constructors
 
         //- Construct from components
-        linearGeometrySolid(dynamicFvMesh& mesh);
+        unsNonLinGeomTotalLagSolid(dynamicFvMesh& mesh);
 
 
     // Destructor
 
-        virtual ~linearGeometrySolid()
+        virtual ~unsNonLinGeomTotalLagSolid()
         {}
 
 
@@ -187,10 +217,10 @@ public:
             }
 
             //- Return point mesh
-            // const pointMesh& pMesh() const
-            // {
-            //     return pMesh_;
-            // }
+            const pointMesh& pMesh() const
+            {
+                return pMesh_;
+            }
 
             //- Stress tensor
             const volSymmTensorField& sigma() const
@@ -199,105 +229,91 @@ public:
             }
 
             //- Strain tensor
-            const volSymmTensorField& epsilon() const
+            // const volSymmTensorField& epsilon() const
+            // {
+            //     return epsilon_;
+            // }
+
+            //- Return point displacement field
+            virtual const pointVectorField& pointD() const
             {
-                return epsilon_;
+                return pointD_;
             }
 
-            //- Return point displacement field
-            // virtual const pointVectorField& pointD() const
-            // {
-            //     return pointD_;
-            // }
-
             //- Return multi-material interface pointer
-            // const leastSquaresVolPointInterpolation& volToPoint() const
-            // {
-            //     return volToPoint_;
-            // }
+/*            const newLeastSquaresVolPointInterpolation& volToPoint() const
+            {
+                return volToPoint_;
+            }*/
 
             //- Return point displacement field
-            // virtual vector pointU(label pointID) const;
+            //virtual vector pointU(label pointID) const;
 
             //- Patch point displacement increment
-            // virtual tmp<vectorField> patchPointDisplacementIncrement
-            // (
-            //     const label patchID
-            // ) const;
+/*            virtual tmp<vectorField> patchPointDisplacementIncrement
+            (
+                const label patchID
+            ) const;
 
             //- Face zone point displacement increment
-            // virtual tmp<vectorField> faceZonePointDisplacementIncrement
-            // (
-            //     const label zoneID
-            // ) const;
+            virtual tmp<vectorField> faceZonePointDisplacementIncrement
+            (
+                const label zoneID
+            ) const;
 
             //- Face zone velocity surface (tangential) gradient
-            // virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
-            // (
-            //     const label zoneID,
-            //     const label patchID
-            // ) const;
+            virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
+            (
+                const label zoneID,
+                const label patchID
+            ) const;
 
             //- Face zone current normal
-            // virtual tmp<vectorField> faceZoneNormal
-            // (
-            //     const label zoneID,
-            //     const label patchID
-            // ) const;
+            virtual tmp<vectorField> faceZoneNormal
+            (
+                const label zoneID,
+                const label patchID
+            ) const;
 
             //- Face zone primitive patch in current configuration
-            // virtual tmp<vectorField> currentFaceZonePoints
-            // (
-            //     const label zoneID
-            // ) const;
+            virtual tmp<vectorField> currentFaceZonePoints
+            (
+                const label zoneID
+            ) const;
 
         // Edit
 
             //- Set traction on the specified patch
             //  This function enables the FSI procedure to pass a traction from
             //  fluid to the solid
-            // virtual void setTraction
-            // (
-            //     const label patchID,
-            //     const vectorField& traction
-            // );
-
-            // //- Set pressure at specified patch
-            // virtual void setPressure
-            // (
-            //     const label patchID,
-            //     const scalarField& pressure
-            // );
-
-            //- Set traction at specified patch
-            // virtual void setTraction
-            // (
-            //     const label patchID,
-            //     const label zoneID,
-            //     const vectorField& zoneTraction
-            // );
+            virtual void setTraction
+            (
+                const label patchID,
+                const vectorField& traction
+            );
 
             //- Set pressure at specified patch
-            // virtual void setPressure
-            // (
-            //     const label patchID,
-            //     const label zoneID,
-            //     const scalarField& zonePressure
-            // );
+            virtual void setPressure
+            (
+                const label patchID,
+                const scalarField& pressure
+            );
 
-            //- Predict traction at specified zone
-            // virtual tmp<vectorField> predictTraction
-            // (
-            //     const label patchID,
-            //     const label zoneID
-            // );
+            //- Set traction at specified patch
+            virtual void setTraction
+            (
+                const label patchID,
+                const label zoneID,
+                const vectorField& zoneTraction
+            );
 
-            //- Predict pressure at specified zone
-            // virtual tmp<scalarField> predictPressure
-            // (
-            //     const label patchID,
-            //     const label zoneID
-            // );
+            //- Set pressure at specified patch
+            virtual void setPressure
+            (
+                const label patchID,
+                const label zoneID,
+                const scalarField& zonePressure
+            );*/
 
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();

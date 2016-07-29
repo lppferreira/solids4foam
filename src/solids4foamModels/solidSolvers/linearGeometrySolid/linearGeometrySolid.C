@@ -151,7 +151,7 @@ bool linearGeometrySolid::converged
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-linearGeometrySolid::linearGeometrySolid(fvMesh& mesh)
+linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 :
     solidSolver(typeName, mesh),
     D_

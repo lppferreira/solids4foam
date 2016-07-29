@@ -169,7 +169,7 @@ bool nonLinGeomTotalLagrangian::converged
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-nonLinGeomTotalLagrangian::nonLinGeomTotalLagrangian(fvMesh& mesh)
+nonLinGeomTotalLagrangian::nonLinGeomTotalLagrangian(dynamicFvMesh& mesh)
 :
     solidSolver(typeName, mesh),
     D_

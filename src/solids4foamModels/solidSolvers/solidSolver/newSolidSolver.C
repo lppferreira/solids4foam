@@ -29,7 +29,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::solidSolver> Foam::solidSolver::New(fvMesh& mesh)
+Foam::autoPtr<Foam::solidSolver> Foam::solidSolver::New(dynamicFvMesh& mesh)
 {
     word solidSolverTypeName;
 
@@ -59,7 +59,7 @@ Foam::autoPtr<Foam::solidSolver> Foam::solidSolver::New(fvMesh& mesh)
     {
         FatalErrorIn
         (
-            "solidSolver::New(fvMesh&)"
+            "solidSolver::New(dynamicFvMesh& mesh)"
         )   << "Unknown solidSolver type " << solidSolverTypeName
             << endl << endl
             << "Valid solidSolver types are :" << endl

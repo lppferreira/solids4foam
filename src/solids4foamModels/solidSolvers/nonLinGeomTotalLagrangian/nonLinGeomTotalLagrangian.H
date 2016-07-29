@@ -148,7 +148,7 @@ public:
     // Constructors
 
         //- Construct from components
-        nonLinGeomTotalLagrangian(fvMesh& mesh);
+        nonLinGeomTotalLagrangian(dynamicFvMesh& mesh);
 
 
     // Destructor

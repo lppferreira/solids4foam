@@ -272,7 +272,7 @@ void nonLinGeomUpdatedLagrangian::moveMesh(const pointField& oldPoints)
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-nonLinGeomUpdatedLagrangian::nonLinGeomUpdatedLagrangian(fvMesh& mesh)
+nonLinGeomUpdatedLagrangian::nonLinGeomUpdatedLagrangian(dynamicFvMesh& mesh)
 :
     solidSolver(typeName, mesh),
     DD_

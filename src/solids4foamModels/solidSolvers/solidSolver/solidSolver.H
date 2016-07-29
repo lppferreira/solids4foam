@@ -41,7 +41,7 @@ SourceFiles
 #ifndef solidSolver_H
 #define solidSolver_H
 
-#include "fvMesh.H"
+#include "dynamicFvMesh.H"
 #include "IOdictionary.H"
 #include "autoPtr.H"
 #include "runTimeSelectionTables.H"
@@ -63,7 +63,7 @@ class solidSolver
     // Private data
 
         //- Non-const reference to mesh
-        fvMesh& mesh_;
+        dynamicFvMesh& mesh_;
 
         //- Solid properties dictionary
         dictionary solidProperties_;
@@ -125,7 +125,7 @@ public:
             solidSolver,
             dictionary,
             (
-                fvMesh& mesh
+                dynamicFvMesh& mesh
             ),
             (mesh)
         );
@@ -137,14 +137,14 @@ public:
         solidSolver
         (
             const word& type,
-            fvMesh& mesh
+            dynamicFvMesh& mesh
         );
 
 
     // Selectors
 
         //- Select constructed from mesh
-        static autoPtr<solidSolver> New(fvMesh& mesh);
+        static autoPtr<solidSolver> New(dynamicFvMesh& mesh);
 
 
     // Destructor
@@ -157,13 +157,13 @@ public:
         // Access
 
             //- Return mesh
-            const fvMesh& mesh() const
+            const dynamicFvMesh& mesh() const
             {
                 return mesh_;
             }
 
             //- Return non-const mesh
-            fvMesh& mesh()
+            dynamicFvMesh& mesh()
             {
                 return mesh_;
             }
