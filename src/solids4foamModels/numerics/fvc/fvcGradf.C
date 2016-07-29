@@ -199,24 +199,30 @@ tmp
         }
     }
 
-/*    forAll(mesh.boundary(), patchI)//put back in with AMI
+    // JN/PC: we need to fix this with AMI: for now throw an error
+    forAll(mesh.boundary(), patchI)
     {
-        if (mesh.boundary()[patchI].type() == ggiFvPatch::typeName)
+        //if (mesh.boundary()[patchI].type() == ggiFvPatch::typeName)
+        if (mesh.boundary()[patchI].type() == "ggi")
         {
-            const ggiFvPatch& ggiPatch =
-                refCast<const ggiFvPatch>(mesh.boundary()[patchI]);
+            FatalErrorIn("fvc::fGrad(...)")
+                << "AMI functionality yet to be included in the of30 branch"
+                << abort(FatalError);
 
-            if (!ggiPatch.master())
-            {
-                Field<GradType>& slaveGrad = 
-                    tGrad().boundaryField()[patchI];
-                const Field<GradType>& masterGrad = 
-                    tGrad().boundaryField()[ggiPatch.shadowIndex()];
+            //const ggiFvPatch& ggiPatch =
+            //    refCast<const ggiFvPatch>(mesh.boundary()[patchI]);
 
-                slaveGrad = ggiPatch.interpolate(masterGrad);
-            }
+            //if (!ggiPatch.master())
+            //{
+            //    Field<GradType>& slaveGrad = 
+            //        tGrad().boundaryField()[patchI];
+            //    const Field<GradType>& masterGrad = 
+            //        tGrad().boundaryField()[ggiPatch.shadowIndex()];
+
+            //    slaveGrad = ggiPatch.interpolate(masterGrad);
+            //}
         }
-    }*/
+    }
 
 //     const GeometricField<GradType, fvPatchField, volMesh>& gradU = 
 //         mesh.lookupObject<GeometricField<GradType, fvPatchField, volMesh> >
@@ -386,30 +392,36 @@ tmp
         }
     }
 
-/*    forAll(mesh.boundary(), patchI)//put back in with AMI
+    // JN/PC: we need to fix this with AMI: for now throw an error
+    forAll(mesh.boundary(), patchI)
     {
-        if (mesh.boundary()[patchI].type() == ggiFvPatch::typeName)
+        //if (mesh.boundary()[patchI].type() == ggiFvPatch::typeName)
+        if (mesh.boundary()[patchI].type() == "ggi")
         {
-            const ggiFvPatch& ggiPatch = 
-                refCast<const ggiFvPatch>(mesh.boundary()[patchI]);
+            FatalErrorIn("fvc::fGrad(...)")
+                << "AMI functionality yet to be included in the of30 branch"
+                << abort(FatalError);
 
-            if (!ggiPatch.master())
-            {
-                Field<GradType>& slaveGrad = 
-                    tGrad().boundaryField()[patchI];
-                const Field<GradType>& masterGrad = 
-                    tGrad().boundaryField()[ggiPatch.shadowIndex()];
+            //const ggiFvPatch& ggiPatch =
+            //    refCast<const ggiFvPatch>(mesh.boundary()[patchI]);
 
-                slaveGrad = ggiPatch.interpolate(masterGrad);
-            }
+            //if (!ggiPatch.master())
+            //{
+            //    Field<GradType>& slaveGrad = 
+            //        tGrad().boundaryField()[patchI];
+            //    const Field<GradType>& masterGrad = 
+            //        tGrad().boundaryField()[ggiPatch.shadowIndex()];
+
+            //    slaveGrad = ggiPatch.interpolate(masterGrad);
+            //}
         }
-    }*/
+    }
 
     return tGrad;
 }
 
 
-/*template<class Type, template<class> class FaceList>
+template<class Type, template<class> class FaceList>
 tmp<Field<typename outerProduct<vector, Type>::type> > fGrad
 (
     const PrimitivePatch<face, FaceList, const pointField&>& patch,
@@ -481,7 +493,7 @@ tmp<Field<typename outerProduct<vector, Type>::type> > fGrad
     }
 
     return tGrad;
-}*/
+}
 
 
 template<class Type>

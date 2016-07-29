@@ -82,12 +82,12 @@ namespace fvc
         const GeometricField<Type, pointPatchField, pointMesh>& pf
     );
 
-/*    template<class Type, template<class> class FaceList>
+    template<class Type, template<class> class FaceList>
     tmp<Field<typename outerProduct<vector, Type>::type> > fGrad
     (
         const PrimitivePatch<face, FaceList, const pointField&>& patch,
         const Field<Type>& ppf
-    );*/
+    );
 
     template<class Type>
     tmp
@@ -112,9 +112,9 @@ namespace fvc
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//#ifdef NoRepository
-//#   include "fvcGradf.C"
-//#endif
+#ifdef NoRepository
+#   include "fvcGradf.C"
+#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

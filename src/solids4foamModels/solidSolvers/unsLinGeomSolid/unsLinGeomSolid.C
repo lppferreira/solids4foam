@@ -775,9 +775,7 @@ bool unsLinGeomSolid::evolve()
     Info << "Evolving solid solver" << endl;
 
     int iCorr = 0;
-//    lduMatrix::solverPerformance solverPerfD;
     solverPerformance solverPerfD;
-//    lduMatrix::debug = 0;
     solverPerformance::debug = 0;
 
     Info<< "Solving the momentum equation for D" << endl;
