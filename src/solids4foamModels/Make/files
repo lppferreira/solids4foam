@@ -1,8 +1,8 @@
 solidModels/solidModel/solidModel.C
 solidModels/solidModel/newSolidModel.C
-solidModels/linearGeometrySolid/linearGeometrySolid.C
-solidModels/nonLinGeomUpdatedLagrangian/nonLinGeomUpdatedLagrangian.C
-solidModels/nonLinGeomTotalLagrangian/nonLinGeomTotalLagrangian.C
+solidModels/linGeomSolid/linGeomSolid.C
+solidModels/nonLinGeomUpdatedLagSolid/nonLinGeomUpdatedLagSolid.C
+solidModels/nonLinGeomTotalLagSolid/nonLinGeomTotalLagSolid.C
 solidModels/unsLinGeomSolid/unsLinGeomSolid.C
 solidModels/unsNonLinGeomTotalLagSolid/unsNonLinGeomTotalLagSolid.C
 solidModels/unsNonLinGeomUpdatedLagSolid/unsNonLinGeomUpdatedLagSolid.C
@@ -35,6 +35,8 @@ $(fluidFvPatchFields)/extrapolatedPressure/extrapolatedPressureFvPatchScalarFiel
 
 solidFvPatchFields = solidModels/fvPatchFields
 $(solidFvPatchFields)/fixedDisplacement/fixedDisplacementFvPatchVectorField.C
+$(solidFvPatchFields)/fixedDisplacementZeroShear/fixedDisplacementZeroShearFvPatchVectorField.C
+$(solidFvPatchFields)/solidDirectionMixed/solidDirectionMixedFvPatchVectorField.C
 $(solidFvPatchFields)/solidTraction/solidTractionFvPatchVectorField.C
 $(solidFvPatchFields)/solidSymmetry/solidSymmetryFvPatchScalarField.C
 $(solidFvPatchFields)/solidSymmetry/solidSymmetryFvPatchVectorField.C

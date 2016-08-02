@@ -29,7 +29,8 @@ License
 #include "transformField.H"
 #include "transformGeometricField.H"
 #include "IOdictionary.H"
-#include "linearGeometrySolid.H"
+#include "volFields.H"
+#include "surfaceFields.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -67,21 +68,7 @@ Foam::linearElastic::linearElastic
       : nu_*E_/((1.0 + nu_)*(1.0 - 2.0*nu_))
     ),
     mu_(E_/(2.0*(1.0 + nu_)))
-{
-    // PC: is there are nice way that we can check this, instead of multiple
-    // if-elseif-elseif ...
-//     if
-//     (
-//         mesh.lookupObject<solidSolver>("solidProperties").type()
-//      != solidSolvers::linearGeometrySolid::typeName
-//     )
-//     {
-//         WarningIn(type() + "::linearElastic")
-//             << "This mechanical law may not be appropriate for the selected "
-//             << "mathematical model"
-//             << endl;
-//     }
-}
+{}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

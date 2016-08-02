@@ -24,7 +24,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "linearGeometrySolid.H"
+#include "linGeomSolid.H"
 #include "volFields.H"
 #include "fvm.H"
 #include "fvc.H"
@@ -53,13 +53,13 @@ namespace solidModels
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-defineTypeNameAndDebug(linearGeometrySolid, 0);
-addToRunTimeSelectionTable(solidModel, linearGeometrySolid, dictionary);
+defineTypeNameAndDebug(linGeomSolid, 0);
+addToRunTimeSelectionTable(solidModel, linGeomSolid, dictionary);
 
 
 // * * * * * * * * * * *  Private Member Functions * * * * * * * * * * * * * //
 
-bool linearGeometrySolid::converged
+bool linGeomSolid::converged
 (
     const int iCorr,
     //const lduMatrix::solverPerformance& solverPerfD
@@ -151,7 +151,7 @@ bool linearGeometrySolid::converged
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
+linGeomSolid::linGeomSolid(dynamicFvMesh& mesh)
 :
     solidModel(typeName, mesh),
     D_
@@ -228,7 +228,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-// vector linearGeometrySolid::pointU(label pointID) const
+// vector linGeomSolid::pointU(label pointID) const
 // {
 //     pointVectorField pointU
 //     (
@@ -250,7 +250,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 // }
 
 // //- Patch point displacement
-// tmp<vectorField> linearGeometrySolid::patchPointDisplacementIncrement
+// tmp<vectorField> linGeomSolid::patchPointDisplacementIncrement
 // (
 //     const label patchID
 // ) const
@@ -275,7 +275,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 // }
 
 //- Face zone point displacement
-// tmp<vectorField> linearGeometrySolid::faceZonePointDisplacementIncrement
+// tmp<vectorField> linGeomSolid::faceZonePointDisplacementIncrement
 // (
 //     const label zoneID
 // ) const
@@ -362,7 +362,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 
 
 //- Face zone point displacement
-// tmp<tensorField> linearGeometrySolid::faceZoneSurfaceGradientOfVelocity
+// tmp<tensorField> linGeomSolid::faceZoneSurfaceGradientOfVelocity
 // (
 //     const label zoneID,
 //     const label patchID
@@ -427,7 +427,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 
 
 // tmp<vectorField>
-// linearGeometrySolid::currentFaceZonePoints(const label zoneID) const
+// linGeomSolid::currentFaceZonePoints(const label zoneID) const
 // {
 //     vectorField pointDisplacement
 //     (
@@ -514,7 +514,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 
 
 //- Face zone point displacement
-// tmp<vectorField> linearGeometrySolid::faceZoneNormal
+// tmp<vectorField> linGeomSolid::faceZoneNormal
 // (
 //     const label zoneID,
 //     const label patchID
@@ -581,7 +581,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 // }
 
 
-// void linearGeometrySolid::setTraction
+// void linGeomSolid::setTraction
 // (
 //     const label patchID,
 //     const vectorField& traction
@@ -593,7 +593,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 //      != solidTractionFvPatchVectorField::typeName
 //     )
 //     {
-//         FatalErrorIn("void linearGeometrySolid::setTraction(...)")
+//         FatalErrorIn("void linGeomSolid::setTraction(...)")
 //             << "Bounary condition on " << D_.name()
 //             <<  " is "
 //             << D_.boundaryField()[patchID].type()
@@ -612,7 +612,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 //     patchU.traction() = traction;
 // }
 
-// void linearGeometrySolid::setPressure
+// void linGeomSolid::setPressure
 // (
 //     const label patchID,
 //     const scalarField& pressure
@@ -624,7 +624,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 //      != solidTractionFvPatchVectorField::typeName
 //     )
 //     {
-//         FatalErrorIn("void linearGeometrySolid::setTraction(...)")
+//         FatalErrorIn("void linGeomSolid::setTraction(...)")
 //             << "Bounary condition on " << D_.name()
 //             <<  " is "
 //             << D_.boundaryField()[patchID].type()
@@ -643,7 +643,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 //     patchU.pressure() = pressure;
 // }
 
-// void linearGeometrySolid::setTraction
+// void linGeomSolid::setTraction
 // (
 //     const label patchID,
 //     const label zoneID,
@@ -667,7 +667,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 //     setTraction(patchID, patchTraction);
 // }
 
-// void linearGeometrySolid::setPressure
+// void linGeomSolid::setPressure
 // (
 //     const label patchID,
 //     const label zoneID,
@@ -692,7 +692,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 // }
 
 
-// tmp<vectorField> linearGeometrySolid::predictTraction
+// tmp<vectorField> linGeomSolid::predictTraction
 // (
 //     const label patchID,
 //     const label zoneID
@@ -705,7 +705,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 //      != solidTractionFvPatchVectorField::typeName
 //     )
 //     {
-//         FatalErrorIn("void linearGeometrySolid::setTraction(...)")
+//         FatalErrorIn("void linGeomSolid::setTraction(...)")
 //             << "Bounary condition on " << D_.name()
 //                 <<  " is "
 //                 << D_.boundaryField()[patchID].type()
@@ -751,7 +751,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 // }
 
 
-// tmp<scalarField> linearGeometrySolid::predictPressure
+// tmp<scalarField> linGeomSolid::predictPressure
 // (
 //     const label patchID,
 //     const label zoneID
@@ -764,7 +764,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 //      != solidTractionFvPatchVectorField::typeName
 //     )
 //     {
-//         FatalErrorIn("void linearGeometrySolid::setTraction(...)")
+//         FatalErrorIn("void linGeomSolid::setTraction(...)")
 //             << "Bounary condition on " << D_.name()
 //                 <<  " is "
 //                 << D_.boundaryField()[patchID].type()
@@ -810,7 +810,7 @@ linearGeometrySolid::linearGeometrySolid(dynamicFvMesh& mesh)
 // }
 
 
-bool linearGeometrySolid::evolve()
+bool linGeomSolid::evolve()
 {
     Info << "Evolving solid solver" << endl;
 
@@ -864,7 +864,7 @@ bool linearGeometrySolid::evolve()
 }
 
 
-// void linearGeometrySolid::predict()
+// void linGeomSolid::predict()
 // {
 //     Info << "Predicting solid model" << endl;
 
@@ -886,7 +886,7 @@ bool linearGeometrySolid::evolve()
 // }
 
 
-tmp<vectorField> linearGeometrySolid::tractionBoundarySnGrad
+tmp<vectorField> linGeomSolid::tractionBoundarySnGrad
 (
     const vectorField& traction,
     const scalarField& pressure,
@@ -925,7 +925,7 @@ tmp<vectorField> linearGeometrySolid::tractionBoundarySnGrad
 }
 
 
-void linearGeometrySolid::writeFields(const Time& runTime)
+void linGeomSolid::writeFields(const Time& runTime)
 {
     // Update equivalent strain
     volScalarField epsilonEq
@@ -964,7 +964,7 @@ void linearGeometrySolid::writeFields(const Time& runTime)
 }
 
 
-void linearGeometrySolid::end()
+void linGeomSolid::end()
 {
     if (maxIterReached_ > 0)
     {

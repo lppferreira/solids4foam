@@ -23,11 +23,11 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Class
-    linearGeometrySolid
+    nonLinGeomTotalLagSolid
 
 Description
-    Mathematical model where linear geometry is assumed i.e. small strains and
-    small rotations are assumed.
+    Mathematical model for finite strains and rotations, where a total
+    Lagrangian and total displacement approach is employed.
 
     The stress is calculated by the run-time selectable mechanical law.
 
@@ -35,18 +35,16 @@ Author
     Philip Cardiff, UCD.  All rights reserved.
 
 SourceFiles
-    linearGeometrySolid.C
+    nonLinGeomTotalLagSolid.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef linearGeometrySolid_H
-#define linearGeometrySolid_H
+#ifndef nonLinGeomTotalLagSolid_H
+#define nonLinGeomTotalLagSolid_H
 
 #include "solidModel.H"
 #include "volFields.H"
 #include "surfaceFields.H"
-#include "pointFields.H"
-//#include "newLeastSquaresVolPointInterpolation.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -59,46 +57,34 @@ namespace solidModels
 {
 
 /*---------------------------------------------------------------------------*\
-                        Class linearGeometrySolid Declaration
+                        Class nonLinGeomTotalLagSolid Declaration
 \*---------------------------------------------------------------------------*/
 
-class linearGeometrySolid
+class nonLinGeomTotalLagSolid
 :
     public solidModel
 {
     // Private data
 
-        //- Displacement field
+        //- Total displacement field
         volVectorField D_;
 
-        //- Velocity field
-        //volVectorField U_;
-
-        //- Point mesh
-        //pointMesh pMesh_;
-
-        //- Point displacement field
-        //pointVectorField pointD_;
-
-        //- Strain field
-        volSymmTensorField epsilon_;
-
-        //- Stress field
+        //- Cauchy (true) stress field
         volSymmTensorField sigma_;
-
-        //- Mechanical model
-        //mechanicalModel mechanical_;
-
-        //- Cell-to-point interpolation
-        //newLeastSquaresVolPointInterpolation volToPoint_;
-
-        //- Face displacement gradient
-        //surfaceTensorField gradDf_;
 
         //- Cell displacement gradient
         volTensorField gradD_;
 
-        //- Density
+        //- Total deformation gradient
+        volTensorField F_;
+
+        //- Inverse of the total deformation gradient
+        volTensorField Finv_;
+
+        //- Jacobian of total deformation gradient
+        volScalarField J_;
+
+        //- Density (reference configuration)
         const volScalarField rho_;
 
         //- Implicit stiffness; coefficient of the Laplacian term
@@ -136,37 +122,38 @@ class linearGeometrySolid
         //  momentum equation
         int maxIterReached_;
 
+
     // Private Member Functions
 
         //- Check if the momentum equation is converged
         bool converged
         (
             const int iCorr,
-            //const lduMatrix::solverPerformance& solverPerfD
+//            const lduMatrix::solverPerformance& solverPerfD
             const solverPerformance& solverPerfD
         );
 
         //- Disallow default bitwise copy construct
-        linearGeometrySolid(const linearGeometrySolid&);
+        nonLinGeomTotalLagSolid(const nonLinGeomTotalLagSolid&);
 
         //- Disallow default bitwise assignment
-        void operator=(const linearGeometrySolid&);
+        void operator=(const nonLinGeomTotalLagSolid&);
 
 
 public:
 
     //- Runtime type information
-    TypeName("linearGeometry");
+    TypeName("nonLinearGeometryTotalLagrangian");
 
     // Constructors
 
         //- Construct from components
-        linearGeometrySolid(dynamicFvMesh& mesh);
+        nonLinGeomTotalLagSolid(dynamicFvMesh& mesh);
 
 
     // Destructor
 
-        virtual ~linearGeometrySolid()
+        virtual ~nonLinGeomTotalLagSolid()
         {}
 
 
@@ -199,10 +186,10 @@ public:
             }
 
             //- Strain tensor
-            const volSymmTensorField& epsilon() const
-            {
-                return epsilon_;
-            }
+            // const volSymmTensorField& epsilon() const
+            // {
+            //     return epsilon_;
+            // }
 
             //- Return point displacement field
             // virtual const pointVectorField& pointD() const

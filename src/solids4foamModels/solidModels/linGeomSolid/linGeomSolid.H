@@ -23,11 +23,11 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Class
-    nonLinGeomUpdatedLagrangian
+    linGeomSolid
 
 Description
-    Mathematical model for finite strains and rotations, where an updated
-    Lagrangian and incremental displacement approach is employed.
+    Mathematical model where linear geometry is assumed i.e. small strains and
+    small rotations are assumed.
 
     The stress is calculated by the run-time selectable mechanical law.
 
@@ -35,18 +35,17 @@ Author
     Philip Cardiff, UCD.  All rights reserved.
 
 SourceFiles
-    nonLinGeomUpdatedLagrangian.C
+    linGeomSolid.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef nonLinGeomUpdatedLagrangian_H
-#define nonLinGeomUpdatedLagrangian_H
+#ifndef linGeomSolid_H
+#define linGeomSolid_H
 
 #include "solidModel.H"
 #include "volFields.H"
 #include "surfaceFields.H"
 #include "pointFields.H"
-#include "volPointInterpolation.H"
 //#include "newLeastSquaresVolPointInterpolation.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -60,60 +59,47 @@ namespace solidModels
 {
 
 /*---------------------------------------------------------------------------*\
-                        Class nonLinGeomUpdatedLagrangian Declaration
+                        Class linGeomSolid Declaration
 \*---------------------------------------------------------------------------*/
 
-class nonLinGeomUpdatedLagrangian
+class linGeomSolid
 :
     public solidModel
 {
     // Private data
 
-        //- Displacement increment field
-        volVectorField DD_;
-
-        //- Total displacement field
+        //- Displacement field
         volVectorField D_;
 
+        //- Velocity field
+        //volVectorField U_;
+
         //- Point mesh
-        pointMesh pMesh_;
+        //pointMesh pMesh_;
 
-        //- Point displacement increment field
-        pointVectorField pointDD_;
+        //- Point displacement field
+        //pointVectorField pointD_;
 
-        //- Point total displacement field
-        pointVectorField pointD_;
+        //- Strain field
+        volSymmTensorField epsilon_;
 
-        //- Cauchy (true) stress field
+        //- Stress field
         volSymmTensorField sigma_;
 
-        //- Cell-to-point interpolation for interpolating DD to pointDD
-//        newLeastSquaresVolPointInterpolation volToPoint_;
-        volPointInterpolation volToPoint_;
+        //- Mechanical model
+        //mechanicalModel mechanical_;
 
-        //- Cell displacement increment gradient
-        volTensorField gradDD_;
+        //- Cell-to-point interpolation
+        //newLeastSquaresVolPointInterpolation volToPoint_;
+
+        //- Face displacement gradient
+        //surfaceTensorField gradDf_;
 
         //- Cell displacement gradient
         volTensorField gradD_;
 
-        //- Total deformation gradient
-        volTensorField F_;
-
-        //- Jacobian of total deformation gradient
-        volScalarField J_;
-
-        //- Relative deformation gradient
-        volTensorField relF_;
-
-        //- Relative Jacobian: Jacobian of the relative deformation gradient
-        volTensorField relFinv_;
-
-        //- Relative Jacobian: Jacobian of the relative deformation gradient
-        volScalarField relJ_;
-
-        //- Density (updated configuration)
-        volScalarField rho_;
+        //- Density
+        const volScalarField rho_;
 
         //- Implicit stiffness; coefficient of the Laplacian term
         //  The value of this term only affects convergence and not the answer
@@ -128,8 +114,8 @@ class nonLinGeomUpdatedLagrangian
         //  will store the reciprocal for effficiency
         const volScalarField rImpK_;
 
-        //- DD equation under-relaxation factor
-        const scalar DDEqnRelaxFactor_;
+        //- D equation under-relaxation factor
+        const scalar DEqnRelaxFactor_;
 
         //- Solution standard tolerance
         const scalar solutionTol_;
@@ -150,48 +136,37 @@ class nonLinGeomUpdatedLagrangian
         //  momentum equation
         int maxIterReached_;
 
-        //- Stabilise hydrostatic pressure
-        //  Apply smoothing to the relative Jacobian calculation
-        const Switch stabilisePressure_;
-
-
     // Private Member Functions
 
         //- Check if the momentum equation is converged
         bool converged
         (
             const int iCorr,
-            //const lduMatrix::solverPerformance& solverPerfDD
-            const solverPerformance& solverPerfDD
+            //const lduMatrix::solverPerformance& solverPerfD
+            const solverPerformance& solverPerfD
         );
 
-        //- Move the mesh to the deformed configuration
-        void moveMesh(const pointField& oldPoints);
-
-        //- Create global face zone point maps
-        void findGlobalFaceZones();
-
         //- Disallow default bitwise copy construct
-        nonLinGeomUpdatedLagrangian(const nonLinGeomUpdatedLagrangian&);
+        linGeomSolid(const linGeomSolid&);
 
         //- Disallow default bitwise assignment
-        void operator=(const nonLinGeomUpdatedLagrangian&);
+        void operator=(const linGeomSolid&);
 
 
 public:
 
     //- Runtime type information
-    TypeName("nonLinearGeometryUpdatedLagrangian");
+    TypeName("linearGeometry");
 
     // Constructors
 
         //- Construct from components
-        nonLinGeomUpdatedLagrangian(dynamicFvMesh& mesh);
+        linGeomSolid(dynamicFvMesh& mesh);
 
 
     // Destructor
 
-        virtual ~nonLinGeomUpdatedLagrangian()
+        virtual ~linGeomSolid()
         {}
 
 
@@ -224,10 +199,10 @@ public:
             }
 
             //- Strain tensor
-            // const volSymmTensorField& epsilon() const
-            // {
-            //     return epsilon_;
-            // }
+            const volSymmTensorField& epsilon() const
+            {
+                return epsilon_;
+            }
 
             //- Return point displacement field
             // virtual const pointVectorField& pointD() const
