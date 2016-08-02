@@ -16,17 +16,16 @@ FoamFile
 
 d2dt2Schemes
 {
-    default            steadyState;
+    default            Euler;
 }
 
 ddtSchemes
 {
-    default            steadyState;
+    default            Euler;
 }
 
 gradSchemes
 {
-    //default            extendedLeastSquares 0;
     default            leastSquares;
 }
 
@@ -38,13 +37,14 @@ divSchemes
 laplacianSchemes
 {
     default            none;
-    //laplacian(DD,D)    Gauss linear skewCorrected 1.0;
     laplacian(DD,D)    Gauss linear corrected;
 }
 
 snGradSchemes
 {
     default            none;
+    snGrad(D)          corrected;
+    snGrad(DD)         corrected;
 }
 
 interpolationSchemes

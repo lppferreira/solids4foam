@@ -1,16 +1,16 @@
-solidSolvers/solidSolver/solidSolver.C
-solidSolvers/solidSolver/newSolidSolver.C
-solidSolvers/linearGeometrySolid/linearGeometrySolid.C
-solidSolvers/nonLinGeomUpdatedLagrangian/nonLinGeomUpdatedLagrangian.C
-solidSolvers/nonLinGeomTotalLagrangian/nonLinGeomTotalLagrangian.C
-solidSolvers/unsLinGeomSolid/unsLinGeomSolid.C
-solidSolvers/unsNonLinGeomTotalLagSolid/unsNonLinGeomTotalLagSolid.C
-solidSolvers/unsNonLinGeomUpdatedLagSolid/unsNonLinGeomUpdatedLagSolid.C
+solidModels/solidModel/solidModel.C
+solidModels/solidModel/newSolidModel.C
+solidModels/linearGeometrySolid/linearGeometrySolid.C
+solidModels/nonLinGeomUpdatedLagrangian/nonLinGeomUpdatedLagrangian.C
+solidModels/nonLinGeomTotalLagrangian/nonLinGeomTotalLagrangian.C
+solidModels/unsLinGeomSolid/unsLinGeomSolid.C
+solidModels/unsNonLinGeomTotalLagSolid/unsNonLinGeomTotalLagSolid.C
+solidModels/unsNonLinGeomUpdatedLagSolid/unsNonLinGeomUpdatedLagSolid.C
 
-fluidSolvers/fluidSolver/fluidSolver.C
-fluidSolvers/fluidSolver/newFluidSolver.C
-fluidSolvers/icoFluid/icoFluid.C
-fluidSolvers/pisoFluid/pisoFluid.C
+fluidModels/fluidModel/fluidModel.C
+fluidModels/fluidModel/newFluidModel.C
+fluidModels/icoFluid/icoFluid.C
+fluidModels/pisoFluid/pisoFluid.C
 
 /*fluidSolidInterfaces/fluidSolidInterface/fluidSolidInterface.C
 fluidSolidInterfaces/fluidSolidInterface/newFluidSolidInterface.C
@@ -29,17 +29,17 @@ $(mechanicalLaws)/mechanicalLaw/newMechanicalLaw.C
 $(mechanicalLaws)/linearElastic/linearElastic.C
 $(mechanicalLaws)/neoHookeanElastic/neoHookeanElastic.C
 
-fluidFvPatchFields = fluidSolvers/fvPatchFields
+fluidFvPatchFields = fluidModels/fvPatchFields
 $(fluidFvPatchFields)/transitionalParabolicVelocity/transitionalParabolicVelocityFvPatchVectorField.C
 $(fluidFvPatchFields)/extrapolatedPressure/extrapolatedPressureFvPatchScalarField.C
 
-fvPatchFields = boundaryConditions/fvPatchFields
-$(fvPatchFields)/fixedDisplacement/fixedDisplacementFvPatchVectorField.C
-$(fvPatchFields)/solidTraction/solidTractionFvPatchVectorField.C
-$(fvPatchFields)/solidSymmetry/solidSymmetryFvPatchScalarField.C
-$(fvPatchFields)/solidSymmetry/solidSymmetryFvPatchVectorField.C
-$(fvPatchFields)/solidWedge/solidWedgeFvPatchVectorField.C
-$(fvPatchFields)/solidWedge/solidWedgeFvPatchScalarField.C
+solidFvPatchFields = solidModels/fvPatchFields
+$(solidFvPatchFields)/fixedDisplacement/fixedDisplacementFvPatchVectorField.C
+$(solidFvPatchFields)/solidTraction/solidTractionFvPatchVectorField.C
+$(solidFvPatchFields)/solidSymmetry/solidSymmetryFvPatchScalarField.C
+$(solidFvPatchFields)/solidSymmetry/solidSymmetryFvPatchVectorField.C
+$(solidFvPatchFields)/solidWedge/solidWedgeFvPatchVectorField.C
+$(solidFvPatchFields)/solidWedge/solidWedgeFvPatchScalarField.C
 
 /*numerics/newLeastSquaresVolPointInterpolation/newLeastSquaresVolPointInterpolation.C
 numerics/newGGIInterpolation/newGGIInterpolationName.C

@@ -22,51 +22,52 @@ License
     along with OpenFOAM; if not, write to the Free Software Foundation,
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-Application
-    fluidFoam
-
-Description
-    Finite volume fluid flow solver with run-time selectable fluid model.
-
-Author
-    Zeljko Tukovic, FSB Zagreb.  All rights reserved.
-
 \*---------------------------------------------------------------------------*/
 
-#include "fvCFD.H"
-#include "dynamicFvMesh.H"
-#include "fluidModel.H"
+#include "solidModel.H"
+#include "Time.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-int main(int argc, char *argv[])
+Foam::autoPtr<Foam::solidModel> Foam::solidModel::New(dynamicFvMesh& mesh)
 {
-#   include "setRootCase.H"
-#   include "createTime.H"
-#   include "createDynamicFvMesh.H"
-#   include "createFluid.H"
+    word solidModelTypeName;
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-
-    Info<< "\nStarting time loop\n" << endl;
-
-    for (runTime++; !runTime.end(); runTime++)
+    // Enclose the creation of the dictionary to ensure it is
+    // deleted before the flow is created otherwise the dictionary
+    // is entered in the database twice
     {
-        Info<< "Time = " << runTime.timeName() << nl << endl;
+        IOdictionary solidProperties
+        (
+            IOobject
+            (
+                "solidProperties",
+                mesh.time().constant(),
+                mesh,
+                IOobject::MUST_READ,
+                IOobject::NO_WRITE
+            )
+        );
 
-        fluid->evolve();
-
-        runTime.write();
-
-        Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
-            << "  ClockTime = " << runTime.elapsedClockTime() << " s"
-            << nl << endl;
+        solidProperties.lookup("solidModel") >> solidModelTypeName;
     }
 
-    Info<< "End\n" << endl;
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(solidModelTypeName);
 
-    return(0);
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    {
+        FatalErrorIn
+        (
+            "solidModel::New(dynamicFvMesh& mesh)"
+        )   << "Unknown solidModel type " << solidModelTypeName
+            << endl << endl
+            << "Valid solidModel types are :" << endl
+            << dictionaryConstructorTablePtr_->toc()
+            << exit(FatalError);
+    }
+
+    return autoPtr<solidModel>(cstrIter()(mesh));
 }
 
 

@@ -149,6 +149,7 @@ void Foam::linearElastic::correct(volSymmTensorField& sigma)
     sigma = 2.0*mu_*epsilon + lambda_*tr(epsilon)*I;
 }
 
+
 void Foam::linearElastic::correct(surfaceSymmTensorField& sigma)
 {
     // Lookup the strain tensor from the solver
