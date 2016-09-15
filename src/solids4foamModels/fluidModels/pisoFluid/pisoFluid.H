@@ -43,6 +43,7 @@ SourceFiles
 
 #include "fluidModel.H"
 #include "volFields.H"
+#include "pointFields.H"
 #include "surfaceFields.H"
 #include "singlePhaseTransportModel.H"
 #include "turbulentTransportModel.H"
@@ -68,6 +69,12 @@ class pisoFluid
 
         //- Velocity field
         volVectorField U_;
+
+        //- Point mesh
+        pointMesh pMesh_;
+
+        //- Point displacement field
+        pointVectorField pointD_;
 
         //- Pressure field
         volScalarField p_;
@@ -155,37 +162,49 @@ public:
             }
 
             // //- Patch viscous force (N/m2)
-            // virtual tmp<vectorField> patchViscousForce
-            // (
-            //     const label patchID
-            // ) const;
+             virtual tmp<vectorField> patchViscousForce
+             (
+                 const label patchID
+             ) const;
 
-            // //- Patch pressure force (N/m2)
-            // virtual tmp<scalarField> patchPressureForce
-            // (
-            //     const label patchID
-            // ) const;
+            // - Patch pressure force (N/m2)
+             virtual tmp<scalarField> patchPressureForce
+             (
+                 const label patchID
+             ) const;
 
             // //- Patch viscous force (N/m2)
-            // virtual tmp<vectorField> faceZoneViscousForce
-            // (
-            //     const label zoneID,
-            //     const label patchID
-            // ) const;
+             virtual tmp<vectorField> faceZoneViscousForce
+             (
+                 const label zoneID,
+                 const label patchID
+             ) const;
 
             // //- Patch pressure force (N/m2)
-            // virtual tmp<scalarField> faceZonePressureForce
-            // (
-            //     const label zoneID,
-            //     const label patchID
-            // ) const;
+             virtual tmp<scalarField> faceZonePressureForce
+             (
+                 const label zoneID,
+                 const label patchID
+             ) const;
 
             // //- Face zone effective dynamic viscosity
-            // virtual tmp<scalarField> faceZoneMuEff
-            // (
-            //     const label zoneID,
-            //     const label patchID
-            // ) const;
+             virtual tmp<scalarField> faceZoneMuEff
+             (
+                 const label zoneID,
+                 const label patchID
+             ) const;
+
+            //- Return point displacement field
+             virtual const pointVectorField& pointD() const
+             {
+                 return pointD_;
+             }
+
+            //- Face zone primitive patch in current configuration
+             virtual tmp<vectorField> currentFaceZonePoints
+             (
+                 const label zoneID
+             ) const;
 
         // Edit
 

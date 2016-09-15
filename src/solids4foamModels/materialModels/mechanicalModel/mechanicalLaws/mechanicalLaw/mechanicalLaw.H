@@ -197,6 +197,10 @@ public:
         //  analyses
         virtual void setMaterialIndex(label curMaterialIndex)
         {}
+
+        //- Update total accumulated fields
+        virtual void updateTotalFields()
+        {}
 };
 
 

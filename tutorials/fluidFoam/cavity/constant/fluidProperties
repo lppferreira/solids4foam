@@ -14,8 +14,8 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-fluidSolver            icoFluid;
-//fluidSolver            pisoFluid;
+fluidModel            icoFluid;
+//fluidModel            pisoFluid;
 
 icoFluidCoeffs
 {

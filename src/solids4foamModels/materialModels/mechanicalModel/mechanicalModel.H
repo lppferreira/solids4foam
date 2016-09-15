@@ -142,6 +142,9 @@ public:
 
         //- Read plasticityProperties dictionary
         virtual bool read();
+
+        //- Update total accumulated fields
+        void updateTotalFields();
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

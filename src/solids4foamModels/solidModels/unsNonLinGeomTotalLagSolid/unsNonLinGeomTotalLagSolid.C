@@ -164,7 +164,7 @@ unsNonLinGeomTotalLagSolid::unsNonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
         mesh,
         dimensionedSymmTensor("zero", dimForce/dimArea, symmTensor::zero)
     ),
-//    volToPoint_(mesh),
+    volToPoint_(mesh),
     gradD_
     (
         IOobject
@@ -323,29 +323,29 @@ unsNonLinGeomTotalLagSolid::unsNonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 
-// vector unsNonLinGeomTotalLagSolid::pointU(label pointID) const
-// {
-//     pointVectorField pointU
-//     (
-//         IOobject
-//         (
-//             "pointU",
-//             runTime().timeName(),
-//             mesh(),
-//             IOobject::NO_READ,
-//             IOobject::NO_WRITE
-//         ),
-//         pMesh_,
-//         dimensionedVector("0", dimVelocity, vector::zero)
-//     );
+ vector unsNonLinGeomTotalLagSolid::pointU(label pointID) const
+ {
+     pointVectorField pointU
+     (
+         IOobject
+         (
+             "pointU",
+             runTime().timeName(),
+             mesh(),
+             IOobject::NO_READ,
+             IOobject::NO_WRITE
+         ),
+         pMesh_,
+         dimensionedVector("0", dimVelocity, vector::zero)
+     );
 
-//     volToPoint_.interpolate(U_, pointU);
+     volToPoint_.interpolate(U_, pointU);
 
-//     return pointU.internalField()[pointID];
-// }
+     return pointU.internalField()[pointID];
+ }
 
 //- Patch point displacement
-/*tmp<vectorField> unsNonLinGeomTotalLagSolid::patchPointDisplacementIncrement
+tmp<vectorField> unsNonLinGeomTotalLagSolid::patchPointDisplacementIncrement
 (
     const label patchID
 ) const
@@ -472,8 +472,24 @@ tmp<tensorField> unsNonLinGeomTotalLagSolid::faceZoneSurfaceGradientOfVelocity
     );
     tensorField& velocityGradient = tVelocityGradient();
 
-    vectorField pPointU =
-        volToPoint_.interpolate(mesh().boundaryMesh()[patchID], U_);
+     pointVectorField pPointU
+     (
+         IOobject
+         (
+             "pPointU",
+             runTime().timeName(),
+             mesh(),
+             IOobject::NO_READ,
+             IOobject::NO_WRITE
+         ),
+         pMesh_,
+         dimensionedVector("0", dimVelocity, vector::zero)
+     );
+
+    volToPoint_.interpolate(U_, pPointU);
+
+//    vectorField pPointU =
+//        volToPoint_.interpolate(mesh().boundaryMesh()[patchID], U_);
 
     const faceList& localFaces =
         mesh().boundaryMesh()[patchID].localFaces();
@@ -788,8 +804,43 @@ void unsNonLinGeomTotalLagSolid::setPressure
     }
 
     setPressure(patchID, patchPressure);
-}*/
+}
 
+tmp<vectorField> unsNonLinGeomTotalLagSolid::predictTraction
+ (
+     const label patchID,
+     const label zoneID
+ )
+ {
+     // Predict traction on patch
+     //	dummy implementation!
+
+     tmp<vectorField> ttF
+     (
+         new vectorField(mesh().faceZones()[zoneID].size(), vector::zero)
+     );
+
+
+     return ttF;
+ }
+
+ tmp<scalarField> unsNonLinGeomTotalLagSolid::predictPressure
+ (
+     const label patchID,
+     const label zoneID
+ )
+ {
+//      Predict pressure field on patch
+//	dummy implementation!
+
+     tmp<scalarField> tpF
+     (
+         new scalarField(mesh().faceZones()[zoneID].size(), 0)
+     );
+
+
+     return tpF;
+ }
 
 bool unsNonLinGeomTotalLagSolid::evolve()
 {
@@ -1033,6 +1084,10 @@ tmp<vectorField> unsNonLinGeomTotalLagSolid::tractionBoundarySnGrad
     );
 }
 
+void unsNonLinGeomTotalLagSolid::updateTotalFields()
+{
+    mechanical().updateTotalFields();
+}
 
 void unsNonLinGeomTotalLagSolid::writeFields(const Time& runTime)
 {

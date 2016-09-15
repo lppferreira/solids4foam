@@ -146,5 +146,16 @@ bool Foam::mechanicalModel::read()
     }
 }
 
+void Foam::mechanicalModel::updateTotalFields()
+{
+//    PtrList<mechanicalLaw>& laws = *this;
+
+    mechanicalLawPtr_->updateYieldStress();//correct member function???
+//    forAll(laws, lawI)
+//    {
+//        laws[lawI].updateTotalFields();// this function is not defined in any of the models :/
+//    }
+}
+
 
 // ************************************************************************* //

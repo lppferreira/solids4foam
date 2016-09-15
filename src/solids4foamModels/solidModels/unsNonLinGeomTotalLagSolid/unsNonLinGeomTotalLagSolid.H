@@ -51,6 +51,7 @@ SourceFiles
 #include "surfaceFields.H"
 #include "pointFields.H"
 //#include "newLeastSquaresVolPointInterpolation.H"
+#include "volPointInterpolation.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -92,6 +93,7 @@ class unsNonLinGeomTotalLagSolid
 
         //- Cell-to-point interpolation for interpolating DD to pointDD
 //        newLeastSquaresVolPointInterpolation volToPoint_;
+        volPointInterpolation volToPoint_;
 
         //- Cell displacement gradient
         volTensorField gradD_;
@@ -241,16 +243,17 @@ public:
             }
 
             //- Return multi-material interface pointer
-/*            const newLeastSquaresVolPointInterpolation& volToPoint() const
+//            const newLeastSquaresVolPointInterpolation& volToPoint() const
+            const volPointInterpolation& volToPoint() const
             {
                 return volToPoint_;
-            }*/
+            }
 
             //- Return point displacement field
-            //virtual vector pointU(label pointID) const;
+            virtual vector pointU(label pointID) const;
 
             //- Patch point displacement increment
-/*            virtual tmp<vectorField> patchPointDisplacementIncrement
+            virtual tmp<vectorField> patchPointDisplacementIncrement
             (
                 const label patchID
             ) const;
@@ -313,7 +316,21 @@ public:
                 const label patchID,
                 const label zoneID,
                 const scalarField& zonePressure
-            );*/
+            );
+
+            //- Predict traction at specified zone
+             virtual tmp<vectorField> predictTraction
+             (
+                 const label patchID,
+                 const label zoneID
+             );
+
+            //- Predict pressure at specified zone
+             virtual tmp<scalarField> predictPressure
+             (
+                 const label patchID,
+                 const label zoneID
+             );
 
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();
@@ -329,6 +346,9 @@ public:
                 const scalarField& pressure,
                 const fvPatch& patch
             ) const;
+
+            //- Update total accumulated fields
+            virtual void updateTotalFields();
 
             //- Write fields
             virtual void writeFields(const Time& runTime);

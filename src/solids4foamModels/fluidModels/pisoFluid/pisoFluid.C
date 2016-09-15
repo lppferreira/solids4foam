@@ -64,6 +64,20 @@ pisoFluid::pisoFluid(const fvMesh& mesh)
         ),
         mesh
     ),
+    pMesh_(mesh),
+    pointD_
+    (
+        IOobject
+        (
+            "pointD",
+            runTime().timeName(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
+        ),
+        pMesh_,
+        dimensionedVector("0", dimLength, vector::zero)
+    ),
     p_
     (
         IOobject
@@ -128,130 +142,215 @@ const volScalarField& pisoFluid::p() const
 
 
 //- Patch viscous force (N/m2)
-// tmp<vectorField> pisoFluid::patchViscousForce(const label patchID) const
-// {
-//     tmp<vectorField> tvF
-//     (
-//         new vectorField(mesh().boundary()[patchID].size(), vector::zero)
-//     );
+ tmp<vectorField> pisoFluid::patchViscousForce(const label patchID) const
+ {
+     tmp<vectorField> tvF
+     (
+         new vectorField(mesh().boundary()[patchID].size(), vector::zero)
+     );
 
-//     tvF() =
-//         notes_.value()
-//        *(
-//             mesh().boundary()[patchID].nf()
-//           & turbulence_->devReff()().boundaryField()[patchID]
-//         );
+     tvF() =
+         rho_.value()
+        *(
+             mesh().boundary()[patchID].nf()
+           & turbulence_->devReff()().boundaryField()[patchID]
+         );
 
-// //     vectorField n = mesh().boundary()[patchID].nf();
-// //     tvF() -= n*(n&tvF());
+ //     vectorField n = mesh().boundary()[patchID].nf();
+ //     tvF() -= n*(n&tvF());
 
-//     return tvF;
-// }
+     return tvF;
+ }
 
 // //- Patch pressure force (N/m2)
-// tmp<scalarField> pisoFluid::patchPressureForce(const label patchID) const
-// {
-//     tmp<scalarField> tpF
-//     (
-//         new scalarField(mesh().boundary()[patchID].size(), 0)
-//     );
+ tmp<scalarField> pisoFluid::patchPressureForce(const label patchID) const
+ {
+     tmp<scalarField> tpF
+     (
+         new scalarField(mesh().boundary()[patchID].size(), 0)
+     );
 
-//     tpF() = rho_.value()*p().boundaryField()[patchID];
+     tpF() = rho_.value()*p().boundaryField()[patchID];
 
-//     return tpF;
-// }
+     return tpF;
+ }
 
 // //- Patch viscous force (N/m2)
-// tmp<vectorField> pisoFluid::faceZoneViscousForce
-// (
-//     const label zoneID,
-//     const label patchID
-// ) const
-// {
-//     vectorField pVF = patchViscousForce(patchID);
+ tmp<vectorField> pisoFluid::faceZoneViscousForce
+ (
+     const label zoneID,
+     const label patchID
+ ) const
+ {
+     vectorField pVF = patchViscousForce(patchID);
 
-//     tmp<vectorField> tvF
-//     (
-//         new vectorField(mesh().faceZones()[zoneID].size(), vector::zero)
-//     );
-//     vectorField& vF = tvF();
+     tmp<vectorField> tvF
+     (
+         new vectorField(mesh().faceZones()[zoneID].size(), vector::zero)
+     );
+     vectorField& vF = tvF();
 
-//     const label patchStart =
-//         mesh().boundaryMesh()[patchID].start();
+     const label patchStart =
+         mesh().boundaryMesh()[patchID].start();
 
-//     forAll(pVF, i)
-//     {
-//         vF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
-//             pVF[i];
-//     }
+     forAll(pVF, i)
+     {
+         vF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
+             pVF[i];
+     }
 
 //     // Parallel data exchange: collect pressure field on all processors
-//     reduce(vF, sumOp<vectorField>());
+     reduce(vF, sumOp<vectorField>());
 
 
-//     return tvF;
-// }
+     return tvF;
+ }
 
 // //- Patch pressure force (N/m2)
-// tmp<scalarField> pisoFluid::faceZonePressureForce
-// (
-//     const label zoneID,
-//     const label patchID
-// ) const
-// {
-//     scalarField pPF = patchPressureForce(patchID);
+ tmp<scalarField> pisoFluid::faceZonePressureForce
+ (
+     const label zoneID,
+     const label patchID
+ ) const
+ {
+     scalarField pPF = patchPressureForce(patchID);
 
-//     tmp<scalarField> tpF
-//     (
-//         new scalarField(mesh().faceZones()[zoneID].size(), 0)
-//     );
-//     scalarField& pF = tpF();
+     tmp<scalarField> tpF
+     (
+         new scalarField(mesh().faceZones()[zoneID].size(), 0)
+     );
+     scalarField& pF = tpF();
 
-//     const label patchStart =
-//         mesh().boundaryMesh()[patchID].start();
+     const label patchStart =
+         mesh().boundaryMesh()[patchID].start();
 
-//     forAll(pPF, i)
-//     {
-//         pF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
-//             pPF[i];
-//     }
-
-//     // Parallel data exchange: collect pressure field on all processors
-//     reduce(pF, sumOp<scalarField>());
-
-//     return tpF;
-// }
-
-// tmp<scalarField> pisoFluid::faceZoneMuEff
-// (
-//     const label zoneID,
-//     const label patchID
-// ) const
-// {
-//     scalarField pMuEff =
-//         rho_.value()*turbulence_->nuEff()().boundaryField()[patchID];
-
-//     tmp<scalarField> tMuEff
-//     (
-//         new scalarField(mesh().faceZones()[zoneID].size(), 0)
-//     );
-//     scalarField& muEff = tMuEff();
-
-//     const label patchStart =
-//         mesh().boundaryMesh()[patchID].start();
-
-//     forAll(pMuEff, i)
-//     {
-//         muEff[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
-//             pMuEff[i];
-//     }
+     forAll(pPF, i)
+     {
+         pF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
+             pPF[i];
+     }
 
 //     // Parallel data exchange: collect pressure field on all processors
-//     reduce(muEff, sumOp<scalarField>());
+     reduce(pF, sumOp<scalarField>());
 
-//     return tMuEff;
-// }
+     return tpF;
+ }
 
+ tmp<scalarField> pisoFluid::faceZoneMuEff
+ (
+     const label zoneID,
+     const label patchID
+ ) const
+ {
+     scalarField pMuEff =
+         rho_.value()*turbulence_->nuEff()().boundaryField()[patchID];
+
+     tmp<scalarField> tMuEff
+     (
+         new scalarField(mesh().faceZones()[zoneID].size(), 0)
+     );
+     scalarField& muEff = tMuEff();
+
+     const label patchStart =
+         mesh().boundaryMesh()[patchID].start();
+
+     forAll(pMuEff, i)
+     {
+         muEff[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
+             pMuEff[i];
+     }
+
+//     // Parallel data exchange: collect pressure field on all processors
+     reduce(muEff, sumOp<scalarField>());
+
+     return tMuEff;
+ }
+
+tmp<vectorField>
+ pisoFluid::currentFaceZonePoints(const label zoneID) const
+ {
+     vectorField pointDisplacement
+     (
+         mesh().faceZones()[zoneID]().localPoints().size(),
+         vector::zero
+     );
+
+     const vectorField& pointDI = pointD_.internalField();
+
+     label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
+
+     if (globalZoneIndex != -1)
+     {
+         // global face zone
+         const labelList& curPointMap =
+             globalToLocalFaceZonePointMap()[globalZoneIndex];
+
+         const labelList& zoneMeshPoints =
+             mesh().faceZones()[zoneID]().meshPoints();
+
+         vectorField zonePointsDisplGlobal
+         (
+             zoneMeshPoints.size(),
+             vector::zero
+         );
+
+         //- Inter-proc points are shared by multiple procs
+         //  pointNumProc is the number of procs which a point lies on
+         scalarField pointNumProcs(zoneMeshPoints.size(), 0);
+
+         forAll(zonePointsDisplGlobal, globalPointI)
+         {
+             label localPoint = curPointMap[globalPointI];
+
+             if(zoneMeshPoints[localPoint] < mesh().nPoints())
+             {
+                 label procPoint = zoneMeshPoints[localPoint];
+
+                 zonePointsDisplGlobal[globalPointI] =
+                     pointDI[procPoint];
+
+                 pointNumProcs[globalPointI] = 1;
+             }
+         }
+
+         if (Pstream::parRun())
+         {
+             reduce(zonePointsDisplGlobal, sumOp<vectorField>());
+             reduce(pointNumProcs, sumOp<scalarField>());
+
+             //- now average the displacement between all procs
+             zonePointsDisplGlobal /= pointNumProcs;
+         }
+
+         forAll(pointDisplacement, globalPointI)
+         {
+             label localPoint = curPointMap[globalPointI];
+
+             pointDisplacement[localPoint] =
+                 zonePointsDisplGlobal[globalPointI];
+         }
+     }
+     else
+     {
+         pointDisplacement =
+             vectorField
+             (
+                 pointDI,
+                 mesh().faceZones()[zoneID]().meshPoints()
+             );
+     }
+
+     tmp<vectorField> tCurrentPoints
+     (
+         new vectorField
+         (
+             mesh().faceZones()[zoneID]().localPoints()
+           + pointDisplacement
+         )
+     );
+
+     return tCurrentPoints;
+ }
 
 void pisoFluid::evolve()
 {

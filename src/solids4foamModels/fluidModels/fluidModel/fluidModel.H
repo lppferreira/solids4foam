@@ -69,18 +69,18 @@ class fluidModel
         dictionary fluidProperties_;
 
         //- Global face zones
-        //mutable labelList* globalFaceZonesPtr_;
+        mutable labelList* globalFaceZonesPtr_;
 
         //- Global to local face zone point maping
-        //mutable labelListList* globalToLocalFaceZonePointMapPtr_;
+        mutable labelListList* globalToLocalFaceZonePointMapPtr_;
 
     // Private Member Functions
 
         //- Find global face zones
-        // void calcGlobalFaceZones() const;
+         void calcGlobalFaceZones() const;
 
         // //- Calculate global to local point addressing
-        // void calcGlobalToLocalFaceZonePointMap() const;
+         void calcGlobalToLocalFaceZonePointMap() const;
 
         //- Disallow default bitwise copy construct
         fluidModel(const fluidModel&);
@@ -170,37 +170,44 @@ public:
             // ) const = 0;
 
             // //- Patch pressure force (N/m2)
-            // virtual tmp<scalarField> patchPressureForce
-            // (
-            //     const label patchID
-            // ) const = 0;
+             virtual tmp<scalarField> patchPressureForce
+             (
+                 const label patchID
+             ) const = 0;
 
             // //- Patch viscous force (N/m2)
-            // virtual tmp<vectorField> faceZoneViscousForce
-            // (
-            //     const label zoneID,
-            //     const label patchID
-            // ) const = 0;
+             virtual tmp<vectorField> faceZoneViscousForce
+             (
+                 const label zoneID,
+                 const label patchID
+             ) const = 0;
 
             // //- Patch pressure force (N/m2)
-            // virtual tmp<scalarField> faceZonePressureForce
-            // (
-            //     const label zoneID,
-            //     const label patchID
-            // ) const = 0;
+             virtual tmp<scalarField> faceZonePressureForce
+             (
+                 const label zoneID,
+                 const label patchID
+             ) const = 0;
 
             // //- Face zone effective dynamic viscosity
-            // virtual tmp<scalarField> faceZoneMuEff
-            // (
-            //     const label zoneID,
-            //     const label patchID
-            // ) const = 0;
+             virtual tmp<scalarField> faceZoneMuEff
+             (
+                 const label zoneID,
+                 const label patchID
+             ) const = 0;
 
             // //- Get global face zones list
-            // const labelList& globalFaceZones() const;
+             const labelList& globalFaceZones() const;
 
             // //- Get global to local face zone point addressing
-            // const labelListList& globalToLocalFaceZonePointMap() const;
+             const labelListList& globalToLocalFaceZonePointMap() const;
+
+            //- Return point displacement field
+            virtual const pointVectorField& pointD() const = 0;
+
+            //- Face zone primitive patch in current configuration
+             virtual tmp<vectorField>
+             currentFaceZonePoints(const label zoneID) const = 0;
 
         // Edit
 

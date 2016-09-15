@@ -12,10 +12,10 @@ fluidModels/fluidModel/newFluidModel.C
 fluidModels/icoFluid/icoFluid.C
 fluidModels/pisoFluid/pisoFluid.C
 
-/*fluidSolidInterfaces/fluidSolidInterface/fluidSolidInterface.C
+fluidSolidInterfaces/fluidSolidInterface/fluidSolidInterface.C
 fluidSolidInterfaces/fluidSolidInterface/newFluidSolidInterface.C
 fluidSolidInterfaces/weakCouplingInterface/weakCouplingInterface.C
-fluidSolidInterfaces/fixedRelaxationCouplingInterface/fixedRelaxationCouplingInterface.C
+/*fluidSolidInterfaces/fixedRelaxationCouplingInterface/fixedRelaxationCouplingInterface.C
 fluidSolidInterfaces/AitkenCouplingInterface/AitkenCouplingInterface.C
 fluidSolidInterfaces/IQNILSCouplingInterface/IQNILSCouplingInterface.C*/
 
