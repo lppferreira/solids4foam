@@ -47,7 +47,6 @@ SourceFiles
 #include "runTimeSelectionTables.H"
 #include "fluidModel.H"
 #include "solidModel.H"
-//#include "extendedGgiInterpolation.H"
 #include "coupledPolyPatch.H"
 #include "AMIPatchToPatchInterpolation.H"
 #include "polyBoundaryMesh.H"
@@ -99,7 +98,6 @@ class fluidSolidInterface
         mutable vectorField* currentSolidZonePointsPtr_;
 
         //- Solid face zone primitive patch in current configuration
-//        mutable PrimitivePatch<face, List, const pointField&>*
         mutable PrimitivePatch<face, SubList, const pointField&>*
             currentSolidZonePatchPtr_;
 
@@ -110,13 +108,8 @@ class fluidSolidInterface
         mutable PrimitivePatch<face, SubList, const pointField&>*
             currentFluidZonePatchPtr_;
 
-////        const polyPatch& patchAMI1_;
-
         //- AMI zone-to-zone interpolation
-////        mutable extendedGgiZoneInterpolation* ggiInterpolatorPtr_;AMIInterpolation
-            mutable autoPtr<AMIPatchToPatchInterpolation> AMIPtr_;
-////            mutable AMIPatchToPatchInterpolation* AMIPtr_;
-
+        mutable autoPtr<AMIPatchToPatchInterpolation> AMIPtr_;
 
         //- Outer correction loop stoping tolerance
         scalar outerCorrTolerance_;
@@ -343,20 +336,15 @@ public:
             const vectorField& currentSolidZonePoints() const;
 
             //- Return current solid zone patch
-//            const PrimitivePatch<face, List, const pointField&>&
             const PrimitivePatch<face, SubList, const pointField&>&
-            currentSolidZonePatch() const;
+                currentSolidZonePatch() const;
 
             //- Return current fluid zone points
             const vectorField& currentFluidZonePoints() const;
 
             //- Return current fluid zone patch
-//            const PrimitivePatch<face, List, const pointField&>&
             const PrimitivePatch<face, SubList, const pointField&>&
-            currentFluidZonePatch() const;
-
-            //- Return fluid to solid interpolator
-////            const extendedGgiZoneInterpolation& ggiInterpolator() const;
+                currentFluidZonePatch() const;
 
             //- Return a reference to the AMI interpolator
             const AMIPatchToPatchInterpolation& AMI() const;
@@ -482,4 +470,3 @@ public:
 #endif
 
 // ************************************************************************* //
-

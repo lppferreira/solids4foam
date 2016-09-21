@@ -56,8 +56,15 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        // Solve governing equations
-        solid->evolve();
+        do
+        {
+            // Solve governing equations
+            solid->evolve();
+        }
+        while (mesh.update());
+
+        // Update accumulated fields
+        solid->updateTotalFields();
 
         // Write fields
         if (runTime.outputTime())
