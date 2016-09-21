@@ -39,6 +39,7 @@ $(mechanicalLaws)/poroLinearElastic/poroLinearElastic.C
 $(mechanicalLaws)/poroLinearElasticMohrCoulombPlastic/poroLinearElasticMohrCoulombPlastic.C
 $(mechanicalLaws)/neoHookeanElastic/neoHookeanElastic.C
 $(mechanicalLaws)/neoHookeanElasticMisesPlastic/neoHookeanElasticMisesPlastic.C
+$(mechanicalLaws)/neoHookeanElasticSmoothMisesPlastic/neoHookeanElasticSmoothMisesPlastic.C
 $(mechanicalLaws)/StVenantKirchhoffElastic/StVenantKirchhoffElastic.C
 $(mechanicalLaws)/StVenantKirchhoffOrthotropicElastic/StVenantKirchhoffOrthotropicElastic.C
 $(mechanicalLaws)/thermoLinearElastic/thermoLinearElastic.C
@@ -80,6 +81,7 @@ $(fluidFvPatchFields)/extrapolatedPressure/extrapolatedPressureFvPatchScalarFiel
 functionObjects/setInletVelocity/setInletVelocity.C
 functionObjects/solidForces/solidForces.C
 functionObjects/solidForcesDisplacements/solidForcesDisplacements.C
+functionObjects/solidStressDisplacements/solidStressDisplacements.C
 functionObjects/solidDisplacements/solidDisplacements.C
 functionObjects/hydrostaticPressure/hydrostaticPressure.C
 functionObjects/principalStresses/principalStresses.C

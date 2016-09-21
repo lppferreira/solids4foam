@@ -1,0 +1,2 @@
+echo "Compiling SmoothMultiPhase.f and placing object in $FOAM_USER_LIBBIN"
+gfortran -g -c SmoothMultiPhase.f -o $FOAM_USER_LIBBIN/SmoothMultiPhase.o
