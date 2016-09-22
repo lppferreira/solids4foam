@@ -30,15 +30,8 @@ License
 #include "fvc.H"
 #include "fvMatrices.H"
 #include "addToRunTimeSelectionTable.H"
-#include "fvcGradf.H"
 #include "solidTractionFvPatchVectorField.H"
-
-//#include "skewCorrectionVectors.H"
-//#include "multiMaterial.H"
-//#include "twoDPointCorrector.H"
-//#include "thermalModel.H"
-//#include "findRefCellVector.H"
-//#include "componentReferenceList.H"
+#include "fvcGradf.H"
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -62,7 +55,6 @@ addToRunTimeSelectionTable(solidModel, linGeomSolid, dictionary);
 bool linGeomSolid::converged
 (
     const int iCorr,
-    //const lduMatrix::solverPerformance& solverPerfD
     const solverPerformance& solverPerfD
 )
 {
@@ -193,19 +185,6 @@ linGeomSolid::linGeomSolid(dynamicFvMesh& mesh)
         pMesh_,
         dimensionedVector("0", dimLength, vector::zero)
     ),
-    epsilon_
-    (
-        IOobject
-        (
-            "epsilon",
-            runTime().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedSymmTensor("zero", dimless, symmTensor::zero)
-    ),
     sigma_
     (
         IOobject
@@ -219,7 +198,6 @@ linGeomSolid::linGeomSolid(dynamicFvMesh& mesh)
         mesh,
         dimensionedSymmTensor("zero", dimForce/dimArea, symmTensor::zero)
     ),
-    volToPoint_(mesh),
     gradD_
     (
         IOobject
@@ -248,6 +226,17 @@ linGeomSolid::linGeomSolid(dynamicFvMesh& mesh)
     materialTol_(lookupOrDefault<scalar>("materialTolerance", 1e-05)),
     infoFrequency_(lookupOrDefault<int>("infoFrequency", 100)),
     nCorr_(lookupOrDefault<int>("nCorrectors", 1000)),
+    g_
+    (
+        IOobject
+        (
+            "g",
+            runTime().constant(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    ),
     maxIterReached_(0)
 {
     D_.oldTime().oldTime();
@@ -256,53 +245,8 @@ linGeomSolid::linGeomSolid(dynamicFvMesh& mesh)
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
- vector linGeomSolid::pointU(label pointID) const
- {
-     pointVectorField pointU
-     (
-         IOobject
-         (
-             "pointU",
-             runTime().timeName(),
-             mesh(),
-             IOobject::NO_READ,
-             IOobject::NO_WRITE
-         ),
-         pMesh_,
-         dimensionedVector("0", dimVelocity, vector::zero)
-     );
 
-     volToPoint_.interpolate(U_, pointU);
 
-     return pointU.internalField()[pointID];
- }
-
-// //- Patch point displacement
- tmp<vectorField> linGeomSolid::patchPointDisplacementIncrement
- (
-     const label patchID
- ) const
- {
-     tmp<vectorField> tPointDisplacement
-     (
-         new vectorField
-         (
-             mesh().boundaryMesh()[patchID].localPoints().size(),
-             vector::zero
-         )
-     );
-
-     tPointDisplacement() =
-         vectorField
-         (
-             pointD_.internalField() - pointD_.oldTime().internalField(),
-             mesh().boundaryMesh()[patchID].meshPoints()
-         );
-
-     return tPointDisplacement;
- }
-
-//- Face zone point displacement
  tmp<vectorField> linGeomSolid::faceZonePointDisplacementIncrement
  (
      const label zoneID
@@ -389,7 +333,6 @@ linGeomSolid::linGeomSolid(dynamicFvMesh& mesh)
  }
 
 
-//- Face zone point displacement
  tmp<tensorField> linGeomSolid::faceZoneSurfaceGradientOfVelocity
  (
      const label zoneID,
@@ -406,6 +349,13 @@ linGeomSolid::linGeomSolid(dynamicFvMesh& mesh)
      );
      tensorField& velocityGradient = tVelocityGradient();
 
+/*    vectorField pPointU =
+        mechanical().volToPoint().interpolate
+        (
+            mesh().boundaryMesh()[patchID],
+            U_
+        );*/
+
      pointVectorField pPointU
      (
          IOobject
@@ -420,10 +370,7 @@ linGeomSolid::linGeomSolid(dynamicFvMesh& mesh)
          dimensionedVector("0", dimVelocity, vector::zero)
      );
 
-    volToPoint_.interpolate(U_, pPointU);
-
-//     vectorField pPointU =
-//         volToPoint_.interpolate(mesh().boundaryMesh()[patchID], U_);
+    mechanical().volToPoint().interpolate(U_,pPointU);
 
      const faceList& localFaces =
          mesh().boundaryMesh()[patchID].localFaces();
@@ -687,173 +634,54 @@ linGeomSolid::linGeomSolid(dynamicFvMesh& mesh)
      patchU.pressure() = pressure;
  }
 
- void linGeomSolid::setTraction
- (
-     const label patchID,
-     const label zoneID,
-     const vectorField& faceZoneTraction
- )
- {
-     vectorField patchTraction(mesh().boundary()[patchID].size(), vector::zero);
+void linGeomSolid::setTraction
+(
+    const label patchID,
+    const label zoneID,
+    const vectorField& faceZoneTraction
+)
+{
+    vectorField patchTraction(mesh().boundary()[patchID].size(), vector::zero);
 
-     const label patchStart =
-         mesh().boundaryMesh()[patchID].start();
+    const label patchStart =
+        mesh().boundaryMesh()[patchID].start();
 
-     forAll(patchTraction, i)
-     {
-         patchTraction[i] =
-             faceZoneTraction
-             [
-                 mesh().faceZones()[zoneID].whichFace(patchStart + i)
-             ];
-     }
+    forAll(patchTraction, i)
+    {
+        patchTraction[i] =
+            faceZoneTraction
+            [
+                mesh().faceZones()[zoneID].whichFace(patchStart + i)
+            ];
+    }
 
-     setTraction(patchID, patchTraction);
- }
+    setTraction(patchID, patchTraction);
+}
 
- void linGeomSolid::setPressure
- (
-     const label patchID,
-     const label zoneID,
-     const scalarField& faceZonePressure
- )
- {
-     scalarField patchPressure(mesh().boundary()[patchID].size(), 0.0);
+void linGeomSolid::setPressure
+(
+    const label patchID,
+    const label zoneID,
+    const scalarField& faceZonePressure
+)
+{
+    scalarField patchPressure(mesh().boundary()[patchID].size(), 0.0);
 
-     const label patchStart =
-         mesh().boundaryMesh()[patchID].start();
+    const label patchStart =
+        mesh().boundaryMesh()[patchID].start();
 
-     forAll(patchPressure, i)
-     {
-         patchPressure[i] =
-             faceZonePressure
-             [
-                 mesh().faceZones()[zoneID].whichFace(patchStart + i)
-             ];
-     }
+    forAll(patchPressure, i)
+    {
+        patchPressure[i] =
+            faceZonePressure
+            [
+                mesh().faceZones()[zoneID].whichFace(patchStart + i)
+            ];
+    }
 
-     setPressure(patchID, patchPressure);
- }
-
-
- tmp<vectorField> linGeomSolid::predictTraction
- (
-     const label patchID,
-     const label zoneID
- )
- {
-     // Predict traction on patch
-     if
-     (
-         D_.boundaryField()[patchID].type()
-      != solidTractionFvPatchVectorField::typeName
-     )
-     {
-         FatalErrorIn("void linGeomSolid::setTraction(...)")
-             << "Bounary condition on " << D_.name()
-                 <<  " is "
-                 << D_.boundaryField()[patchID].type()
-                 << "for patch" << mesh().boundary()[patchID].name()
-                 << ", instead "
-                 << solidTractionFvPatchVectorField::typeName
-                 << abort(FatalError);
-     }
-
-     solidTractionFvPatchVectorField& patchUo =
-         refCast<solidTractionFvPatchVectorField>
-         (
-             D_.oldTime().boundaryField()[patchID]
-         );
-
-     solidTractionFvPatchVectorField& patchUoo =
-         refCast<solidTractionFvPatchVectorField>
-         (
-             D_.oldTime().oldTime().boundaryField()[patchID]
-         );
-
-
-     vectorField ptF = 2*patchUo.traction() - patchUoo.traction();
-
-     tmp<vectorField> ttF
-     (
-         new vectorField(mesh().faceZones()[zoneID].size(), vector::zero)
-     );
-     vectorField& tF = ttF();
-
-     const label patchStart =
-         mesh().boundaryMesh()[patchID].start();
-
-     forAll(ptF, i)
-     {
-         tF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] = ptF[i];
-     }
-
-     // Parallel data exchange: collect pressure field on all processors
-     reduce(tF, sumOp<vectorField>());
-
-     return ttF;
- }
-
-
- tmp<scalarField> linGeomSolid::predictPressure
- (
-     const label patchID,
-     const label zoneID
- )
- {
-//      Predict pressure field on patch
-     if
-     (
-         D_.boundaryField()[patchID].type()
-      != solidTractionFvPatchVectorField::typeName
-     )
-     {
-         FatalErrorIn("void linGeomSolid::setTraction(...)")
-             << "Bounary condition on " << D_.name()
-                 <<  " is "
-                 << D_.boundaryField()[patchID].type()
-                 << "for patch" << mesh().boundary()[patchID].name()
-                 << ", instead "
-                 << solidTractionFvPatchVectorField::typeName
-                 << abort(FatalError);
-     }
-
-     solidTractionFvPatchVectorField& patchUo =
-         refCast<solidTractionFvPatchVectorField>
-         (
-             D_.oldTime().boundaryField()[patchID]
-         );
-
-     solidTractionFvPatchVectorField& patchUoo =
-         refCast<solidTractionFvPatchVectorField>
-         (
-             D_.oldTime().oldTime().boundaryField()[patchID]
-         );
-
-
-     scalarField pPF = 2*patchUo.pressure() - patchUoo.pressure();
-
-     tmp<scalarField> tpF
-     (
-         new scalarField(mesh().faceZones()[zoneID].size(), 0)
-     );
-     scalarField& pF = tpF();
-
-     const label patchStart =
-         mesh().boundaryMesh()[patchID].start();
-
-     forAll(pPF, i)
-     {
-         pF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] = pPF[i];
-     }
-
-     // Parallel data exchange: collect pressure field on all processors
-     reduce(pF, sumOp<scalarField>());
-
-     return tpF;
- }
-
-
+    setPressure(patchID, patchPressure);
+}
+ 
 bool linGeomSolid::evolve()
 {
     Info << "Evolving solid solver" << endl;
@@ -875,34 +703,34 @@ bool linGeomSolid::evolve()
         (
             rho_*fvm::d2dt2(D_)
          == fvm::laplacian(impKf_, D_, "laplacian(DD,D)")
-          + fvc::div(sigma_ - impK_*gradD_, "div(sigma)")
+          - fvc::laplacian(impKf_, D_, "laplacian(DD,D)")
+          + fvc::div(sigma_, "div(sigma)")
+          + rho_*g_
+          + mechanical().RhieChowCorrection(D_, gradD_)
         );
 
         // Under-relaxation the linear system
         DEqn.relax(DEqnRelaxFactor_);
 
         // Solve the linear system
-        solverPerfD = DEqn.solve();
+        DEqn.solve();
 
         // Under-relax the field
         D_.relax();
 
         // Update gradient of displacement
-        gradD_ = fvc::grad(D_);
-
-        // Update the strain
-        epsilon_ = symm(gradD_);
+        mechanical().grad(D_, gradD_);
 
         // Calculate the stress using run-time selectable mechanical law
         mechanical().correct(sigma_);
     }
     while (!converged(iCorr, solverPerfD) && ++iCorr < nCorr_);
 
-    // PC: rename this function or maybe even remove it
-    // Update yield stress and plasticity total field e.g. epsilonP
-    // Or updateTotalFields: actually, this should be called inside
-    // updateTotalFields() that gets called in solidFoam
-    mechanical().updateYieldStress();
+    // Interpolate cell displacements to vertices
+    mechanical().interpolate(D_, pointD_);
+
+    // Velocity
+    U_ = fvc::ddt(D_);
 
     return true;
 }
@@ -975,7 +803,21 @@ void linGeomSolid::updateTotalFields()
 
 void linGeomSolid::writeFields(const Time& runTime)
 {
-    // Update equivalent strain
+    // Calculate strain
+    volSymmTensorField epsilon
+    (
+        IOobject
+        (
+            "epsilon",
+            runTime.timeName(),
+            mesh(),
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        symm(gradD_)
+    );
+
+    // Calculaute equivalent strain
     volScalarField epsilonEq
     (
         IOobject
@@ -986,7 +828,7 @@ void linGeomSolid::writeFields(const Time& runTime)
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-        sqrt((2.0/3.0)*magSqr(dev(epsilon_)))
+        sqrt((2.0/3.0)*magSqr(dev(epsilon)))
     );
 
     Info<< "Max epsilonEq = " << max(epsilonEq).value()

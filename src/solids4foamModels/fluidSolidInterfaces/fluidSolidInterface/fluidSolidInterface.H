@@ -111,6 +111,9 @@ class fluidSolidInterface
         //- AMI zone-to-zone interpolation
         mutable autoPtr<AMIPatchToPatchInterpolation> AMIPtr_;
 
+        //- AMI point-to-point interpolation
+//        mutable autoPtr<AMIInterpolation> AMIPointPtr_;
+
         //- Outer correction loop stoping tolerance
         scalar outerCorrTolerance_;
 

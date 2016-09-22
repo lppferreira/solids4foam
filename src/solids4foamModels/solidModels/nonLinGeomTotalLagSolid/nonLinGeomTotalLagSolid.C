@@ -225,7 +225,6 @@ nonLinGeomTotalLagSolid::nonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
         mesh,
         dimensionedSymmTensor("zero", dimForce/dimArea, symmTensor::zero)
     ),
-    volToPoint_(mesh),
     gradD_
     (
         IOobject
@@ -295,6 +294,17 @@ nonLinGeomTotalLagSolid::nonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
     materialTol_(lookupOrDefault<scalar>("materialTolerance", 1e-05)),
     infoFrequency_(lookupOrDefault<int>("infoFrequency", 100)),
     nCorr_(lookupOrDefault<int>("nCorrectors", 1000)),
+    g_
+    (
+        IOobject
+        (
+            "g",
+            runTime().constant(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    ),
     maxIterReached_(0)
 {
     D_.oldTime().oldTime();
@@ -302,52 +312,6 @@ nonLinGeomTotalLagSolid::nonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-vector nonLinGeomTotalLagSolid::pointU(label pointID) const
- {
-     pointVectorField pointU
-     (
-         IOobject
-         (
-             "pointU",
-             runTime().timeName(),
-             mesh(),
-             IOobject::NO_READ,
-             IOobject::NO_WRITE
-         ),
-         pMesh_,
-         dimensionedVector("0", dimVelocity, vector::zero)
-     );
-
-     volToPoint_.interpolate(U_, pointU);
-
-     return pointU.internalField()[pointID];
- }
-
-//- Patch point displacement
-tmp<vectorField> nonLinGeomTotalLagSolid::patchPointDisplacementIncrement
-(
-    const label patchID
-) const
-{
-    tmp<vectorField> tPointDisplacement
-    (
-        new vectorField
-        (
-            mesh().boundaryMesh()[patchID].localPoints().size(),
-            vector::zero
-        )
-    );
-
-    tPointDisplacement() =
-        vectorField
-        (
-            pointD_.internalField() - pointD_.oldTime().internalField(),
-            mesh().boundaryMesh()[patchID].meshPoints()
-        );
-
-    return tPointDisplacement;
-}
 
 
 tmp<vectorField> nonLinGeomTotalLagSolid::faceZonePointDisplacementIncrement
@@ -465,8 +429,9 @@ tmp<tensorField> nonLinGeomTotalLagSolid::faceZoneSurfaceGradientOfVelocity
          pMesh_,
          dimensionedVector("0", dimVelocity, vector::zero)
      );
+    mechanical().volToPoint().interpolate(U_,pPointU);
 
-    volToPoint_.interpolate(U_, pPointU);
+//    volToPoint_.interpolate(U_, pPointU);
 
 //    vectorField pPointU =
 //        volToPoint_.interpolate(mesh().boundaryMesh()[patchID], U_);
@@ -783,41 +748,7 @@ tmp<vectorField> nonLinGeomTotalLagSolid::faceZoneNormal
      setPressure(patchID, patchPressure);
  }
 
-tmp<vectorField> nonLinGeomTotalLagSolid::predictTraction
- (
-     const label patchID,
-     const label zoneID
- )
- {
-     // Predict traction on patch
-     //	dummy implementation!
 
-     tmp<vectorField> ttF
-     (
-         new vectorField(mesh().faceZones()[zoneID].size(), vector::zero)
-     );
-
-
-     return ttF;
- }
-
- tmp<scalarField> nonLinGeomTotalLagSolid::predictPressure
- (
-     const label patchID,
-     const label zoneID
- )
- {
-//      Predict pressure field on patch
-//	dummy implementation!
-
-     tmp<scalarField> tpF
-     (
-         new scalarField(mesh().faceZones()[zoneID].size(), 0)
-     );
-
-
-     return tpF;
- }
 
 bool nonLinGeomTotalLagSolid::evolve()
 {
@@ -842,11 +773,10 @@ bool nonLinGeomTotalLagSolid::evolve()
         (
             rho_*fvm::d2dt2(D_)
          == fvm::laplacian(impKf_, D_, "laplacian(DD,D)")
-          + fvc::div
-            (
-                (J_*sigma_ & Finv_.T()) - impK_*gradD_,
-                "div(sigma)"
-            )
+          - fvc::laplacian(impKf_, D_, "laplacian(DD,D)")
+          + fvc::div((J_*sigma_ & Finv_.T()), "div(sigma)")
+          + rho_*g_
+          + mechanical().RhieChowCorrection(D_, gradD_)
         );
 
         // Under-relax the linear system
@@ -859,8 +789,8 @@ bool nonLinGeomTotalLagSolid::evolve()
         // Under-relax the D field
         D_.relax();
 
-        // Update gradient of displacement increment
-        gradD_ = fvc::grad(D_);
+        // Update gradient of displacement
+        mechanical().grad(D_, gradD_);
 
         // Total deformation gradient
         F_ = I + gradD_.T();
@@ -877,11 +807,11 @@ bool nonLinGeomTotalLagSolid::evolve()
     }
     while (!converged(iCorr, solverPerfD) && ++iCorr < nCorr_);
 
-    // PC: rename this function or maybe even remove it
-    // Update yield stress and plasticity total field e.g. epsilonP
-    // Or updateTotalFields: actually, this should be called inside
-    // updateTotalFields() that gets called in solidFoam
-    mechanical().updateYieldStress();
+    // Interpolate cell displacements to vertices
+    mechanical().interpolate(D_, pointD_);
+
+    // Velocity
+    U_ = fvc::ddt(D_);
 
     return true;
 }

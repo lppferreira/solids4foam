@@ -178,9 +178,8 @@ void unsNonLinGeomUpdatedLagSolid::moveMesh(const pointField& oldPoints)
     // "face area does not match neighbour..."
     // We could sync points as a pointVectorField just as we sync pointDD
 
-    // Interpolate cell displacements to vertices
-    volToPoint_.interpolate(DD_, pointDD_);
-
+    // Interppolate cell displacements to vertices
+    mechanical().interpolate(DD_, pointDD_);
     // Ensure continuous displacement across processor boundary
     // Something strange is happening here
     pointDD_.correctBoundaryConditions();
@@ -367,7 +366,6 @@ unsNonLinGeomUpdatedLagSolid::unsNonLinGeomUpdatedLagSolid(dynamicFvMesh& mesh)
         mesh,
         dimensionedSymmTensor("zero", dimForce/dimArea, symmTensor::zero)
     ),
-    volToPoint_(mesh),
     gradDD_
     (
         IOobject
@@ -561,6 +559,17 @@ unsNonLinGeomUpdatedLagSolid::unsNonLinGeomUpdatedLagSolid(dynamicFvMesh& mesh)
         solidProperties().lookupOrDefault<int>("infoFrequency", 100)
     ),
     nCorr_(solidProperties().lookupOrDefault<int>("nCorrectors", 10000)),
+    g_
+    (
+        IOobject
+        (
+            "g",
+            runTime().constant(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    ),
     maxIterReached_(0),
     stabilisePressure_(lookupOrDefault<Switch>("stabilisePressure", false))
 {
@@ -570,53 +579,6 @@ unsNonLinGeomUpdatedLagSolid::unsNonLinGeomUpdatedLagSolid(dynamicFvMesh& mesh)
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-
- vector unsNonLinGeomUpdatedLagSolid::pointU(label pointID) const
- {
-     pointVectorField pointU
-     (
-         IOobject
-         (
-             "pointU",
-             runTime().timeName(),
-             mesh(),
-             IOobject::NO_READ,
-             IOobject::NO_WRITE
-         ),
-         pMesh_,
-         dimensionedVector("0", dimVelocity, vector::zero)
-     );
-
-     volToPoint_.interpolate(U_, pointU);
-
-     return pointU.internalField()[pointID];
- }
-
-//- Patch point displacement
-tmp<vectorField> unsNonLinGeomUpdatedLagSolid::patchPointDisplacementIncrement
-(
-    const label patchID
-) const
-{
-    tmp<vectorField> tPointDisplacement
-    (
-        new vectorField
-        (
-            mesh().boundaryMesh()[patchID].localPoints().size(),
-            vector::zero
-        )
-    );
-
-    tPointDisplacement() =
-        vectorField
-        (
-            pointD_.internalField() - pointD_.oldTime().internalField(),
-            mesh().boundaryMesh()[patchID].meshPoints()
-        );
-
-    return tPointDisplacement;
-}
 
 
 tmp<vectorField> unsNonLinGeomUpdatedLagSolid::faceZonePointDisplacementIncrement
@@ -735,7 +697,9 @@ tmp<tensorField> unsNonLinGeomUpdatedLagSolid::faceZoneSurfaceGradientOfVelocity
          dimensionedVector("0", dimVelocity, vector::zero)
      );
 
-    volToPoint_.interpolate(U_, pPointU);
+    mechanical().volToPoint().interpolate(U_,pPointU);
+
+//    volToPoint_.interpolate(U_, pPointU);
 
 //    vectorField pPointU =
 //        volToPoint_.interpolate(mesh().boundaryMesh()[patchID], U_);
@@ -1051,41 +1015,7 @@ void unsNonLinGeomUpdatedLagSolid::setPressure
     setPressure(patchID, patchPressure);
 }
 
-tmp<vectorField> unsNonLinGeomUpdatedLagSolid::predictTraction
- (
-     const label patchID,
-     const label zoneID
- )
- {
-     // Predict traction on patch
-     //	dummy implementation!
 
-     tmp<vectorField> ttF
-     (
-         new vectorField(mesh().faceZones()[zoneID].size(), vector::zero)
-     );
-
-
-     return ttF;
- }
-
- tmp<scalarField> unsNonLinGeomUpdatedLagSolid::predictPressure
- (
-     const label patchID,
-     const label zoneID
- )
- {
-//      Predict pressure field on patch
-//	dummy implementation!
-
-     tmp<scalarField> tpF
-     (
-         new scalarField(mesh().faceZones()[zoneID].size(), 0)
-     );
-
-
-     return tpF;
- }
 
 bool unsNonLinGeomUpdatedLagSolid::evolve()
 {
@@ -1118,7 +1048,9 @@ bool unsNonLinGeomUpdatedLagSolid::evolve()
          == fvm::laplacian(impKf_, DD_, "laplacian(DDD,DD)")
           - fvc::laplacian(impKf_, DD_, "laplacian(DDD,DD)")
           + fvc::div((relJf_*relFinvf_.T() & mesh().Sf()) & sigmaf_)
+          + rho_*g_
         );
+
 
         // Under-relax the linear system
         DDEqn.relax(DDEqnRelaxFactor_);
@@ -1131,7 +1063,7 @@ bool unsNonLinGeomUpdatedLagSolid::evolve()
         DD_.relax();
 
         // Update the cell and face displacement increment gradients
-//        volToPoint_.interpolate(DD_, pointDD_);
+        mechanical().volToPoint().interpolate(DD_,pointDD_);
         gradDD_ = fvc::grad(DD_, pointDD_);
         gradDDf_ = fvc::fGrad(DD_, pointDD_);
 
@@ -1156,17 +1088,11 @@ bool unsNonLinGeomUpdatedLagSolid::evolve()
     }
     while (!converged(iCorr, solverPerfDD) && ++iCorr < nCorr_);
 
-    // PC: rename this function or maybe even remove it
-    // Update yield stress and plasticity total field e.g. epsilonP
-    // Or updateTotalFields: actually, this should be called inside
-    // updateTotalFields() that gets called in solidFoam
-    mechanical().updateYieldStress();
 
     // Relative deformation gradient
     relF_ = I + gradDD_.T();
 
     // Inverse relative deformation gradient
-//    relFinv_ = hinv(relF_);
     relFinv_ = inv(relF_);
 
     // Total deformation gradient

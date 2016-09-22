@@ -70,19 +70,31 @@ void Foam::solidModel::calcGlobalFaceZones() const
         //     }
         // }
 
-        // New method: directly lookup globalFaceZones from decomposeParDict
+
+        // For FSI cases, we need to look in a different location for the dict
+
+        word decompDictName = "system/decomposeParDict";
+
+        if (isDir(rootPath()/caseName()/"../system/solid"))
+        {
+            decompDictName = "../system/solid/decomposeParDict";
+        }
+
+        Info<< "Reading decomposeParDict " << decompDictName << endl;
+
         IOdictionary decompDict
         (
             IOobject
             (
-                "decomposeParDict",
-                mesh().time().time().system(),
+                decompDictName,
                 mesh().time(),
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE,
                 false
             )
         );
+
+        // New method: directly lookup globalFaceZones from decomposeParDict
 
         if (decompDict.found("globalFaceZones"))
         {
@@ -374,33 +386,15 @@ Foam::solidModel::solidModel
         (
             // PC: maybe this should be a Dict instead of a Properties
             "solidProperties",
-            mesh.time().constant(), // PC: system?
+            mesh.time().constant(), 
             mesh,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
-            //IOobject::AUTO_WRITE // must be AUTO_WRITE : PC: why?
         )
     ),
     mesh_(mesh),
     solidProperties_(subDict(type + "Coeffs")),
-    mechanicalProperties_
-    (
-        IOobject
-        (
-            "mechanicalProperties",
-            mesh.time().constant(),
-            mesh,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
-        )
-    ),
-    mechanicalLawPtr_
-    (
-        mechanicalLaw::New
-        (
-            "law", mesh, mechanicalProperties_.subDict("mechanical")
-        )
-    ),
+    mechanical_(mesh),
     globalFaceZonesPtr_(NULL),
     globalToLocalFaceZonePointMapPtr_(NULL)
 {}
@@ -438,6 +432,55 @@ Foam::solidModel::globalToLocalFaceZonePointMap() const
     }
 
     return *globalToLocalFaceZonePointMapPtr_;
+}
+
+void Foam::solidModel::setTraction
+(
+    const label patchID,
+    const label zoneID,
+    const vectorField& faceZoneTraction
+)
+{
+    vectorField patchTraction(mesh().boundary()[patchID].size(), vector::zero);
+
+    const label patchStart =
+        mesh().boundaryMesh()[patchID].start();
+
+    forAll(patchTraction, i)
+    {
+        patchTraction[i] =
+            faceZoneTraction
+            [
+                mesh().faceZones()[zoneID].whichFace(patchStart + i)
+            ];
+    }
+
+    setTraction(patchID, patchTraction);
+}
+
+
+void Foam::solidModel::setPressure
+(
+    const label patchID,
+    const label zoneID,
+    const scalarField& faceZonePressure
+)
+{
+    scalarField patchPressure(mesh().boundary()[patchID].size(), 0.0);
+
+    const label patchStart =
+        mesh().boundaryMesh()[patchID].start();
+
+    forAll(patchPressure, i)
+    {
+        patchPressure[i] =
+            faceZonePressure
+            [
+                mesh().faceZones()[zoneID].whichFace(patchStart + i)
+            ];
+    }
+
+    setPressure(patchID, patchPressure);
 }
 
 

@@ -1,0 +1,171 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Copyright held by original author
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+License
+    This file is part of OpenFOAM.
+
+    OpenFOAM is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 2 of the License, or (at your
+    option) any later version.
+
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenFOAM; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+\*---------------------------------------------------------------------------*/
+
+#include "fixedRelaxationCouplingInterface.H"
+#include "addToRunTimeSelectionTable.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+namespace Foam
+{
+
+namespace fluidSolidInterfaces
+{
+
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+
+defineTypeNameAndDebug(fixedRelaxationCouplingInterface, 0);
+addToRunTimeSelectionTable
+(
+    fluidSolidInterface, fixedRelaxationCouplingInterface, dictionary
+);
+
+
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+fixedRelaxationCouplingInterface::fixedRelaxationCouplingInterface
+(
+    dynamicFvMesh& fluidMesh,
+    dynamicFvMesh& solidMesh
+)
+:
+    fluidSolidInterface(typeName, fluidMesh, solidMesh),
+    relaxationFactor_
+    (
+        fsiProperties().lookupOrDefault<scalar>("relaxationFactor", 0.01)
+    )
+{}
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+void fixedRelaxationCouplingInterface::evolve()
+{
+    initializeFields();
+
+    updateInterpolator();
+
+    scalar residualNorm = 0;
+
+    do
+    {
+        outerCorr()++;
+
+        // Transfer the displacement from the solid to the fluid
+        updateDisplacement();
+
+        // Move the fluid mesh
+        moveFluidMesh();
+
+        // Solve fluid
+        fluid().evolve();
+
+        // Transfer the force from the fluid to the solid
+        updateForce();
+
+        // Solve solid
+	//JN: Why is the solid here behind the fluid?
+	// in weakCoupling it yomes first
+        solid().evolve();
+
+        // Calculate the FSI residual
+        residualNorm = updateResidual();
+    }
+    while (residualNorm > outerCorrTolerance() && outerCorr() < nOuterCorr());
+
+    solid().updateTotalFields();
+}
+
+
+void fixedRelaxationCouplingInterface::updateDisplacement()
+{
+    Info<< nl << "Time = " << fluid().runTime().timeName()
+        << ", iteration: " << outerCorr() << endl;
+
+    Info<< "Current fsi under-relaxation factor: "
+        << relaxationFactor_ << endl;
+
+	//JN: No solidZonePointsDispl() here?
+	//JN: Also, no AMI/ggi for the displacement?
+
+    fluidZonePointsDisplPrev() = fluidZonePointsDispl();
+
+    fluidZonePointsDispl() += relaxationFactor_*residual();
+
+
+    // Make sure that displacement on all processors is equal to one
+    // calculated on master processor
+    if (Pstream::parRun())
+    {
+        if (!Pstream::master())
+        {
+            fluidZonePointsDispl() = vector::zero;
+        }
+
+        //- pass to all procs
+        reduce(fluidZonePointsDispl(), sumOp<vectorField>());
+
+        label globalFluidZoneIndex =
+            findIndex(fluid().globalFaceZones(), fluidZoneIndex());
+
+        if (globalFluidZoneIndex == -1)
+        {
+            FatalErrorIn
+            (
+                "fluidSolidInterface::updateDisplacement()"
+            )   << "global zone point map is not availabel"
+                << abort(FatalError);
+        }
+
+        const labelList& map =
+            fluid().globalToLocalFaceZonePointMap()[globalFluidZoneIndex];
+
+        if (!Pstream::master())
+        {
+            vectorField fluidZonePointsDisplGlobal =
+                fluidZonePointsDispl();
+
+            forAll(fluidZonePointsDisplGlobal, globalPointI)
+            {
+                label localPoint = map[globalPointI];
+
+                fluidZonePointsDispl()[localPoint] =
+                    fluidZonePointsDisplGlobal[globalPointI];
+            }
+        }
+    }
+}
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace fluidSolidInterfaces
+
+} // End namespace Foam
+
+// ************************************************************************* //

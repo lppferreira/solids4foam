@@ -265,15 +265,16 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
         vectorField solidZonePoints_ =
             solidMesh().faceZones()[solidZoneIndex_]().localPoints();
 
-        // Is this enough??? Otherwise we'll need an AMI for point
-        // interpolation!
         // PC: unfortunately we will need some sort of AMI point interpolation
         // or maybe we can get by with the face-to-face interpolation, where we
         // interpolate from solid-points to solid-faces then AMI solids-faces to
         // fluid-faces and then from fluid-faces to fluid-points
-        WarningIn("void Foam::fluidSolidInterface::calcAMIInterpolator() const")
-            << "This needs to be fixed! We need AMI point-to-point!" << endl;
-        vectorField solidZonePoints = solidZonePoints_;
+        // WarningIn("void Foam::fluidSolidInterface::calcAMIInterpolator() const")
+        //    << "This needs to be fixed! We need AMI point-to-point!" << endl;
+
+	// JN: Seems to work all of a sudden. Strange...
+//        vectorField solidZonePoints = solidZonePoints_;
+        vectorField solidZonePoints = AMI().interpolateToSource(solidZonePoints_);
 
         vectorField fluidZonePoints =
             fluidMesh().faceZones()[fluidZoneIndex_]().localPoints();
@@ -292,6 +293,7 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
     }
 
     // PC: is there somethign similar in AMI?
+    // JN: I didn't find anything...
     //Info<< "Number of uncovered master faces: "
     //    << ggiInterpolatorPtr_->uncoveredMasterFaces().size() << endl;
 
@@ -480,6 +482,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     currentFluidZonePointsPtr_(NULL),
     currentFluidZonePatchPtr_(NULL),
     AMIPtr_(NULL),
+//    AMIPointPtr(NULL),
     outerCorrTolerance_
     (
         fsiProperties_.lookupOrDefault<scalar>("outerCorrTolerance", 1e-06)
@@ -635,6 +638,7 @@ Foam::fluidSolidInterface::~fluidSolidInterface()
     deleteDemandDrivenData(currentFluidZonePointsPtr_);
     deleteDemandDrivenData(currentFluidZonePatchPtr_);
     AMIPtr_.clear();
+//    AMIPointPtr_.clear();
     deleteDemandDrivenData(accumulatedFluidInterfaceDisplacementPtr_);
     deleteDemandDrivenData(minEdgeLengthPtr_);
 }
@@ -1028,6 +1032,8 @@ void Foam::fluidSolidInterface::moveFluidMesh()
         // so in this case there are no unused points so nothing happens here
         // I need to understand better how AMI deals with this and if we need to
         // do anything special
+	// JN: Ok. I don't have any experience. I guess let's use this and check
+	// a case, where we have unused points and see what happens
         vectorField newPoints = fluidMesh().points();
 
         const labelList& fluidZoneMeshPoints =

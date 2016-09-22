@@ -11,13 +11,15 @@ fluidModels/fluidModel/fluidModel.C
 fluidModels/fluidModel/newFluidModel.C
 fluidModels/icoFluid/icoFluid.C
 fluidModels/pisoFluid/pisoFluid.C
+fluidModels/oneWayFsiFluid/oneWayFsiFluid.C
 
 fluidSolidInterfaces/fluidSolidInterface/fluidSolidInterface.C
 fluidSolidInterfaces/fluidSolidInterface/newFluidSolidInterface.C
 fluidSolidInterfaces/weakCouplingInterface/weakCouplingInterface.C
-/*fluidSolidInterfaces/fixedRelaxationCouplingInterface/fixedRelaxationCouplingInterface.C
+fluidSolidInterfaces/fixedRelaxationCouplingInterface/fixedRelaxationCouplingInterface.C
 fluidSolidInterfaces/AitkenCouplingInterface/AitkenCouplingInterface.C
-fluidSolidInterfaces/IQNILSCouplingInterface/IQNILSCouplingInterface.C*/
+fluidSolidInterfaces/IQNILSCouplingInterface/IQNILSCouplingInterface.C
+fluidSolidInterfaces/oneWayCouplingInterface/oneWayCouplingInterface.C
 
 
 mechanicalModel = materialModels/mechanicalModel
@@ -42,6 +44,8 @@ $(solidFvPatchFields)/solidSymmetry/solidSymmetryFvPatchScalarField.C
 $(solidFvPatchFields)/solidSymmetry/solidSymmetryFvPatchVectorField.C
 $(solidFvPatchFields)/solidWedge/solidWedgeFvPatchVectorField.C
 $(solidFvPatchFields)/solidWedge/solidWedgeFvPatchScalarField.C
+
+numerics/newFvMeshSubset/newFvMeshSubset.C
 
 /*numerics/newLeastSquaresVolPointInterpolation/newLeastSquaresVolPointInterpolation.C
 numerics/newGGIInterpolation/newGGIInterpolationName.C

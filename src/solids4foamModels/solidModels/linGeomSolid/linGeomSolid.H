@@ -46,8 +46,7 @@ SourceFiles
 #include "volFields.H"
 #include "surfaceFields.H"
 #include "pointFields.H"
-//#include "newLeastSquaresVolPointInterpolation.H"
-#include "volPointInterpolation.H"
+#include "uniformDimensionedFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -81,21 +80,8 @@ class linGeomSolid
         //- Point displacement field
         pointVectorField pointD_;
 
-        //- Strain field
-        volSymmTensorField epsilon_;
-
         //- Stress field
         volSymmTensorField sigma_;
-
-        //- Mechanical model
-        //mechanicalModel mechanical_;
-
-        //- Cell-to-point interpolation
-        //newLeastSquaresVolPointInterpolation volToPoint_;
-        volPointInterpolation volToPoint_;
-
-        //- Face displacement gradient
-        //surfaceTensorField gradDf_;
 
         //- Cell displacement gradient
         volTensorField gradD_;
@@ -133,6 +119,9 @@ class linGeomSolid
 
         //- Maximum number of momentum correctors
         const int nCorr_;
+
+        //- Gravitational acceleration
+        const uniformDimensionedVectorField g_;
 
         //- Number of times the maximum number of correctors was reached in the
         //  momentum equation
@@ -189,10 +178,16 @@ public:
             }
 
             //- Return point mesh
-            // const pointMesh& pMesh() const
-            // {
-            //     return pMesh_;
-            // }
+             const pointMesh& pMesh() const
+             {
+                 return pMesh_;
+             }
+
+            //- Gradient of displacement
+            const volTensorField& gradD() const
+            {
+                return gradD_;
+            }
 
             //- Stress tensor
             const volSymmTensorField& sigma() const
@@ -200,33 +195,23 @@ public:
                 return sigma_;
             }
 
-            //- Strain tensor
-            const volSymmTensorField& epsilon() const
+            //- Implicit stiffness
+            const volScalarField& impK() const
             {
-                return epsilon_;
+                return impK_;
+            }
+
+            //- Reciprocal of the implicit stiffness
+            const volScalarField& rImpK() const
+            {
+                return rImpK_;
             }
 
             //- Return point displacement field
-             virtual const pointVectorField& pointD() const
-             {
-                 return pointD_;
-             }
-
-            //- Return multi-material interface pointer
-//             const leastSquaresVolPointInterpolation& volToPoint() const
-            const volPointInterpolation& volToPoint() const
-             {
-                 return volToPoint_;
-             }
-
-            //- Return point displacement field
-             virtual vector pointU(label pointID) const;
-
-            //- Patch point displacement increment
-             virtual tmp<vectorField> patchPointDisplacementIncrement
-             (
-                 const label patchID
-             ) const;
+            virtual const pointVectorField& pointD() const
+            {
+                return pointD_;
+            }
 
             //- Face zone point displacement increment
              virtual tmp<vectorField> faceZonePointDisplacementIncrement
@@ -265,41 +250,27 @@ public:
                  const vectorField& traction
              );
 
-            // //- Set pressure at specified patch
-             virtual void setPressure
-             (
-                 const label patchID,
-                 const scalarField& pressure
-             );
+            //- Set pressure at specified patch
+            virtual void setPressure
+            (
+                const label patchID,
+                const scalarField& pressure
+            );
 
             //- Set traction at specified patch
              virtual void setTraction
              (
                  const label patchID,
                  const label zoneID,
-                 const vectorField& zoneTraction
+                 const vectorField& faceZoneTraction
              );
 
-            //- Set pressure at specified patch
+            //- Set traction at specified patch
              virtual void setPressure
              (
                  const label patchID,
                  const label zoneID,
-                 const scalarField& zonePressure
-             );
-
-            //- Predict traction at specified zone
-             virtual tmp<vectorField> predictTraction
-             (
-                 const label patchID,
-                 const label zoneID
-             );
-
-            //- Predict pressure at specified zone
-             virtual tmp<scalarField> predictPressure
-             (
-                 const label patchID,
-                 const label zoneID
+                 const scalarField& faceZonePressure
              );
 
             //- Evolve the solid solver and solve the mathematical model

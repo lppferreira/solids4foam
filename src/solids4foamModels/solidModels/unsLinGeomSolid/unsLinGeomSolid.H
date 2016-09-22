@@ -50,8 +50,7 @@ SourceFiles
 #include "volFields.H"
 #include "surfaceFields.H"
 #include "pointFields.H"
-//#include "newLeastSquaresVolPointInterpolation.H"
-#include "volPointInterpolation.H"
+#include "uniformDimensionedFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -97,10 +96,6 @@ class unsLinGeomSolid
         //- Stress surface field
         surfaceSymmTensorField sigmaf_;
 
-        //- Cell-to-point interpolation
-//        newLeastSquaresVolPointInterpolation volToPoint_;
-        volPointInterpolation volToPoint_;
-
         //- Cell displacement gradient
         volTensorField gradD_;
 
@@ -140,6 +135,9 @@ class unsLinGeomSolid
 
         //- Maximum number of momentum correctors
         const int nCorr_;
+
+        //- Gravitational acceleration
+        const uniformDimensionedVectorField g_;
 
         //- Number of times the maximum number of correctors was reached in the
         //  momentum equation
@@ -207,33 +205,11 @@ public:
                 return sigma_;
             }
 
-            //- Strain tensor
-            const volSymmTensorField& epsilon() const
-            {
-                return epsilon_;
-            }
-
             //- Return point displacement field
             virtual const pointVectorField& pointD() const
             {
                 return pointD_;
             }
-
-            //- Return multi-material interface pointer
-//            const newLeastSquaresVolPointInterpolation& volToPoint() const
-            const volPointInterpolation& volToPoint() const
-            {
-                return volToPoint_;
-            }
-
-            //- Return point displacement field
-            virtual vector pointU(label pointID) const;
-
-            //- Patch point displacement increment
-            virtual tmp<vectorField> patchPointDisplacementIncrement
-            (
-                const label patchID
-            ) const;
 
             //- Face zone point displacement increment
             virtual tmp<vectorField> faceZonePointDisplacementIncrement
@@ -294,20 +270,6 @@ public:
                 const label zoneID,
                 const scalarField& zonePressure
             );
-
-            //- Predict traction at specified zone
-             virtual tmp<vectorField> predictTraction
-             (
-                 const label patchID,
-                 const label zoneID
-             );
-
-            //- Predict pressure at specified zone
-             virtual tmp<scalarField> predictPressure
-             (
-                 const label patchID,
-                 const label zoneID
-             );
 
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();

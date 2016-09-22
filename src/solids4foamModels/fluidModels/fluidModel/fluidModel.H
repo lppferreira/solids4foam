@@ -145,7 +145,7 @@ public:
 
         // Access
 
-            //- Return mesh
+            //- Return const reference to the mesh
             const fvMesh& mesh() const
             {
                 return mesh_;
@@ -164,10 +164,10 @@ public:
             //virtual const volScalarField& p() const = 0;
 
             //- Patch viscous force (N/m2)
-            // virtual tmp<vectorField> patchViscousForce
-            // (
-            //     const label patchID
-            // ) const = 0;
+             virtual tmp<vectorField> patchViscousForce
+             (
+                 const label patchID
+             ) const = 0;
 
             // //- Patch pressure force (N/m2)
              virtual tmp<scalarField> patchPressureForce

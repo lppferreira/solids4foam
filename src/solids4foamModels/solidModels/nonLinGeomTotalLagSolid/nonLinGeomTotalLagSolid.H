@@ -31,6 +31,11 @@ Description
 
     The stress is calculated by the run-time selectable mechanical law.
 
+    More details in:
+    P. Cardiff, Z. Tukovic, P. De Jaeger, M. Clancy and A. Ivankovic. A
+    Lagrangian cell-centred finite volume method for metal forming simulation,
+    doi=10.1002/nme.5345.
+
 Author
     Philip Cardiff, UCD.  All rights reserved.
 
@@ -46,7 +51,7 @@ SourceFiles
 #include "volFields.H"
 #include "surfaceFields.H"
 #include "pointFields.H"
-#include "volPointInterpolation.H"
+#include "uniformDimensionedFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -82,9 +87,6 @@ class nonLinGeomTotalLagSolid
 
         //- Cauchy (true) stress field
         volSymmTensorField sigma_;
-
-        //- Cell-to-point interpolation
-        volPointInterpolation volToPoint_;
 
         //- Cell displacement gradient
         volTensorField gradD_;
@@ -132,6 +134,9 @@ class nonLinGeomTotalLagSolid
         //- Maximum number of momentum correctors
         const int nCorr_;
 
+        //- Gravitational acceleration
+        const uniformDimensionedVectorField g_;
+
         //- Number of times the maximum number of correctors was reached in the
         //  momentum equation
         int maxIterReached_;
@@ -143,7 +148,6 @@ class nonLinGeomTotalLagSolid
         bool converged
         (
             const int iCorr,
-//            const lduMatrix::solverPerformance& solverPerfD
             const solverPerformance& solverPerfD
         );
 
@@ -188,10 +192,10 @@ public:
             }
 
             //- Return point mesh
-            // const pointMesh& pMesh() const
-            // {
-            //     return pMesh_;
-            // }
+             const pointMesh& pMesh() const
+             {
+                 return pMesh_;
+             }
 
             //- Stress tensor
             const volSymmTensorField& sigma() const
@@ -210,22 +214,6 @@ public:
              {
                  return pointD_;
              }
-
-            //- Return multi-material interface pointer
-//             const leastSquaresVolPointInterpolation& volToPoint() const
-            const volPointInterpolation& volToPoint() const
-             {
-                 return volToPoint_;
-             }
-
-            //- Return point displacement field
-             virtual vector pointU(label pointID) const;
-
-            //- Patch point displacement increment
-             virtual tmp<vectorField> patchPointDisplacementIncrement
-             (
-                 const label patchID
-             ) const;
 
             //- Face zone point displacement increment
              virtual tmp<vectorField> faceZonePointDisplacementIncrement
@@ -285,20 +273,6 @@ public:
                  const label patchID,
                  const label zoneID,
                  const scalarField& zonePressure
-             );
-
-            //- Predict traction at specified zone
-             virtual tmp<vectorField> predictTraction
-             (
-                 const label patchID,
-                 const label zoneID
-             );
-
-            //- Predict pressure at specified zone
-             virtual tmp<scalarField> predictPressure
-             (
-                 const label patchID,
-                 const label zoneID
              );
 
             //- Evolve the solid solver and solve the mathematical model
