@@ -89,14 +89,14 @@ Foam::linearElastic::linearElastic
     }
     else
     {
-////        if (planeStress())
-////        {
-////            lambda_ = nu_*E_/((1.0 + nu_)*(1.0 - nu_));
-////        }
-////        else
-////        {
+       if (planeStress())
+        {
+           lambda_ = nu_*E_/((1.0 + nu_)*(1.0 - nu_));
+        }
+        else
+        {
             lambda_ = nu_*E_/((1.0 + nu_)*(1.0 - 2.0*nu_));
-////        }
+        }
 
         k_ = lambda_ + (2.0/3.0)*mu_;
     }

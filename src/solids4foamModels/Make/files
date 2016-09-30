@@ -29,7 +29,11 @@ mechanicalLaws = $(mechanicalModel)/mechanicalLaws
 $(mechanicalLaws)/mechanicalLaw/mechanicalLaw.C
 $(mechanicalLaws)/mechanicalLaw/newMechanicalLaw.C
 $(mechanicalLaws)/linearElastic/linearElastic.C
+$(mechanicalLaws)/linearElasticFromFile/linearElasticFromFile.C
+$(mechanicalLaws)/linearElasticMohrCoulombPlastic/linearElasticMohrCoulombPlastic.C
 $(mechanicalLaws)/neoHookeanElastic/neoHookeanElastic.C
+$(mechanicalLaws)/neoHookeanElasticMisesPlastic/neoHookeanElasticMisesPlastic.C
+/*$(mechanicalLaws)/orthotropicLinearElastic/orthotropicLinearElastic.C*/
 
 fluidFvPatchFields = fluidModels/fvPatchFields
 $(fluidFvPatchFields)/transitionalParabolicVelocity/transitionalParabolicVelocityFvPatchVectorField.C

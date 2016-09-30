@@ -99,12 +99,14 @@ Foam::mechanicalLaw::mechanicalLaw
     // region0.
 
 //    if (mesh.db().foundObject<fvMesh>("solid"))
-    if (mesh.foundObject<fvMesh>("solid"))
+//    if (mesh.foundObject<fvMesh>("solid"))
+    if (mesh.name()=="solid")
     {
         baseMeshRegionName_ = "solid";
     }
 //    else if (mesh.db().foundObject<fvMesh>("region0"))
-    else if (mesh.foundObject<fvMesh>("region0"))
+//    else if (mesh.foundObject<fvMesh>("region0"))
+    else if (mesh.name()=="region0")
     {
         baseMeshRegionName_ = "region0";
     }

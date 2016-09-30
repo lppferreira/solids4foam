@@ -273,8 +273,15 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
         //    << "This needs to be fixed! We need AMI point-to-point!" << endl;
 
 	// JN: Seems to work all of a sudden. Strange...
-//        vectorField solidZonePoints = solidZonePoints_;
-        vectorField solidZonePoints = AMI().interpolateToSource(solidZonePoints_);
+	//JN: Compiles, but during runtime you get the error
+	//--> FOAM FATAL ERROR: 
+	//Supplied field size is not equal to target patch size
+	//    source patch   = 13904
+	//    target patch   = 13904
+	//    supplied field = 14160
+	//Maybe we'll have to interpolate to the face centers
+        vectorField solidZonePoints = solidZonePoints_;
+//        vectorField solidZonePoints = AMI().interpolateToSource(solidZonePoints_);
 
         vectorField fluidZonePoints =
             fluidMesh().faceZones()[fluidZoneIndex_]().localPoints();
@@ -1201,8 +1208,10 @@ Foam::scalar Foam::fluidSolidInterface::updateResidual()
 
     WarningIn("Foam::scalar Foam::fluidSolidInterface::updateResidual()")
         << "I think we need AMI point interpolation here!" << endl;
-    solidZonePointsDispl() =
-        AMI().interpolateToSource(solidZonePointsDisplAtSolid);
+//    solidZonePointsDispl() =
+//        AMI().interpolateToSource(solidZonePointsDisplAtSolid);
+	//JN: Same as above - runtime error
+    solidZonePointsDispl() = solidZonePointsDisplAtSolid;
 
 ////    solidZonePointsDispl() =
 ////        ggiInterpolator().slaveToMasterPointInterpolate
