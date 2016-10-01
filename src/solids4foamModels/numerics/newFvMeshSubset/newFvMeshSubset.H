@@ -292,7 +292,7 @@ public:
     // Constructors
 
         //- Construct given a mesh
-        explicit newFvMeshSubset(const IOobject&, const fvMesh&);
+        newFvMeshSubset(const IOobject&, const fvMesh&);
 
 
     // Destructor
