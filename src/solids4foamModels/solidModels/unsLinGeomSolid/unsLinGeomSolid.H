@@ -84,12 +84,6 @@ class unsLinGeomSolid
         //- Point displacement field
         pointVectorField pointD_;
 
-        //- Strain field
-        volSymmTensorField epsilon_;
-
-        //- Strain surface field
-        surfaceSymmTensorField epsilonf_;
-
         //- Stress field
         volSymmTensorField sigma_;
 
@@ -117,9 +111,6 @@ class unsLinGeomSolid
         //  We divide by impK every time tractionBoundarySnGrad is called so we
         //  will store the reciprocal for effficiency
         const volScalarField rImpK_;
-
-        //- D equation under-relaxation factor
-        const scalar DEqnRelaxFactor_;
 
         //- Solution standard tolerance
         const scalar solutionTol_;
@@ -149,7 +140,6 @@ class unsLinGeomSolid
         bool converged
         (
             const int iCorr,
-//            const lduMatrix::solverPerformance& solverPerfD
             const solverPerformance& solverPerfD
         );
 

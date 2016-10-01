@@ -55,7 +55,6 @@ addToRunTimeSelectionTable(solidModel, unsLinGeomSolid, dictionary);
 bool unsLinGeomSolid::converged
 (
     const int iCorr,
-//    const lduMatrix::solverPerformance& solverPerfD
     const solverPerformance& solverPerfD
 )
 {
@@ -186,32 +185,6 @@ unsLinGeomSolid::unsLinGeomSolid(dynamicFvMesh& mesh)
         pMesh_,
         dimensionedVector("0", dimLength, vector::zero)
     ),
-    epsilon_
-    (
-        IOobject
-        (
-            "epsilon",
-            runTime().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedSymmTensor("zero", dimless, symmTensor::zero)
-    ),
-    epsilonf_
-    (
-        IOobject
-        (
-            "epsilonf",
-            runTime().timeName(),
-            mesh,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedSymmTensor("zero", dimless, symmTensor::zero)
-    ),
     sigma_
     (
         IOobject
@@ -268,15 +241,6 @@ unsLinGeomSolid::unsLinGeomSolid(dynamicFvMesh& mesh)
     impK_(mechanical().impK()),
     impKf_(mechanical().impKf()),
     rImpK_(1.0/impK_),
-    DEqnRelaxFactor_
-    (
-        mesh.relaxEquation("DEqn")
-      ? mesh.equationRelaxationFactor("DEqn")
-      : 1.0
-//        mesh.solutionDict().relax("DEqn")
-//      ? mesh.solutionDict().relaxationFactor("DEqn")
-//      : 1.0
-    ),
     solutionTol_
     (
         solidProperties().lookupOrDefault<scalar>("solutionTolerance", 1e-06)
@@ -416,26 +380,27 @@ tmp<tensorField> unsLinGeomSolid::faceZoneSurfaceGradientOfVelocity
     );
     tensorField& velocityGradient = tVelocityGradient();
 
-     pointVectorField pPointU
-     (
-         IOobject
-         (
-             "pPointU",
-             runTime().timeName(),
-             mesh(),
-             IOobject::NO_READ,
-             IOobject::NO_WRITE
-         ),
-         pMesh_,
-         dimensionedVector("0", dimVelocity, vector::zero)
-     );
+    pointVectorField pPointUField
+        (
+        IOobject
+        (
+            "pPointUField",
+            runTime().timeName(),
+            mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        pMesh_,
+        dimensionedVector("0", dimVelocity, vector::zero)
+        );
 
-    mechanical().volToPoint().interpolate(U_,pPointU);
-
-//    volToPoint_.interpolate(U_, pPointU);
-
-//    vectorField pPointU =
-//        volToPoint_.interpolate(mesh().boundaryMesh()[patchID], U_);
+    mechanical().volToPoint().interpolate(U_, pPointUField);
+    vectorField pPointU(mesh().boundaryMesh()[patchID].nPoints(), vector::zero);
+    const labelList& meshPoints = mesh().boundaryMesh()[patchID].meshPoints();
+    forAll(pPointU, pointI)
+    {
+        pPointU[pointI] = pPointUField[meshPoints[pointI]];
+    }
 
     const faceList& localFaces =
         mesh().boundaryMesh()[patchID].localFaces();
@@ -780,7 +745,7 @@ bool unsLinGeomSolid::evolve()
         );
 
         // Under-relaxation the linear system
-        DEqn.relax(DEqnRelaxFactor_);
+        DEqn.relax();
 
         // Solve the linear system
         solverPerfD = DEqn.solve();
@@ -789,13 +754,11 @@ bool unsLinGeomSolid::evolve()
         D_.relax();
 
         // Interpolate D to pointD
-        mechanical().interpolate(D_, pointD_);
+        mechanical().interpolate(D_, pointD_, false);
 
         // Update gradient of displacement
-//        mechanical().grad(D_, pointD_, gradD_);// JN: maybe use this?
-//        mechanical().grad(D_, pointD_, gradDf_);
-        gradD_ = fvc::grad(D_, pointD_);
-        gradDf_ = fvc::fGrad(D_, pointD_);
+        mechanical().grad(D_, pointD_, gradD_);
+        mechanical().grad(D_, pointD_, gradDf_);
 
         // Calculate the stress using run-time selectable mechanical law
         mechanical().correct(sigmaf_);
@@ -807,6 +770,7 @@ bool unsLinGeomSolid::evolve()
 
     // Velocity
     U_ = fvc::ddt(D_);
+
     return true;
 }
 
@@ -824,7 +788,7 @@ bool unsLinGeomSolid::evolve()
 //     }
 //     else
 //     {
-//         volToPoint_.interpolate(D_, pointD_);
+//         mechanical().volToPoint().interpolate(D_, pointD_);
 //         gradD_ = fvc::grad(D_, pointD_);
 //         gradDf_ = fvc::fGrad(D_, pointD_);
 //     }
@@ -873,12 +837,26 @@ tmp<vectorField> unsLinGeomSolid::tractionBoundarySnGrad
 
 void unsLinGeomSolid::updateTotalFields()
 {
-    mechanical().updateTotalFields();//Not sure, what this does...
+    mechanical().updateTotalFields();
 }
 
 void unsLinGeomSolid::writeFields(const Time& runTime)
 {
-    // Update equivalent strain
+    // Calculate strain
+    volSymmTensorField epsilon
+    (
+        IOobject
+        (
+            "epsilon",
+            runTime.timeName(),
+            mesh(),
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        symm(gradD_)
+    );
+
+    // Calculate equivalent strain
     volScalarField epsilonEq
     (
         IOobject
@@ -889,13 +867,13 @@ void unsLinGeomSolid::writeFields(const Time& runTime)
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-        sqrt((2.0/3.0)*magSqr(dev(epsilon_)))
+        sqrt((2.0/3.0)*magSqr(dev(epsilon)))
     );
 
     Info<< "Max epsilonEq = " << max(epsilonEq).value()
         << endl;
 
-    // Update equivalent (von Mises) stress
+    // Calculate equivalent (von Mises) stress
     volScalarField sigmaEq
     (
         IOobject
@@ -911,10 +889,8 @@ void unsLinGeomSolid::writeFields(const Time& runTime)
 
     Info<< "Max sigmaEq = " << gMax(sigmaEq) << endl;
 
-
     solidModel::writeFields(runTime);
 }
-
 
 
 void unsLinGeomSolid::end()
