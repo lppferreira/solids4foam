@@ -38,8 +38,8 @@ Author
 #ifndef solidSymmetryFvPatchScalarField_H
 #define solidSymmetryFvPatchScalarField_H
 
-#include "symmetryFvPatchFields.H"
-#include "symmetryFvPatch.H"
+#include "symmetryPlaneFvPatchFields.H"
+#include "symmetryPlaneFvPatch.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -52,7 +52,7 @@ namespace Foam
 
 class solidSymmetryFvPatchScalarField
 :
-    public symmetryFvPatchScalarField
+    public symmetryPlaneFvPatchScalarField
 {
 
 public:

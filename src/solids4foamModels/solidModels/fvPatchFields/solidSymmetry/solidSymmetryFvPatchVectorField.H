@@ -26,22 +26,22 @@ Class
     Foam::solidSymmetryFvPatchVectorField
 
 Description
-    symmetry plane with non-orthogonal correction
-    same as symmetryDisplacement
+    Symmetry plane with non-orthogonal correction.
 
 SourceFiles
     solidSymmetryFvPatchVectorField.C
 
 Author
-    Zeljko Tukovic FSB Zagreb
+    Zeljko Tukovic, FSB Zagreb. All rights reserved.
+    Philip Cardiff, UCD. All rights reserved.
 
 \*---------------------------------------------------------------------------*/
 
 #ifndef solidSymmetryFvPatchVectorField_H
 #define solidSymmetryFvPatchVectorField_H
 
-#include "symmetryFvPatchFields.H"
-#include "symmetryFvPatch.H"
+#include "symmetryPlaneFvPatchFields.H"
+#include "symmetryPlaneFvPatch.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -54,7 +54,7 @@ namespace Foam
 
 class solidSymmetryFvPatchVectorField
 :
-    public symmetryFvPatchVectorField
+    public symmetryPlaneFvPatchVectorField
 {
 
 public:

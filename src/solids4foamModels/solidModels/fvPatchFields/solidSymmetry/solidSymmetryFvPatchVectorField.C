@@ -41,7 +41,7 @@ solidSymmetryFvPatchVectorField::solidSymmetryFvPatchVectorField
     const DimensionedField<vector, volMesh>& iF
 )
 :
-    symmetryFvPatchField<vector>(p, iF)
+    symmetryPlaneFvPatchField<vector>(p, iF)
 {}
 
 
@@ -53,9 +53,9 @@ solidSymmetryFvPatchVectorField::solidSymmetryFvPatchVectorField
     const fvPatchFieldMapper& mapper
 )
 :
-    symmetryFvPatchField<vector>(ptf, p, iF, mapper)
+    symmetryPlaneFvPatchField<vector>(ptf, p, iF, mapper)
 {
-    if (!isType<symmetryFvPatch>(this->patch()))
+    if (!isType<symmetryPlaneFvPatch>(this->patch()))
     {
         FatalErrorIn
         (
@@ -84,12 +84,12 @@ solidSymmetryFvPatchVectorField::solidSymmetryFvPatchVectorField
     const dictionary& dict
 )
 :
-    symmetryFvPatchField<vector>(p, iF, dict)
+    symmetryPlaneFvPatchField<vector>(p, iF, dict)
 {
     Info << "Symmetry boundary condition with non-orthogonal correction"
         << endl;
 
-    if (!isType<symmetryFvPatch>(p))
+    if (!isType<symmetryPlaneFvPatch>(p))
     {
         FatalIOErrorIn
         (
@@ -116,7 +116,7 @@ solidSymmetryFvPatchVectorField::solidSymmetryFvPatchVectorField
     const solidSymmetryFvPatchVectorField& ptf
 )
 :
-    symmetryFvPatchField<vector>(ptf)
+    symmetryPlaneFvPatchField<vector>(ptf)
 {}
 
 
@@ -126,7 +126,7 @@ solidSymmetryFvPatchVectorField::solidSymmetryFvPatchVectorField
     const DimensionedField<vector, volMesh>& iF
 )
 :
-    symmetryFvPatchField<vector>(ptf, iF)
+    symmetryPlaneFvPatchField<vector>(ptf, iF)
 {}
 
 
