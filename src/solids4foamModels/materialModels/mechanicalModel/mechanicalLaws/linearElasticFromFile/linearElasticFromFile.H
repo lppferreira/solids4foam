@@ -117,15 +117,6 @@ public:
         //- Return density
         virtual tmp<volScalarField> impK() const;
 
-        //- Return the bulk modulus
-        virtual tmp<volScalarField> K() const;
-
-        //- Provide access to mu for the coupledUnsNonLinLinearElasticSolid
-        virtual const dimensionedScalar& mu() const;
-
-        //- Provide access to lambda for the coupledUnsNonLinLinearElasticSolid
-        virtual const dimensionedScalar& lambda() const;
-
         //- Calculate stress volField
         virtual void correct(volSymmTensorField& sigma);
 

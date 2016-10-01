@@ -28,8 +28,6 @@ License
 #include "zeroGradientFvPatchFields.H"
 #include "transformField.H"
 #include "transformGeometricField.H"
-#include "IOdictionary.H"
-#include "volFields.H"
 #include "fvc.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
