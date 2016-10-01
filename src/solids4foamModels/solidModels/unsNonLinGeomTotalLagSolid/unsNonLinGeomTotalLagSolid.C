@@ -71,29 +71,6 @@ scalar unsNonLinGeomTotalLagSolid::residual() const
 }
 
 
-// void unsNonLinGeomTotalLagSolid::checkJacobian(const volScalarField& J)
-// {
-//     const scalarField& JI = J.internalField();
-
-//     if (gMax(JI) < 0.01)
-//     {
-//         forAll(JI, cellI)
-//         {
-//             if (JI[cellI] < SMALL)
-//             {
-//                 Pout<< "Cell " << cellI
-//                     << " with centre " << mesh.C()[cellI]
-//                     << " has a become inverted!" << endl;
-//             }
-//         }
-
-//         FatalErrorIn(type() + "::evolve()")
-//             << "Cells have become inverted! see details above."
-//             << abort(FatalError);
-//     }
-// }
-
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 unsNonLinGeomTotalLagSolid::unsNonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
@@ -722,7 +699,7 @@ bool unsNonLinGeomTotalLagSolid::evolve()
 
     do
     {
-        if (lduMatrix::debug)
+        if (iCorr % infoFrequency_ == 0)
         {
             Info<< "Time: " << runTime().timeName()
                 << ", outer iteration: " << iCorr << endl;
@@ -826,7 +803,7 @@ bool unsNonLinGeomTotalLagSolid::evolve()
             curConvergenceTolerance = solutionTol_;
         }
 
-        if (lduMatrix::debug)
+        if (iCorr % infoFrequency_ == 0)
         {
             Info<< "Relative residual = " << res << endl;
         }
