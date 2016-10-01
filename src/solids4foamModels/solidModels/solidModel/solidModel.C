@@ -70,12 +70,21 @@ void Foam::solidModel::calcGlobalFaceZones() const
         //     }
         // }
 
+        // New method: directly lookup globalFaceZones from decomposeParDict
+
 
         // For FSI cases, we need to look in a different location for the dict
 
         word decompDictName = "system/decomposeParDict";
 
-        if (isDir(rootPath()/caseName()/"../system/solid"))
+        if
+        (
+            isDir
+            (
+                mesh().time().rootPath()/mesh().time().caseName()
+                /"../system/solid"
+            )
+        )
         {
             decompDictName = "../system/solid/decomposeParDict";
         }
@@ -93,8 +102,6 @@ void Foam::solidModel::calcGlobalFaceZones() const
                 false
             )
         );
-
-        // New method: directly lookup globalFaceZones from decomposeParDict
 
         if (decompDict.found("globalFaceZones"))
         {
@@ -119,6 +126,10 @@ void Foam::solidModel::calcGlobalFaceZones() const
             }
 
             globalFaceZonesPtr_ = new labelList(globalFaceZonesSet);
+        }
+        else
+        {
+            globalFaceZonesPtr_ = new labelList(0);
         }
     }
     else
@@ -386,7 +397,7 @@ Foam::solidModel::solidModel
         (
             // PC: maybe this should be a Dict instead of a Properties
             "solidProperties",
-            mesh.time().constant(), 
+            mesh.time().constant(),
             mesh,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
@@ -433,6 +444,7 @@ Foam::solidModel::globalToLocalFaceZonePointMap() const
 
     return *globalToLocalFaceZonePointMapPtr_;
 }
+
 
 void Foam::solidModel::setTraction
 (

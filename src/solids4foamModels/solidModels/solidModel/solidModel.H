@@ -75,7 +75,7 @@ class solidModel
         //- Global face zones
         mutable labelList* globalFaceZonesPtr_;
 
-        //- Global to local face zone poin maping
+        //- Global to local face zone poin mapping
         mutable labelListList* globalToLocalFaceZonePointMapPtr_;
 
     // Private Member Functions
@@ -188,21 +188,21 @@ public:
             virtual tmp<vectorField> faceZonePointDisplacementIncrement
             (
                  const label zoneID
-             ) const = 0;
+            ) const = 0;
 
             //- Face zone velocity gradient
-             virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
-             (
-                 const label zoneID,
-                 const label patchID
-             ) const = 0;
+            virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
+            (
+                const label zoneID,
+                const label patchID
+            ) const = 0;
 
             //- Face zone current normal
-             virtual tmp<vectorField> faceZoneNormal
-             (
-                 const label zoneID,
-                 const label patchID
-             ) const = 0;
+            virtual tmp<vectorField> faceZoneNormal
+            (
+                const label zoneID,
+                const label patchID
+            ) const = 0;
 
             //- Face zone primitive patch in current configuration
             virtual tmp<vectorField> currentFaceZonePoints
@@ -226,34 +226,34 @@ public:
             );
 
             //- Set traction at specified patch
-             virtual void setTraction
-             (
-                 const label patchID,
-                 const vectorField& traction
-             ) = 0;
-
-            // //- Set traction at specified patch
-             virtual void setPressure
-             (
-                 const label patchID,
-                 const scalarField& pressure
-             ) = 0;
+            virtual void setTraction
+            (
+                const label patchID,
+                const vectorField& traction
+            ) = 0;
 
             //- Set traction at specified patch
-             virtual void setTraction
-             (
-                 const label patchID,
-                 const label zoneID,
-                 const vectorField& faceZoneTraction
-             ) = 0;
+            virtual void setPressure
+            (
+                const label patchID,
+                const scalarField& pressure
+            ) = 0;
 
             //- Set traction at specified patch
-             virtual void setPressure
-             (
-                 const label patchID,
-                 const label zoneID,
-                 const scalarField& faceZonePressure
-             ) = 0;
+            virtual void setTraction
+            (
+                const label patchID,
+                const label zoneID,
+                const vectorField& faceZoneTraction
+            ) ;
+
+            //- Set traction at specified patch
+            virtual void setPressure
+            (
+                const label patchID,
+                const label zoneID,
+                const scalarField& faceZonePressure
+            );
 
             //- Evolve the solid model
             virtual bool evolve() = 0;
