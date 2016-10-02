@@ -34,7 +34,6 @@ License
 #include "SubField.H"
 #include "Time.H"
 #include "addToRunTimeSelectionTable.H"
-#include "PrimitivePatchInterpolation.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -174,7 +173,7 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
 
     AMIPtr_.set
     (
-        new AMIPatchToPatchInterpolation
+        new newAMIPatchToPatchInterpolation
         (
             currentFluidZonePatch(),
             currentSolidZonePatch(),
@@ -256,46 +255,15 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
 
     Info<< "Checking solid-to-fluid point interpolator (AMI)" << endl;
     {
-        // In foam-extend, we can directly interpolate from the interface solid
-        // points to the interface fluid points
-        // In OpenFOAM, we must interpolate from point-to-faces, then face-to-
-        // face, then face-to-point
-
         vectorField solidZonePoints_ =
             solidMesh().faceZones()[solidZoneIndex_]().localPoints();
 
-        // Create interpolator to interpolate from points to faces
-        // Note: I don't think PrimitivePatchInterpolation is parallelised!
-        // We could sotre this interpolator
-        PrimitivePatchInterpolation
-        <
-            PrimitivePatch<face, SubList, const pointField&>
-         > solidPatchInterp(currentSolidZonePatch());
-
-        // Interpolate from points to faces
-        const vectorField solidZonePointsInterpToFaces =
-            solidPatchInterp.pointToFaceInterpolate(solidZonePoints_);
-
-        // Interpolate from solid interface to fluid interface
-        vectorField solidZonePointsInterpToFacesToFluid =
-            AMI().interpolateToSource(solidZonePointsInterpToFaces);
-
-        // Create interpolator to interpolate from points to faces
-        // Note: I don't think PrimitivePatchInterpolation is parallelised!
-        // We could sotre this interpolator
-        PrimitivePatchInterpolation
-        <
-            PrimitivePatch<face, SubList, const pointField&>
-         > fluidPatchInterp(currentFluidZonePatch());
-
-        // Interpolate from points to faces
-        const vectorField solidZonePoints =
-            fluidPatchInterp.faceToPointInterpolate
+        vectorField solidZonePoints =
+            AMI().pointInterpolateToSource
             (
-                solidZonePointsInterpToFacesToFluid
+                solidZonePoints_
             );
 
-        // Interpolate from faces to points
         vectorField fluidZonePoints =
             fluidMesh().faceZones()[fluidZoneIndex_]().localPoints();
 
@@ -502,7 +470,6 @@ Foam::fluidSolidInterface::fluidSolidInterface
     currentFluidZonePointsPtr_(NULL),
     currentFluidZonePatchPtr_(NULL),
     AMIPtr_(NULL),
-//    AMIPointPtr(NULL),
     outerCorrTolerance_
     (
         fsiProperties_.lookupOrDefault<scalar>("outerCorrTolerance", 1e-06)
@@ -712,7 +679,8 @@ Foam::fluidSolidInterface::currentFluidZonePatch() const
 }
 
 
-const Foam::AMIPatchToPatchInterpolation& Foam::fluidSolidInterface::AMI() const
+const Foam::newAMIPatchToPatchInterpolation&
+Foam::fluidSolidInterface::AMI() const
 {
     if (!AMIPtr_.valid())
     {
@@ -1218,35 +1186,10 @@ Foam::scalar Foam::fluidSolidInterface::updateResidual()
     vectorField solidZonePointsDisplAtSolid =
         solid().faceZonePointDisplacementIncrement(solidZoneIndex());
 
-    // Create interpolator to interpolate from points to faces
-    // Note: I don't think PrimitivePatchInterpolation is parallelised!
-    // We could sotre this interpolator
-    PrimitivePatchInterpolation
-    <
-        PrimitivePatch<face, SubList, const pointField&>
-    > solidPatchInterp(currentSolidZonePatch());
-
-    // Interpolate from points to faces
-    const vectorField solidZonePointsDisplAtSolidToFaces =
-        solidPatchInterp.pointToFaceInterpolate(solidZonePointsDisplAtSolid);
-
-    // Interpolate from solid interface to fluid interface
-    vectorField solidZonePointsDisplAtSolidToFacesToFluid =
-        AMI().interpolateToSource(solidZonePointsDisplAtSolidToFaces);
-
-    // Create interpolator to interpolate from points to faces
-    // Note: I don't think PrimitivePatchInterpolation is parallelised!
-    // We could sotre this interpolator
-    PrimitivePatchInterpolation
-    <
-        PrimitivePatch<face, SubList, const pointField&>
-    > fluidPatchInterp(currentFluidZonePatch());
-
-    // Interpolate from points to faces
     solidZonePointsDispl() =
-        fluidPatchInterp.faceToPointInterpolate
+        AMI().pointInterpolateToSource
         (
-            solidZonePointsDisplAtSolidToFacesToFluid
+            solidZonePointsDisplAtSolid
         );
 
     residualPrev() = residual();

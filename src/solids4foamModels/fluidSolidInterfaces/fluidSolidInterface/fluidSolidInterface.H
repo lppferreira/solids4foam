@@ -48,7 +48,7 @@ SourceFiles
 #include "fluidModel.H"
 #include "solidModel.H"
 #include "coupledPolyPatch.H"
-#include "AMIPatchToPatchInterpolation.H"
+#include "newAMIPatchToPatchInterpolation.H"
 #include "polyBoundaryMesh.H"
 #include "coupleGroupIdentifier.H"
 
@@ -109,7 +109,7 @@ class fluidSolidInterface
             currentFluidZonePatchPtr_;
 
         //- AMI zone-to-zone interpolation
-        mutable autoPtr<AMIPatchToPatchInterpolation> AMIPtr_;
+        mutable autoPtr<newAMIPatchToPatchInterpolation> AMIPtr_;
 
         //- Outer correction loop stoping tolerance
         scalar outerCorrTolerance_;
@@ -347,7 +347,7 @@ public:
                 currentFluidZonePatch() const;
 
             //- Return a reference to the AMI interpolator
-            const AMIPatchToPatchInterpolation& AMI() const;
+            const newAMIPatchToPatchInterpolation& AMI() const;
 
             //- Return outer corrector loop tolerance
             scalar outerCorrTolerance() const
