@@ -259,17 +259,64 @@ void nonLinGeomUpdatedLagSolid::moveMesh(const pointField& oldPoints)
 
     twoDPointCorrector twoDCorrector(mesh());
     twoDCorrector.correctPoints(newPoints);
-    twoDCorrector.correctPoints(pointDD_.internalField());
+    twoDCorrector.correctPoints(pointDDI);
     mesh().movePoints(newPoints);
     mesh().V00();
     mesh().moving(false);
-//    mesh().changing(false);
     mesh().changing();
 
     // meshPhi does not need to be written
     mesh().setPhi().writeOpt() = IOobject::NO_WRITE;
 }
 
+void nonLinGeomUpdatedLagSolid::moveMeshConsistent(const pointField& oldPoints)
+{
+    Info<< "Moving the mesh to the deformed configuration consistent with F"
+        << nl << endl;
+
+    // Take a copy of the geometry
+    const surfaceVectorField Sf = mesh().Sf();
+    const surfaceScalarField magSf = mesh().magSf();
+    const surfaceVectorField Cf = mesh().Cf();
+    const volVectorField C = mesh().C();
+    const scalarField V = mesh().V().field();
+    //const pointField allPoints = mesh().allPoints();
+    const pointField points = mesh().points();
+
+    // Move the mesh
+    moveMesh(oldPoints);
+
+    // Overwrite new geometry with deformed geometry consistent with the
+    // relative deformation gradient
+    //relF_
+
+    const_cast<scalarField&>(mesh().V().field()) = relJ_.internalField()*V;
+    const_cast<volVectorField&>(mesh().C()) = relF_ & C;
+
+    // Interpolate refF to the faces
+    const surfaceTensorField relFf = fvc::interpolate(relF_);
+    const_cast<surfaceVectorField&>(mesh().Sf()) = relFf & Sf;
+    const_cast<surfaceScalarField&>(mesh().magSf()) = det(relFf)*magSf;
+    const_cast<surfaceVectorField&>(mesh().Cf()) = relFf & Cf;
+
+    // Interpolate refF to the points
+    pointTensorField pointRelF
+    (
+        IOobject
+        (
+            "pointRelF",
+            runTime().timeName(),
+            mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        pMesh_,
+        dimensionedTensor("zero", dimless, tensor::zero)
+    );
+    mechanical().volToPoint().interpolate(relF_, pointRelF);
+    const_cast<pointField&>(mesh().points()) = pointRelF & points;
+    //const_cast<pointField&>(mesh().allPoints()) = pointRelF & allPoints;
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -442,7 +489,18 @@ nonLinGeomUpdatedLagSolid::nonLinGeomUpdatedLagSolid(dynamicFvMesh& mesh)
         ),
         det(relF_)
     ),
-    rho_(mechanical().rho()),
+    rho_
+    (
+        IOobject
+        (
+            "rho",
+            runTime().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mechanical().rho()
+    ),
     impK_(mechanical().impK()),
     impKf_(mechanical().impKf()),
     rImpK_(1.0/impK_),
@@ -584,26 +642,27 @@ tmp<tensorField> nonLinGeomUpdatedLagSolid::faceZoneSurfaceGradientOfVelocity
     );
     tensorField& velocityGradient = tVelocityGradient();
 
-     pointVectorField pPointU
-     (
-         IOobject
-         (
-             "pPointU",
-             runTime().timeName(),
-             mesh(),
-             IOobject::NO_READ,
-             IOobject::NO_WRITE
-         ),
-         pMesh_,
-         dimensionedVector("0", dimVelocity, vector::zero)
-     );
+    pointVectorField pPointUField
+    (
+        IOobject
+        (
+            "pPointUField",
+            runTime().timeName(),
+            mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        pMesh_,
+        dimensionedVector("0", dimVelocity, vector::zero)
+    );
 
-    mechanical().volToPoint().interpolate(U_,pPointU);
-
-//    volToPoint_.interpolate(U_, pPointU);
-
-////    vectorField pPointU =
-////        volToPoint_.interpolate(mesh().boundaryMesh()[patchID], U_);
+    mechanical().volToPoint().interpolate(U_, pPointUField);
+    vectorField pPointU(mesh().boundaryMesh()[patchID].nPoints(), vector::zero);
+    const labelList& meshPoints = mesh().boundaryMesh()[patchID].meshPoints();
+    forAll(pPointU, pointI)
+    {
+        pPointU[pointI] = pPointUField[meshPoints[pointI]];
+    }
 
     const faceList& localFaces =
         mesh().boundaryMesh()[patchID].localFaces();
@@ -1051,14 +1110,12 @@ tmp<vectorField> nonLinGeomUpdatedLagSolid::tractionBoundarySnGrad
     // Patch relative deformation gradient inverse
     const tensorField& relFinv = relFinv_.boundaryField()[patchID];
 
-    // Patch relative Jacobian
-    const scalarField& relJ = relJ_.boundaryField()[patchID];
-
     // Patch unit normals (updated configuration)
     const vectorField n = patch.nf();
 
     // Patch unit normals (deformed configuration)
-    const vectorField nCurrent = relJ*relFinv.T() & n;
+    vectorField nCurrent = relFinv.T() & n;
+    nCurrent /= mag(nCurrent);
 
     // Return patch snGrad
     return tmp<vectorField>
@@ -1066,9 +1123,9 @@ tmp<vectorField> nonLinGeomUpdatedLagSolid::tractionBoundarySnGrad
         new vectorField
         (
             (
-                (traction - n*pressure)
+                (traction - nCurrent*pressure)
               - (nCurrent & sigma)
-              + (n & (impK*gradDD))
+              + impK*(n & gradDD)
             )*rImpK
         )
     );

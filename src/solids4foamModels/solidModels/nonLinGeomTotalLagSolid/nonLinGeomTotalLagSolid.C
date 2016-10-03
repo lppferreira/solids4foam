@@ -415,21 +415,22 @@ tmp<tensorField> nonLinGeomTotalLagSolid::faceZoneSurfaceGradientOfVelocity
         )
     );
     tensorField& velocityGradient = tVelocityGradient();
-
-     pointVectorField pPointU
-     (
-         IOobject
-         (
-             "pPointU",
-             runTime().timeName(),
-             mesh(),
-             IOobject::NO_READ,
-             IOobject::NO_WRITE
-         ),
-         pMesh_,
-         dimensionedVector("0", dimVelocity, vector::zero)
-     );
-    mechanical().volToPoint().interpolate(U_,pPointU);
+    pointVectorField pPointUField
+    (
+        IOobject
+        (
+            "pPointUField",
+            runTime().timeName(),
+            mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        pMesh_,
+        dimensionedVector("0", dimVelocity, vector::zero)
+    );
+    mechanical().volToPoint().interpolate(U_, pPointUField);
+    vectorField pPointU(mesh().boundaryMesh()[patchID].nPoints(), vector::zero);
+    const labelList& meshPoints = mesh().boundaryMesh()[patchID].meshPoints();
 
 //    volToPoint_.interpolate(U_, pPointU);
 
@@ -827,7 +828,7 @@ tmp<vectorField> nonLinGeomTotalLagSolid::tractionBoundarySnGrad
     // Patch index
     const label patchID = patch.index();
 
-    // Patch mechanical property
+    // Patch implicit stiffness field
     const scalarField& impK = impK_.boundaryField()[patchID];
 
     // Patch reciprocal implicit stiffness field
@@ -836,20 +837,19 @@ tmp<vectorField> nonLinGeomTotalLagSolid::tractionBoundarySnGrad
     // Patch gradient
     const tensorField& gradD = gradD_.boundaryField()[patchID];
 
-    // Patch stress
+    // Patch Cauchy stress
     const symmTensorField& sigma = sigma_.boundaryField()[patchID];
 
     // Patch total deformation gradient inverse
     const tensorField& Finv = Finv_.boundaryField()[patchID];
 
-    // Patch total Jacobian
-    const scalarField& J = J_.boundaryField()[patchID];
-
     // Patch unit normals (initial configuration)
     const vectorField n = patch.nf();
 
     // Patch unit normals (deformed configuration)
-    const vectorField nCurrent = J*Finv.T() & n;
+    vectorField nCurrent = Finv.T() & n;
+    nCurrent /= mag(nCurrent);
+
 
     // Return patch snGrad
     return tmp<vectorField>
@@ -857,9 +857,9 @@ tmp<vectorField> nonLinGeomTotalLagSolid::tractionBoundarySnGrad
         new vectorField
         (
             (
-                (traction - n*pressure)
+                (traction - nCurrent*pressure)
               - (nCurrent & sigma)
-              + (n & (impK*gradD))
+              + impK*(n & gradD)
             )*rImpK
         )
     );

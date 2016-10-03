@@ -683,26 +683,27 @@ tmp<tensorField> unsNonLinGeomUpdatedLagSolid::faceZoneSurfaceGradientOfVelocity
     );
     tensorField& velocityGradient = tVelocityGradient();
 
-     pointVectorField pPointU
-     (
-         IOobject
-         (
-             "pPointU",
-             runTime().timeName(),
-             mesh(),
-             IOobject::NO_READ,
-             IOobject::NO_WRITE
-         ),
-         pMesh_,
-         dimensionedVector("0", dimVelocity, vector::zero)
-     );
+    pointVectorField pPointUField
+    (
+        IOobject
+        (
+            "pPointUField",
+            runTime().timeName(),
+            mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        pMesh_,
+        dimensionedVector("0", dimVelocity, vector::zero)
+    );
 
-    mechanical().volToPoint().interpolate(U_,pPointU);
-
-//    volToPoint_.interpolate(U_, pPointU);
-
-//    vectorField pPointU =
-//        volToPoint_.interpolate(mesh().boundaryMesh()[patchID], U_);
+    mechanical().volToPoint().interpolate(U_, pPointUField);
+    vectorField pPointU(mesh().boundaryMesh()[patchID].nPoints(), vector::zero);
+    const labelList& meshPoints = mesh().boundaryMesh()[patchID].meshPoints();
+    forAll(pPointU, pointI)
+    {
+        pPointU[pointI] = pPointUField[meshPoints[pointI]];
+    }
 
     const faceList& localFaces =
         mesh().boundaryMesh()[patchID].localFaces();

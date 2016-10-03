@@ -145,14 +145,14 @@ public:
 
             //- Interpolate points from target to source
             template<class Type>
-            tmp<Field<Type>> pointInterpolateToSource
+            tmp<Field<Type> > pointInterpolateToSource
             (
                 const Field<Type>& fld
             ) const;
 
             //- Interpolate points from source to target
             template<class Type>
-            tmp<Field<Type>> pointInterpolateToTarget
+            tmp<Field<Type> > pointInterpolateToTarget
             (
                 const Field<Type>& fld
             ) const;

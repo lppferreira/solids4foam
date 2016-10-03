@@ -75,7 +75,7 @@ class solidModel
         //- Global face zones
         mutable labelList* globalFaceZonesPtr_;
 
-        //- Global to local face zone poin mapping
+        //- Global to local face zone point mapping
         mutable labelListList* globalToLocalFaceZonePointMapPtr_;
 
     // Private Member Functions
@@ -245,7 +245,7 @@ public:
                 const label patchID,
                 const label zoneID,
                 const vectorField& faceZoneTraction
-            ) ;
+            );
 
             //- Set traction at specified patch
             virtual void setPressure

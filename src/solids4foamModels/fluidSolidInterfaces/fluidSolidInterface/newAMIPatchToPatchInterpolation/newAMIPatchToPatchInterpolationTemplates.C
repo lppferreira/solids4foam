@@ -30,7 +30,7 @@ License
 // * * * * * * * * * * * * * Public Member Functions  * * * * * * * * * * * //
 
 template<class Type>
-Foam::tmp<Foam::Field<Type>>
+Foam::tmp<Foam::Field<Type> >
 Foam::newAMIPatchToPatchInterpolation::pointInterpolateToSource
 (
     const Field<Type>& tgtFld
@@ -53,7 +53,7 @@ Foam::newAMIPatchToPatchInterpolation::pointInterpolateToSource
 
 
 template<class Type>
-Foam::tmp<Foam::Field<Type>>
+Foam::tmp<Foam::Field<Type> >
 Foam::newAMIPatchToPatchInterpolation::pointInterpolateToTarget
 (
     const Field<Type>& srcFld

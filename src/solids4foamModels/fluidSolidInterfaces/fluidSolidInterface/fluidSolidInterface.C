@@ -219,7 +219,8 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
         reduce(fluidZoneFaceCentres, sumOp<vectorField>());
 
         vectorField solidZoneFaceCentres =
-            AMI().interpolateToSource(fluidZoneFaceCentres);
+//            AMI().interpolateToSource(fluidZoneFaceCentres);
+            AMI().interpolateToTarget(fluidZoneFaceCentres);//JN: isn't this the correct one?
 
         vectorField solidPatchFaceCentres
         (

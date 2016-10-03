@@ -129,7 +129,12 @@ void weakCouplingInterface::updateWeakDisplacement()
     // and vice versa
     // JN: Hmmmm. It seems to compile. Strange...
     // We seem to have full AMI funcionality.
-    solidZonePointsDispl() = AMI().interpolateToSource(solidZonePointsDisplAtSolid);
+    //JN: Ok. Fourth try. Here we need pointInterpolateToSource...
+
+    solidZonePointsDispl() = AMI().pointInterpolateToSource(solidZonePointsDisplAtSolid);
+
+    //solidZonePointsDispl() = AMI().interpolateToSource(solidZonePointsDisplAtSolid);
+
     //solidZonePointsDispl() = solidZonePointsDisplAtSolid;
 
    // solidZonePointsDispl() =
@@ -219,7 +224,7 @@ void weakCouplingInterface::updateWeakTraction()
       - fluid().faceZonePressureForce(fluidZoneIndex(), fluidPatchIndex())*n;
 
         vectorField fluidZoneTractionAtSolid =
-            AMI().interpolateToSource(-fluidZoneTraction);
+            AMI().interpolateToTarget(-fluidZoneTraction);
 
     solidZoneTraction_ =
         relaxationFactor_*fluidZoneTractionAtSolid

@@ -90,7 +90,7 @@ void fixedRelaxationCouplingInterface::evolve()
 
         // Solve solid
 	//JN: Why is the solid here behind the fluid?
-	// in weakCoupling it yomes first
+	// in weakCoupling it comes first
         solid().evolve();
 
         // Calculate the FSI residual

@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
+//#   include "createTimeControls.H"
 #   include "createDynamicFvMesh.H"
 #   include "createSolidMesh.H"
 
@@ -59,6 +60,10 @@ int main(int argc, char *argv[])
 
     for (runTime++; !runTime.end(); runTime++)
     {
+//        #include "readTimeControls.H"
+//        #include "CourantNo.H"
+//        #include "setDeltaT.H"
+
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         // Evolve the fluid-solid interface
