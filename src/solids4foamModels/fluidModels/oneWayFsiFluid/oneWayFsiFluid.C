@@ -231,6 +231,11 @@ tmp<scalarField> oneWayFsiFluid::faceZoneMuEff
     return tMuEff;
 }
 
+tmp<surfaceScalarField> oneWayFsiFluid::phi() const
+{
+    return phi_;
+}
+
 tmp<vectorField>
  oneWayFsiFluid::currentFaceZonePoints(const label zoneID) const
  {

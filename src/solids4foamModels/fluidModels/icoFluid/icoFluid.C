@@ -240,6 +240,12 @@ const volScalarField& icoFluid::p() const
      return tMuEff;
  }
 
+tmp<surfaceScalarField> icoFluid::phi() const
+{
+    return phi_;
+}
+
+
 tmp<vectorField>
  icoFluid::currentFaceZonePoints(const label zoneID) const
  {

@@ -150,10 +150,11 @@ public:
             }
 
             //- Return flux field
-            surfaceScalarField& phi()
-            {
-                return phi_;
-            }
+//            surfaceScalarField& phi()
+//            {
+//                return phi_;
+//            }
+             virtual tmp<surfaceScalarField> phi() const;
 
             //- Density
             const dimensionedScalar& rho()

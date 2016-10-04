@@ -266,6 +266,11 @@ const volScalarField& pisoFluid::p() const
      return tMuEff;
  }
 
+tmp<surfaceScalarField> pisoFluid::phi() const
+{
+    return phi_;
+}
+
 tmp<vectorField>
  pisoFluid::currentFaceZonePoints(const label zoneID) const
  {
