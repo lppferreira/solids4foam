@@ -71,29 +71,6 @@ scalar unsNonLinGeomTotalLagSolid::residual() const
 }
 
 
-// void unsNonLinGeomTotalLagSolid::checkJacobian(const volScalarField& J)
-// {
-//     const scalarField& JI = J.internalField();
-
-//     if (gMax(JI) < 0.01)
-//     {
-//         forAll(JI, cellI)
-//         {
-//             if (JI[cellI] < SMALL)
-//             {
-//                 Pout<< "Cell " << cellI
-//                     << " with centre " << mesh.C()[cellI]
-//                     << " has a become inverted!" << endl;
-//             }
-//         }
-
-//         FatalErrorIn(type() + "::evolve()")
-//             << "Cells have become inverted! see details above."
-//             << abort(FatalError);
-//     }
-// }
-
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 unsNonLinGeomTotalLagSolid::unsNonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
@@ -268,15 +245,6 @@ unsNonLinGeomTotalLagSolid::unsNonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
     impK_(mechanical().impK()),
     impKf_(mechanical().impKf()),
     rImpK_(1.0/impK_),
-    DEqnRelaxFactor_
-    (
-        mesh.relaxEquation("DEqn")
-      ? mesh.equationRelaxationFactor("DEqn")
-      : 1.0
-//        mesh.solutionDict().relax("DEqn")
-//      ? mesh.solutionDict().relaxationFactor("DEqn")
-//      : 1.0
-    ),
     solutionTol_
     (
         solidProperties().lookupOrDefault<scalar>("solutionTolerance", 1e-06)
@@ -319,13 +287,12 @@ unsNonLinGeomTotalLagSolid::unsNonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
     maxIterReached_(0)
 {
     D_.oldTime().oldTime();
+    pointD_.oldTime();
 }
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-
- 
 tmp<vectorField> unsNonLinGeomTotalLagSolid::faceZonePointDisplacementIncrement
 (
     const label zoneID
@@ -370,7 +337,7 @@ tmp<vectorField> unsNonLinGeomTotalLagSolid::faceZonePointDisplacementIncrement
         {
             label localPoint = curPointMap[globalPointI];
 
-            if(zoneMeshPoints[localPoint] < mesh().nPoints())
+            if (zoneMeshPoints[localPoint] < mesh().nPoints())
             {
                 label procPoint = zoneMeshPoints[localPoint];
 
@@ -479,8 +446,7 @@ tmp<tensorField> unsNonLinGeomTotalLagSolid::faceZoneSurfaceGradientOfVelocity
             velocityGradient
             [
                 mesh().faceZones()[zoneID].whichFace(patchStart + i)
-            ] =
-                patchGradU[i];
+            ] = patchGradU[i];
         }
 
         // Parallel data exchange: collect field on all processors
@@ -533,7 +499,7 @@ tmp<vectorField> unsNonLinGeomTotalLagSolid::currentFaceZonePoints
         {
             label localPoint = curPointMap[globalPointI];
 
-            if(zoneMeshPoints[localPoint] < mesh().nPoints())
+            if (zoneMeshPoints[localPoint] < mesh().nPoints())
             {
                 label procPoint = zoneMeshPoints[localPoint];
 
@@ -635,8 +601,7 @@ tmp<vectorField> unsNonLinGeomTotalLagSolid::faceZoneNormal
             normals
             [
                 mesh().faceZones()[zoneID].whichFace(patchStart + i)
-            ] =
-                patchNormals[i];
+            ] = patchNormals[i];
         }
 
         // Parallel data exchange: collect field on all processors
@@ -649,7 +614,6 @@ tmp<vectorField> unsNonLinGeomTotalLagSolid::faceZoneNormal
 
     return tNormals;
 }
-
 
 
 void unsNonLinGeomTotalLagSolid::setTraction
@@ -665,22 +629,22 @@ void unsNonLinGeomTotalLagSolid::setTraction
     )
     {
         FatalErrorIn("void unsNonLinGeomTotalLagSolid::setTraction(...)")
-            << "Bounary condition on " << D_.name()
+            << "Boundary condition on " << D_.name()
             <<  " is "
             << D_.boundaryField()[patchID].type()
-            << "for patch" << mesh().boundary()[patchID].name()
+            << " for patch" << mesh().boundary()[patchID].name()
             << ", instead "
             << solidTractionFvPatchVectorField::typeName
             << abort(FatalError);
     }
 
-    solidTractionFvPatchVectorField& patchU =
+    solidTractionFvPatchVectorField& patchD =
         refCast<solidTractionFvPatchVectorField>
         (
             D_.boundaryField()[patchID]
         );
 
-    patchU.traction() = traction;
+    patchD.traction() = traction;
 }
 
 
@@ -697,88 +661,35 @@ void unsNonLinGeomTotalLagSolid::setPressure
     )
     {
         FatalErrorIn("void unsNonLinGeomTotalLagSolid::setTraction(...)")
-            << "Bounary condition on " << D_.name()
+            << "Boundary condition on " << D_.name()
             <<  " is "
             << D_.boundaryField()[patchID].type()
-            << "for patch" << mesh().boundary()[patchID].name()
+            << " for patch" << mesh().boundary()[patchID].name()
             << ", instead "
             << solidTractionFvPatchVectorField::typeName
             << abort(FatalError);
     }
 
-    solidTractionFvPatchVectorField& patchU =
+    solidTractionFvPatchVectorField& patchD =
         refCast<solidTractionFvPatchVectorField>
         (
             D_.boundaryField()[patchID]
         );
 
-    patchU.pressure() = pressure;
+    patchD.pressure() = pressure;
 }
-
-
-void unsNonLinGeomTotalLagSolid::setTraction
-(
-    const label patchID,
-    const label zoneID,
-    const vectorField& faceZoneTraction
-)
-{
-  vectorField patchTraction(mesh().boundary()[patchID].size(), vector::zero);
-
-    const label patchStart =
-        mesh().boundaryMesh()[patchID].start();
-
-    forAll(patchTraction, i)
-    {
-        patchTraction[i] =
-            faceZoneTraction
-            [
-                mesh().faceZones()[zoneID].whichFace(patchStart + i)
-            ];
-    }
-
-    setTraction(patchID, patchTraction);
-}
-
-
-void unsNonLinGeomTotalLagSolid::setPressure
-(
-    const label patchID,
-    const label zoneID,
-    const scalarField& faceZonePressure
-)
-{
-    scalarField patchPressure(mesh().boundary()[patchID].size(), 0.0);
-
-    const label patchStart =
-        mesh().boundaryMesh()[patchID].start();
-
-    forAll(patchPressure, i)
-    {
-        patchPressure[i] =
-            faceZonePressure
-            [
-                mesh().faceZones()[zoneID].whichFace(patchStart + i)
-            ];
-    }
-
-    setPressure(patchID, patchPressure);
-}
-
 
 
 bool unsNonLinGeomTotalLagSolid::evolve()
 {
-    Info << "Evolving solid solver" << endl;
+    Info<< "Evolving solid solver" << endl;
 
     int iCorr = 0;
     scalar initialResidual = 0;
+    solverPerformance solverPerf;
     scalar res = 1.0;
     scalar maxRes = 0;
     scalar curConvergenceTolerance = solutionTol_;
-
-    solverPerformance solverPerf;
-//    lduMatrix::debug = debug_;
     solverPerformance::debug = 0;
 
     do
@@ -804,7 +715,6 @@ bool unsNonLinGeomTotalLagSolid::evolve()
           + rho_*g_
         );
 
-
         // Add damping
         if (K_.value() > SMALL)
         {
@@ -821,18 +731,11 @@ bool unsNonLinGeomTotalLagSolid::evolve()
               - fvc::div(mesh().Sf() & sigmaf_);
         }
 
-        // PC: what is the nicest way to do this: maybe GGI type BC?
-        // if (interface().valid())
-        // {
-        //     interface()->correct(DEqn);
-        // }
-
         // Under-relax the linear system
-        DEqn.relax(DEqnRelaxFactor_);
+        DEqn.relax();
 
         // Solve the system
-//        solverPerf = DEqn.solve();
-        DEqn.solve();
+        solverPerf = DEqn.solve();
 
         // Under-relax displacement field
         D_.relax();
@@ -842,11 +745,12 @@ bool unsNonLinGeomTotalLagSolid::evolve()
             initialResidual = solverPerf.initialResidual();
         }
 
-        // Update the cell and face displacement gradients
-        mechanical().volToPoint().interpolate(D_,pointD_);
+        // Interpolate D to pointD
+        mechanical().interpolate(D_, pointD_, false);
 
-        gradD_ = fvc::grad(D_, pointD_);
-        gradDf_ = fvc::fGrad(D_, pointD_);
+        // Update gradient of displacement
+        mechanical().grad(D_, pointD_, gradD_);
+        mechanical().grad(D_, pointD_, gradDf_);
 
         // Total deformation gradient
         Ff_ = I + gradDf_.T();
@@ -859,19 +763,6 @@ bool unsNonLinGeomTotalLagSolid::evolve()
 
         // Calculate the stress using run-time selectable mechanical law
         mechanical().correct(sigmaf_);
-
-        // PC: see question above
-        // if (interface().valid())
-        // {
-        //     interface()->updateDisplacement(pointD_);
-        //     interface()->updateDisplacementGradient(gradD_, gradDf_);
-        // }
-        // else
-        // {
-        //     volToPoint_.interpolate(D_, pointD_);
-        //     gradD_ = fvc::grad(D_, pointD_);
-        //     gradDf_ = fvc::fGrad(D_, pointD_);
-        // }
 
         if (nonLinear_ && !enforceLinear_)
         {
@@ -918,7 +809,6 @@ bool unsNonLinGeomTotalLagSolid::evolve()
         }
     }
     while (res > curConvergenceTolerance && ++iCorr < nCorr_);
-
 
     // Velocity
     U_ = fvc::ddt(D_);
@@ -1003,31 +893,16 @@ tmp<vectorField> unsNonLinGeomTotalLagSolid::tractionBoundarySnGrad
     );
 }
 
+
 void unsNonLinGeomTotalLagSolid::updateTotalFields()
 {
     mechanical().updateTotalFields();
 }
 
+
 void unsNonLinGeomTotalLagSolid::writeFields(const Time& runTime)
 {
-    // Update equivalent strain
-    // volScalarField epsilonEq
-    // (
-    //     IOobject
-    //     (
-    //         "epsilonEq",
-    //         runTime.timeName(),
-    //         mesh(),
-    //         IOobject::NO_READ,
-    //         IOobject::AUTO_WRITE
-    //     ),
-    //     sqrt((2.0/3.0)*magSqr(dev(epsilon_)))
-    // );
-
-    // Info<< "Max epsilonEq = " << max(epsilonEq).value()
-    //     << endl;
-
-    // Update equivalent (von Mises) stress
+    // Calculate equivalent (von Mises) stress
     volScalarField sigmaEq
     (
         IOobject

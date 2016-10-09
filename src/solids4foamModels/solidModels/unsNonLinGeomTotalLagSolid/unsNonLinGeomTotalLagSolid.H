@@ -130,9 +130,6 @@ class unsNonLinGeomTotalLagSolid
         //  will store the reciprocal for effficiency
         const volScalarField rImpK_;
 
-        //- D equation under-relaxation factor
-        const scalar DEqnRelaxFactor_;
-
         //- Solution standard tolerance
         const scalar solutionTol_;
 
@@ -225,12 +222,6 @@ public:
                 return sigma_;
             }
 
-            //- Strain tensor
-            // const volSymmTensorField& epsilon() const
-            // {
-            //     return epsilon_;
-            // }
-
             //- Return point displacement field
             virtual const pointVectorField& pointD() const
             {
@@ -279,22 +270,6 @@ public:
             (
                 const label patchID,
                 const scalarField& pressure
-            );
-
-            //- Set traction at specified patch
-            virtual void setTraction
-            (
-                const label patchID,
-                const label zoneID,
-                const vectorField& zoneTraction
-            );
-
-            //- Set pressure at specified patch
-            virtual void setPressure
-            (
-                const label patchID,
-                const label zoneID,
-                const scalarField& zonePressure
             );
 
             //- Evolve the solid solver and solve the mathematical model

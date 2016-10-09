@@ -131,9 +131,6 @@ class nonLinGeomUpdatedLagSolid
         //  will store the reciprocal for effficiency
         const volScalarField rImpK_;
 
-        //- DD equation under-relaxation factor
-        const scalar DDEqnRelaxFactor_;
-
         //- Solution standard tolerance
         const scalar solutionTol_;
 
@@ -172,10 +169,6 @@ class nonLinGeomUpdatedLagSolid
 
         //- Move the mesh to the deformed configuration
         void moveMesh(const pointField& oldPoints);
-
-        //- Move the mesh to the deformed configuration consistent with the
-        //  deformation gradient field
-        void moveMeshConsistent(const pointField& oldPoints);
 
         //- Create global face zone point maps
         void findGlobalFaceZones();
@@ -221,10 +214,10 @@ public:
             }
 
             //- Return point mesh
-             const pointMesh& pMesh() const
-             {
-                 return pMesh_;
-             }
+            const pointMesh& pMesh() const
+            {
+                return pMesh_;
+            }
 
             //- Stress tensor
             const volSymmTensorField& sigma() const
@@ -232,77 +225,55 @@ public:
                 return sigma_;
             }
 
-            //- Strain tensor
-            // const volSymmTensorField& epsilon() const
-            // {
-            //     return epsilon_;
-            // }
-
             //- Return point displacement field
-             virtual const pointVectorField& pointD() const
-             {
-                 return pointD_;
-             }
+            virtual const pointVectorField& pointD() const
+            {
+                return pointD_;
+            }
 
             //- Face zone point displacement increment
-             virtual tmp<vectorField> faceZonePointDisplacementIncrement
-             (
-                 const label zoneID
-             ) const;
+            virtual tmp<vectorField> faceZonePointDisplacementIncrement
+            (
+                const label zoneID
+            ) const;
 
             //- Face zone velocity surface (tangential) gradient
-             virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
-             (
-                 const label zoneID,
-                 const label patchID
-             ) const;
+            virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
+            (
+                const label zoneID,
+                const label patchID
+            ) const;
 
             //- Face zone current normal
-             virtual tmp<vectorField> faceZoneNormal
-             (
-                 const label zoneID,
-                 const label patchID
-             ) const;
+            virtual tmp<vectorField> faceZoneNormal
+            (
+                const label zoneID,
+                const label patchID
+            ) const;
 
             //- Face zone primitive patch in current configuration
-             virtual tmp<vectorField> currentFaceZonePoints
-             (
-                 const label zoneID
-             ) const;
+            virtual tmp<vectorField> currentFaceZonePoints
+            (
+                const label zoneID
+            ) const;
 
         // Edit
 
             //- Set traction on the specified patch
             //  This function enables the FSI procedure to pass a traction from
             //  fluid to the solid
-             virtual void setTraction
-             (
-                 const label patchID,
-                 const vectorField& traction
-             );
-
-            // //- Set pressure at specified patch
-             virtual void setPressure
-             (
-                 const label patchID,
-                 const scalarField& pressure
-             );
-
-            //- Set traction at specified patch
-             virtual void setTraction
-             (
-                 const label patchID,
-                 const label zoneID,
-                 const vectorField& zoneTraction
-             );
+            virtual void setTraction
+            (
+                const label patchID,
+                const vectorField& traction
+            );
 
             //- Set pressure at specified patch
-             virtual void setPressure
-             (
-                 const label patchID,
-                 const label zoneID,
-                 const scalarField& zonePressure
-             );
+            virtual void setPressure
+            (
+                const label patchID,
+                const scalarField& pressure
+            );
 
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();

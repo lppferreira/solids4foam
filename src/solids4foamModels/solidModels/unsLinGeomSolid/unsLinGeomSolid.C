@@ -272,11 +272,11 @@ unsLinGeomSolid::unsLinGeomSolid(dynamicFvMesh& mesh)
     maxIterReached_(0)
 {
     D_.oldTime().oldTime();
+    pointD_.oldTime();
 }
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
 
 tmp<vectorField> unsLinGeomSolid::faceZonePointDisplacementIncrement
 (
@@ -835,10 +835,12 @@ tmp<vectorField> unsLinGeomSolid::tractionBoundarySnGrad
     );
 }
 
+
 void unsLinGeomSolid::updateTotalFields()
 {
     mechanical().updateTotalFields();
 }
+
 
 void unsLinGeomSolid::writeFields(const Time& runTime)
 {
