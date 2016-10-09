@@ -163,9 +163,8 @@ public:
             //- Return pressure field
             //virtual const volScalarField& p() const = 0;
 
-	    //- Return flux field
-//	     virtual tmp<surfaceScalarField> phi() const = 0;
-             virtual tmp<surfaceScalarField> phi() const = 0;
+            //- Return const reference to flux field
+            virtual const surfaceScalarField& phi() const = 0;
 
             //- Patch viscous force (N/m2)
              virtual tmp<vectorField> patchViscousForce

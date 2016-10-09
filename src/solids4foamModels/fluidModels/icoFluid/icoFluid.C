@@ -132,210 +132,202 @@ const volScalarField& icoFluid::p() const
 }
 
 
-//- Patch viscous force (N/m2)
- tmp<vectorField> icoFluid::patchViscousForce(const label patchID) const
- {
-     tmp<vectorField> tvF
-     (
-         new vectorField(mesh().boundary()[patchID].size(), vector::zero)
-     );
-
-     tvF() = rho_.value()*nu_.value()*U().boundaryField()[patchID].snGrad();
-
- //     vectorField n = mesh().boundary()[patchID].nf();
- //     tvF() -= n*(n&tvF());
-
-     return tvF;
- }
-
-// //- Patch pressure force (N/m2)
- tmp<scalarField> icoFluid::patchPressureForce(const label patchID) const
- {
-     tmp<scalarField> tpF
-     (
-         new scalarField(mesh().boundary()[patchID].size(), 0)
-     );
-
-     tpF() = rho_.value()*p().boundaryField()[patchID];
-
-     return tpF;
- }
-
-// //- Patch viscous force (N/m2)
- tmp<vectorField> icoFluid::faceZoneViscousForce
- (
-     const label zoneID,
-     const label patchID
- ) const
- {
-     vectorField pVF = patchViscousForce(patchID);
-
-     tmp<vectorField> tvF
-     (
-         new vectorField(mesh().faceZones()[zoneID].size(), vector::zero)
-     );
-     vectorField& vF = tvF();
-
-     const label patchStart =
-         mesh().boundaryMesh()[patchID].start();
-
-     forAll(pVF, i)
-     {
-         vF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
-             pVF[i];
-     }
-
-//     // Parallel data exchange: collect pressure field on all processors
-     reduce(vF, sumOp<vectorField>());
-
-
-     return tvF;
- }
-
-// //- Patch pressure force (N/m2)
- tmp<scalarField> icoFluid::faceZonePressureForce
- (
-     const label zoneID,
-     const label patchID
- ) const
- {
-     scalarField pPF = patchPressureForce(patchID);
-
-     tmp<scalarField> tpF
-     (
-         new scalarField(mesh().faceZones()[zoneID].size(), 0)
-     );
-     scalarField& pF = tpF();
-
-     const label patchStart =
-         mesh().boundaryMesh()[patchID].start();
-
-     forAll(pPF, i)
-     {
-         pF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
-             pPF[i];
-     }
-
-//     // Parallel data exchange: collect pressure field on all processors
-     reduce(pF, sumOp<scalarField>());
-
-     return tpF;
- }
-
- tmp<scalarField> icoFluid::faceZoneMuEff
- (
-     const label zoneID,
-     const label patchID
- ) const
- {
-     tmp<scalarField> tMuEff
-     (
-         new scalarField
-         (
-             mesh().faceZones()[zoneID].size(),
-             rho_.value()*nu_.value()
-         )
-     );
-
-     return tMuEff;
- }
-
-tmp<surfaceScalarField> icoFluid::phi() const
+tmp<vectorField> icoFluid::patchViscousForce(const label patchID) const
 {
-    return phi_;
+    tmp<vectorField> tvF
+    (
+        new vectorField(mesh().boundary()[patchID].size(), vector::zero)
+    );
+
+    tvF() = rho_.value()*nu_.value()*U().boundaryField()[patchID].snGrad();
+
+    return tvF;
 }
 
 
-tmp<vectorField>
- icoFluid::currentFaceZonePoints(const label zoneID) const
- {
-     vectorField pointDisplacement
-     (
-         mesh().faceZones()[zoneID]().localPoints().size(),
-         vector::zero
-     );
+tmp<scalarField> icoFluid::patchPressureForce(const label patchID) const
+{
+    tmp<scalarField> tpF
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
 
-     const vectorField& pointDI = pointD_.internalField();
+    tpF() = rho_.value()*p().boundaryField()[patchID];
 
-     label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
+    return tpF;
+}
 
-     if (globalZoneIndex != -1)
-     {
-         // global face zone
-         const labelList& curPointMap =
-             globalToLocalFaceZonePointMap()[globalZoneIndex];
 
-         const labelList& zoneMeshPoints =
-             mesh().faceZones()[zoneID]().meshPoints();
+tmp<vectorField> icoFluid::faceZoneViscousForce
+(
+    const label zoneID,
+    const label patchID
+) const
+{
+    vectorField pVF = patchViscousForce(patchID);
 
-         vectorField zonePointsDisplGlobal
-         (
-             zoneMeshPoints.size(),
-             vector::zero
-         );
+    tmp<vectorField> tvF
+    (
+        new vectorField(mesh().faceZones()[zoneID].size(), vector::zero)
+    );
+    vectorField& vF = tvF();
 
-         //- Inter-proc points are shared by multiple procs
-         //  pointNumProc is the number of procs which a point lies on
-         scalarField pointNumProcs(zoneMeshPoints.size(), 0);
+    const label patchStart =
+        mesh().boundaryMesh()[patchID].start();
 
-         forAll(zonePointsDisplGlobal, globalPointI)
-         {
-             label localPoint = curPointMap[globalPointI];
+    forAll(pVF, i)
+    {
+        vF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
+            pVF[i];
+    }
 
-             if(zoneMeshPoints[localPoint] < mesh().nPoints())
-             {
-                 label procPoint = zoneMeshPoints[localPoint];
+    // Parallel data exchange: collect pressure field on all processors
+    reduce(vF, sumOp<vectorField>());
 
-                 zonePointsDisplGlobal[globalPointI] =
-                     pointDI[procPoint];
+    return tvF;
+}
 
-                 pointNumProcs[globalPointI] = 1;
-             }
-         }
+tmp<scalarField> icoFluid::faceZonePressureForce
+(
+    const label zoneID,
+    const label patchID
+) const
+{
+    scalarField pPF = patchPressureForce(patchID);
 
-         if (Pstream::parRun())
-         {
-             reduce(zonePointsDisplGlobal, sumOp<vectorField>());
-             reduce(pointNumProcs, sumOp<scalarField>());
+    tmp<scalarField> tpF
+    (
+        new scalarField(mesh().faceZones()[zoneID].size(), 0)
+    );
+    scalarField& pF = tpF();
 
-             //- now average the displacement between all procs
-             zonePointsDisplGlobal /= pointNumProcs;
-         }
+    const label patchStart =
+        mesh().boundaryMesh()[patchID].start();
 
-         forAll(pointDisplacement, globalPointI)
-         {
-             label localPoint = curPointMap[globalPointI];
+    forAll(pPF, i)
+    {
+        pF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
+            pPF[i];
+    }
 
-             pointDisplacement[localPoint] =
-                 zonePointsDisplGlobal[globalPointI];
-         }
-     }
-     else
-     {
-         pointDisplacement =
-             vectorField
-             (
-                 pointDI,
-                 mesh().faceZones()[zoneID]().meshPoints()
-             );
-     }
+    // Parallel data exchange: collect pressure field on all processors
+    reduce(pF, sumOp<scalarField>());
 
-     tmp<vectorField> tCurrentPoints
-     (
-         new vectorField
-         (
-             mesh().faceZones()[zoneID]().localPoints()
-           + pointDisplacement
-         )
-     );
+    return tpF;
+}
 
-     return tCurrentPoints;
- }
+
+tmp<scalarField> icoFluid::faceZoneMuEff
+(
+    const label zoneID,
+    const label patchID
+) const
+{
+    tmp<scalarField> tMuEff
+    (
+        new scalarField
+        (
+            mesh().faceZones()[zoneID].size(),
+            rho_.value()*nu_.value()
+        )
+    );
+
+    return tMuEff;
+}
+
+
+tmp<vectorField> icoFluid::currentFaceZonePoints
+(
+    const label zoneID
+) const
+{
+    vectorField pointDisplacement
+    (
+        mesh().faceZones()[zoneID]().localPoints().size(),
+        vector::zero
+    );
+
+    const vectorField& pointDI = pointD_.internalField();
+
+    label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
+
+    if (globalZoneIndex != -1)
+    {
+        // global face zone
+        const labelList& curPointMap =
+            globalToLocalFaceZonePointMap()[globalZoneIndex];
+
+        const labelList& zoneMeshPoints =
+            mesh().faceZones()[zoneID]().meshPoints();
+
+        vectorField zonePointsDisplGlobal
+        (
+            zoneMeshPoints.size(),
+            vector::zero
+        );
+
+        //- Inter-proc points are shared by multiple procs
+        //  pointNumProc is the number of procs which a point lies on
+        scalarField pointNumProcs(zoneMeshPoints.size(), 0);
+
+        forAll(zonePointsDisplGlobal, globalPointI)
+        {
+            label localPoint = curPointMap[globalPointI];
+
+            if(zoneMeshPoints[localPoint] < mesh().nPoints())
+            {
+                label procPoint = zoneMeshPoints[localPoint];
+
+                zonePointsDisplGlobal[globalPointI] =
+                    pointDI[procPoint];
+
+                pointNumProcs[globalPointI] = 1;
+            }
+        }
+
+        if (Pstream::parRun())
+        {
+            reduce(zonePointsDisplGlobal, sumOp<vectorField>());
+            reduce(pointNumProcs, sumOp<scalarField>());
+
+            //- now average the displacement between all procs
+            zonePointsDisplGlobal /= pointNumProcs;
+        }
+
+        forAll(pointDisplacement, globalPointI)
+        {
+            label localPoint = curPointMap[globalPointI];
+
+            pointDisplacement[localPoint] =
+                zonePointsDisplGlobal[globalPointI];
+        }
+    }
+    else
+    {
+        pointDisplacement =
+            vectorField
+            (
+                pointDI,
+                mesh().faceZones()[zoneID]().meshPoints()
+            );
+    }
+
+    tmp<vectorField> tCurrentPoints
+    (
+        new vectorField
+        (
+            mesh().faceZones()[zoneID]().localPoints()
+          + pointDisplacement
+        )
+    );
+
+    return tCurrentPoints;
+}
 
 
 void icoFluid::evolve()
 {
-    Info << "Evolving fluid model" << endl;
+    Info<< "Evolving fluid model" << endl;
 
     const fvMesh& mesh = this->mesh();
 

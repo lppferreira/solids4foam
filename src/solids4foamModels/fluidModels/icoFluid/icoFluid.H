@@ -146,12 +146,17 @@ public:
                 return gradp_;
             }
 
-            //- Return flux field
-            //surfaceScalarField& phi()
-            //{
-            //    return phi_;
-            //}
-             virtual tmp<surfaceScalarField> phi() const;
+            //- Return const reference to flux field
+            virtual const surfaceScalarField& phi() const
+            {
+                return phi_;
+            }
+
+            //- Return reference to flux field
+            virtual surfaceScalarField& phi()
+            {
+                return phi_;
+            }
 
             //- Return kinematic viscosity
             const dimensionedScalar& nu() const
