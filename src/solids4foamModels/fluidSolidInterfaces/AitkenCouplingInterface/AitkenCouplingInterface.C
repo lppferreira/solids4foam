@@ -107,8 +107,6 @@ void AitkenCouplingInterface::updateDisplacement()
     Info<< nl << "Time = " << fluid().runTime().timeName()
         << ", iteration: " << outerCorr() << endl;
 
-	// JN: No AMI for displacement?
-
     if (outerCorr() < 3)
     {
         Info<< "Current fsi under-relaxation factor: "

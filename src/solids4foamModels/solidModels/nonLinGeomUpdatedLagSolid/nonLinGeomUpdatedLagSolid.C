@@ -462,12 +462,17 @@ nonLinGeomUpdatedLagSolid::nonLinGeomUpdatedLagSolid(dynamicFvMesh& mesh)
         )
     ),
     maxIterReached_(0),
-    stabilisePressure_(lookupOrDefault<Switch>("stabilisePressure", false))
+    stabilisePressure_
+    (
+        solidProperties().lookupOrDefault<Switch>("stabilisePressure", false)
+    )
 {
     DD_.oldTime().oldTime();
     D_.oldTime();
     pointDD_.oldTime();
     pointD_.oldTime();
+
+    Info<< "stabilisePressure: " << stabilisePressure_ << endl;
 }
 
 
@@ -488,7 +493,7 @@ tmp<vectorField> nonLinGeomUpdatedLagSolid::faceZonePointDisplacementIncrement
     );
     vectorField& pointDisplacement = tPointDisplacement();
 
-    const vectorField& pointDI = pointD_.internalField();
+    const vectorField& pointDDI = pointDD_.internalField();
 
     label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
 
@@ -520,7 +525,7 @@ tmp<vectorField> nonLinGeomUpdatedLagSolid::faceZonePointDisplacementIncrement
             {
                 label procPoint = zoneMeshPoints[localPoint];
 
-                zonePointsDisplGlobal[globalPointI] = pointDI[procPoint];
+                zonePointsDisplGlobal[globalPointI] = pointDDI[procPoint];
 
                 pointNumProcs[globalPointI] = 1;
             }
@@ -548,7 +553,7 @@ tmp<vectorField> nonLinGeomUpdatedLagSolid::faceZonePointDisplacementIncrement
         tPointDisplacement() =
             vectorField
             (
-                pointDI,
+                pointDDI,
                 mesh().faceZones()[zoneID]().meshPoints()
             );
     }
@@ -807,8 +812,8 @@ void nonLinGeomUpdatedLagSolid::setTraction
     )
     {
         FatalErrorIn("void nonLinGeomUpdatedLagSolid::setTraction(...)")
-            << "Boundary condition on " << D_.name()
-            <<  " is "
+            << "Boundary condition on " << DD_.name()
+            << " is "
             << DD_.boundaryField()[patchID].type()
             << " for patch" << mesh().boundary()[patchID].name()
             << ", instead "
@@ -945,7 +950,7 @@ bool nonLinGeomUpdatedLagSolid::evolve()
 
     // Update pointDD as it used by FSI procedure
     mechanical().interpolate(DD_, pointDD_);
-    
+
     // Total displacement at points
     pointD_ = pointD_.oldTime() + pointDD_;
 
@@ -975,7 +980,7 @@ tmp<vectorField> nonLinGeomUpdatedLagSolid::tractionBoundarySnGrad
     // Patch gradient
     const tensorField& gradDD = gradDD_.boundaryField()[patchID];
 
-    // Patch stress
+    // Patch Cauchy stress
     const symmTensorField& sigma = sigma_.boundaryField()[patchID];
 
     // Patch relative deformation gradient inverse
