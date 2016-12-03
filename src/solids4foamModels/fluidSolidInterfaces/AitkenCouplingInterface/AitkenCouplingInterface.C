@@ -121,9 +121,9 @@ void AitkenCouplingInterface::updateDisplacement()
         Info<< "Current fsi under-relaxation factor: "
             << relaxationFactor_ << endl;
 
-        fluidZonePointsDisplPrev() = fluidZonePointsDispl();
+        fluidPatchPointsDisplPrev() = fluidPatchPointsDispl();
 
-        fluidZonePointsDispl() += relaxationFactor_*residual();
+        fluidPatchPointsDispl() += relaxationFactor_*residual();
     }
     else
     {
@@ -165,23 +165,24 @@ void AitkenCouplingInterface::updateDisplacement()
         Info<< "Current fsi under-relaxation factor (Aitken): "
             << aitkenRelaxationFactor_ << endl;
 
-        fluidZonePointsDisplPrev() = fluidZonePointsDispl();
+        fluidPatchPointsDisplPrev() = fluidPatchPointsDispl();
 
-        fluidZonePointsDispl() += aitkenRelaxationFactor_*residual();
+        fluidPatchPointsDispl() += aitkenRelaxationFactor_*residual();
     }
 
 
+    // Philip: not used on of30 as e do not have globalFaceZones
     // Make sure that displacement on all processors is equal to one
     // calculated on master processor
-    if (Pstream::parRun())
-    {
-        if (!Pstream::master())
-        {
-            fluidZonePointsDispl() = vector::zero;
-        }
+    // if (Pstream::parRun())
+    // {
+    //     if (!Pstream::master())
+    //     {
+    //         fluidZonePointsDispl() = vector::zero;
+    //     }
 
-        //- pass to all procs
-        reduce(fluidZonePointsDispl(), sumOp<vectorField>());
+    //     //- pass to all procs
+    //     reduce(fluidZonePointsDispl(), sumOp<vectorField>());
 
         // Philip: disable on of30
 //         label globalFluidZoneIndex =
@@ -212,7 +213,7 @@ void AitkenCouplingInterface::updateDisplacement()
 //                     fluidZonePointsDisplGlobal[globalPointI];
 //             }
 //         }
-    }
+        //    }
 }
 
 

@@ -86,27 +86,27 @@ class fluidSolidInterface
         label solidPatchIndex_;
 
         //- Solid interface face zone index
-        label solidZoneIndex_;
+        //label solidZoneIndex_;
 
         //- Fluid interface patch index
         label fluidPatchIndex_;
 
         //- Fluid interface face zone index
-        label fluidZoneIndex_;
+        //label fluidZoneIndex_;
 
         //- Solid face zone current points
-        mutable vectorField* currentSolidZonePointsPtr_;
+        //mutable vectorField* currentSolidZonePointsPtr_;
 
         //- Solid face zone primitive patch in current configuration
-        mutable PrimitivePatch<face, SubList, const pointField&>*
-            currentSolidZonePatchPtr_;
+        //mutable PrimitivePatch<face, SubList, const pointField&>*
+        //        currentSolidZonePatchPtr_;
 
         //- Fluid face zone current points
-        mutable vectorField* currentFluidZonePointsPtr_;
+        //mutable vectorField* currentFluidZonePointsPtr_;
 
         //- Fluid face zone primitive patch in current configuration
-        mutable PrimitivePatch<face, SubList, const pointField&>*
-            currentFluidZonePatchPtr_;
+        // mutable PrimitivePatch<face, SubList, const pointField&>*
+        //     currentFluidZonePatchPtr_;
 
         //- AMI zone-to-zone interpolation
         mutable autoPtr<newAMIPatchToPatchInterpolation> AMIPtr_;
@@ -126,23 +126,23 @@ class fluidSolidInterface
         //- Interface deformation limit
         scalar interfaceDeformationLimit_;
 
-        //- Fluid zone point displacement
-        vectorField fluidZonePointsDispl_;
+        //- Fluid patch point displacement
+        vectorField fluidPatchPointsDispl_;
 
-        //- Fluid zone ref. point displacement
-        vectorField fluidZonePointsDisplRef_;
+        //- Fluid patch ref. point displacement
+        vectorField fluidPatchPointsDisplRef_;
 
-        //- Fluid zone previous point displacement
-        vectorField fluidZonePointsDisplPrev_;
+        //- Fluid patch previous point displacement
+        vectorField fluidPatchPointsDisplPrev_;
 
-        //- Solid zone point displacement
-        vectorField solidZonePointsDispl_;
+        //- Solid patch point displacement
+        vectorField solidPatchPointsDispl_;
 
-        //- Solid zone ref. point displacement
-        vectorField solidZonePointsDisplRef_;
+        //- Solid patch ref. point displacement
+        vectorField solidPatchPointsDisplRef_;
 
-        //- Solid zone pressure
-        scalarField solidZonePressure_;
+        //- Solid patch pressure
+        scalarField solidPatchPressure_;
 
         //- Current FSI residual
         vectorField residual_;
@@ -171,16 +171,16 @@ class fluidSolidInterface
         bool updateCoupled();
 
         //- Calculate current solid zone points
-        void calcCurrentSolidZonePoints() const;
+        // void calcCurrentSolidZonePoints() const;
 
         //- Calculate current solid zone primitive patch
-        void calcCurrentSolidZonePatch() const;
+        // void calcCurrentSolidZonePatch() const;
 
         //- Calculate current solid zone points
-        void calcCurrentFluidZonePoints() const;
+        // void calcCurrentFluidZonePoints() const;
 
         //- Calculate current solid zone primitive patch
-        void calcCurrentFluidZonePatch() const;
+        // void calcCurrentFluidZonePatch() const;
 
         //- Calculate fluid to solid AMI interpolator
         void calcAMIInterpolator() const;
@@ -315,10 +315,10 @@ public:
             }
 
             //- Return solid face zone index
-            label solidZoneIndex() const
-            {
-                return solidZoneIndex_;
-            }
+            // label solidZoneIndex() const
+            // {
+            //     return solidZoneIndex_;
+            // }
 
             //- Return fluid patch index
             label fluidPatchIndex() const
@@ -327,24 +327,24 @@ public:
             }
 
             //- Return fluid face zone index
-            label fluidZoneIndex() const
-            {
-                return fluidZoneIndex_;
-            }
+            // label fluidZoneIndex() const
+            // {
+            //     return fluidZoneIndex_;
+            // }
 
             //- Return current solid zone points
-            const vectorField& currentSolidZonePoints() const;
+            // const vectorField& currentSolidZonePoints() const;
 
             //- Return current solid zone patch
-            const PrimitivePatch<face, SubList, const pointField&>&
-                currentSolidZonePatch() const;
+            // const PrimitivePatch<face, SubList, const pointField&>&
+            //     currentSolidZonePatch() const;
 
             //- Return current fluid zone points
-            const vectorField& currentFluidZonePoints() const;
+            // const vectorField& currentFluidZonePoints() const;
 
             //- Return current fluid zone patch
-            const PrimitivePatch<face, SubList, const pointField&>&
-                currentFluidZonePatch() const;
+            // const PrimitivePatch<face, SubList, const pointField&>&
+            //     currentFluidZonePatch() const;
 
             //- Return a reference to the AMI interpolator
             const newAMIPatchToPatchInterpolation& AMI() const;
@@ -379,40 +379,40 @@ public:
                 return interfaceDeformationLimit_;
             }
 
-            //- Return fluid zone point displacement
-            vectorField& fluidZonePointsDispl()
+            //- Return fluid patch point displacement
+            vectorField& fluidPatchPointsDispl()
             {
-                return fluidZonePointsDispl_;
+                return fluidPatchPointsDispl_;
             }
 
-            //- Return fluid zone ref. point displacement
-            vectorField& fluidZonePointsDisplRef()
+            //- Return fluid patch ref. point displacement
+            vectorField& fluidPatchPointsDisplRef()
             {
-                return fluidZonePointsDisplRef_;
+                return fluidPatchPointsDisplRef_;
             }
 
-            //- Return fluid zone previous point displacement
-            vectorField& fluidZonePointsDisplPrev()
+            //- Return fluid patch previous point displacement
+            vectorField& fluidPatchPointsDisplPrev()
             {
-                return fluidZonePointsDisplPrev_;
+                return fluidPatchPointsDisplPrev_;
             }
 
-            //- Return solid zone point displacement
-            vectorField& solidZonePointsDispl()
+            //- Return solid patch point displacement
+            vectorField& solidPatchPointsDispl()
             {
-                return solidZonePointsDispl_;
+                return solidPatchPointsDispl_;
             }
 
-            //- Return solid zone ref. point displacement
-            vectorField& solidZonePointsDisplRef()
+            //- Return solid patch ref. point displacement
+            vectorField& solidPatchPointsDisplRef()
             {
-                return solidZonePointsDisplRef_;
+                return solidPatchPointsDisplRef_;
             }
 
-            //- Return solid zone pressure
-            scalarField& solidZonePressure()
+            //- Return solid patch pressure
+            scalarField& solidPatchPressure()
             {
-                return solidZonePressure_;
+                return solidPatchPressure_;
             }
 
             //- Return current fsi residual
