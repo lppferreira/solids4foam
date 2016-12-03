@@ -68,8 +68,10 @@ AitkenCouplingInterface::AitkenCouplingInterface
 
 void AitkenCouplingInterface::evolve()
 {
+    Info<< "initializeFields" << endl;
     initializeFields();
 
+    Info<< "updateInterpolator" << endl;
     updateInterpolator();
 
     scalar residualNorm = 0;
@@ -79,22 +81,29 @@ void AitkenCouplingInterface::evolve()
         outerCorr()++;
 
         // Transfer the displacement from the solid to the fluid
+        Info<< "updateDisplacement" << endl;
         updateDisplacement();
 
         // Move the fluid mesh
+        Info<< "moveFluidMesh" << endl;
         moveFluidMesh();
 
         // Solve fluid
+        Info<< "fluid.evolve" << endl;
         fluid().evolve();
 
         // Transfer the force from the fluid to the solid
+        Info<< "updateForce" << endl;
         updateForce();
 
         // Solve solid
+        Info<< "solid.evolve" << endl;
         solid().evolve();
 
         // Calculate the FSI residual
+        Info<< "updateResidual" << endl;
         residualNorm = updateResidual();
+        Info<< "end of loop" << endl;
     }
     while (residualNorm > outerCorrTolerance() && outerCorr() < nOuterCorr());
 
@@ -174,34 +183,35 @@ void AitkenCouplingInterface::updateDisplacement()
         //- pass to all procs
         reduce(fluidZonePointsDispl(), sumOp<vectorField>());
 
-        label globalFluidZoneIndex =
-            findIndex(fluid().globalFaceZones(), fluidZoneIndex());
+        // Philip: disable on of30
+//         label globalFluidZoneIndex =
+//             findIndex(fluid().globalFaceZones(), fluidZoneIndex());
 
-        if (globalFluidZoneIndex == -1)
-        {
-            FatalErrorIn
-            (
-                "fluidSolidInterface::updateDisplacement()"
-            )   << "global zone point map is not availabel"
-                << abort(FatalError);
-        }
+//         if (globalFluidZoneIndex == -1)
+//         {
+//             FatalErrorIn
+//             (
+//                 "fluidSolidInterface::updateDisplacement()"
+//             )   << "global zone point map is not availabel"
+//                 << abort(FatalError);
+//         }
 
-        const labelList& map =
-            fluid().globalToLocalFaceZonePointMap()[globalFluidZoneIndex];
+//         const labelList& map =
+//             fluid().globalToLocalFaceZonePointMap()[globalFluidZoneIndex];
 
-        if (!Pstream::master())
-        {
-            vectorField fluidZonePointsDisplGlobal =
-                fluidZonePointsDispl();
+//         if (!Pstream::master())
+//         {
+//             vectorField fluidZonePointsDisplGlobal =
+//                 fluidZonePointsDispl();
 
-            forAll(fluidZonePointsDisplGlobal, globalPointI)
-            {
-                label localPoint = map[globalPointI];
+//             forAll(fluidZonePointsDisplGlobal, globalPointI)
+//             {
+//                 label localPoint = map[globalPointI];
 
-                fluidZonePointsDispl()[localPoint] =
-                    fluidZonePointsDisplGlobal[globalPointI];
-            }
-        }
+//                 fluidZonePointsDispl()[localPoint] =
+//                     fluidZonePointsDisplGlobal[globalPointI];
+//             }
+//         }
     }
 }
 

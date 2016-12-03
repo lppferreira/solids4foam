@@ -73,18 +73,17 @@ namespace Foam
  }
 
 
- void Foam::fluidModel::calcGlobalToLocalFaceZonePointMap() const
- {
-     // Find global face zones
-     if (globalToLocalFaceZonePointMapPtr_)
-     {
-         FatalErrorIn
-         (
-             "void fluidModel::calcGlobalToLocalFaceZonePointMap() const"
-         )
-             << "Global to local face zones point map already exists"
-                 << abort(FatalError);
-     }
+void Foam::fluidModel::calcGlobalToLocalFaceZonePointMap() const
+{
+    // Find global face zones
+    if (globalToLocalFaceZonePointMapPtr_)
+    {
+        FatalErrorIn
+        (
+            "void fluidModel::calcGlobalToLocalFaceZonePointMap() const"
+        )   << "Global to local face zones point map already exists"
+            << abort(FatalError);
+    }
 
      globalToLocalFaceZonePointMapPtr_ =
          new labelListList(globalFaceZones().size());
@@ -223,9 +222,8 @@ namespace Foam
                  FatalErrorIn
                  (
                      "fluidModel::calcGlobalToLocalFaceZonePointMap()"
-                 )
-                     << "local to global face zone point map is not correct"
-                         << abort(FatalError);
+                 )   << "local to global face zone point map is not correct"
+                     << abort(FatalError);
              }
          }
 
@@ -271,20 +269,28 @@ Foam::fluidModel::~fluidModel()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
- const Foam::labelList&
- Foam::fluidModel::globalFaceZones() const
- {
-     if (!globalFaceZonesPtr_)
-     {
-         calcGlobalFaceZones();
-     }
+const Foam::labelList&
+Foam::fluidModel::globalFaceZones() const
+{
+    if (!globalFaceZonesPtr_)
+    {
+        calcGlobalFaceZones();
+    }
 
-     return *globalFaceZonesPtr_;
- }
+    return *globalFaceZonesPtr_;
+}
 
- const Foam::labelListList&
- Foam::fluidModel::globalToLocalFaceZonePointMap() const
- {
+
+const Foam::labelListList&
+Foam::fluidModel::globalToLocalFaceZonePointMap() const
+{
+    FatalErrorIn
+    (
+        "const Foam::labelListList&\n"
+        "Foam::fluidModel::globalToLocalFaceZonePointMap() const"
+    )   << "PhilipC: this should not be called in of30 branch"
+        << abort(FatalError);
+
      if (!globalToLocalFaceZonePointMapPtr_)
      {
          calcGlobalToLocalFaceZonePointMap();

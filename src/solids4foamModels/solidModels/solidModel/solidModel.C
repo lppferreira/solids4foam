@@ -39,6 +39,9 @@ namespace Foam
 
 void Foam::solidModel::calcGlobalFaceZones() const
 {
+    FatalErrorIn("void Foam::solidModel::calcGlobalFaceZones() const")
+        << "This should not be called in of30" << abort(FatalError);
+
     // Find global face zones
     if (globalFaceZonesPtr_)
     {
@@ -141,6 +144,11 @@ void Foam::solidModel::calcGlobalFaceZones() const
 
 void Foam::solidModel::calcGlobalToLocalFaceZonePointMap() const
 {
+    FatalErrorIn
+    (
+        "void Foam::solidModel::calcGlobalToLocalFaceZonePointMap() const"
+    )   << "This should not be called in of30" << abort(FatalError);
+
     // Find global face zones
     if (globalToLocalFaceZonePointMapPtr_)
     {
@@ -310,6 +318,11 @@ void Foam::solidModel::updateGlobalFaceZoneNewPoints
     pointField& newPoints
 )
 {
+    FatalErrorIn
+    (
+        "void Foam::solidModel::updateGlobalFaceZoneNewPoints"
+    )   << "This should not be called in of30" << abort(FatalError);
+
     const labelList& globalFaceZones = this->globalFaceZones();
     const labelListList& globalToLocalFaceZonePointMap =
         this->globalToLocalFaceZonePointMap();
@@ -425,6 +438,12 @@ Foam::solidModel::~solidModel()
 
 const Foam::labelList& Foam::solidModel::globalFaceZones() const
 {
+    FatalErrorIn
+    (
+        "const Foam::labelList& Foam::solidModel::globalFaceZones() const"
+    )   << "This should not be called on the of30 branch"
+        << abort(FatalError);
+
     if (!globalFaceZonesPtr_)
     {
         calcGlobalFaceZones();
@@ -437,6 +456,13 @@ const Foam::labelList& Foam::solidModel::globalFaceZones() const
 const Foam::labelListList&
 Foam::solidModel::globalToLocalFaceZonePointMap() const
 {
+    FatalErrorIn
+    (
+        "const Foam::labelListList&\n"
+        "Foam::solidModel::globalToLocalFaceZonePointMap() const"
+    )   << "This should not be called on the of30 branch"
+        << abort(FatalError);
+
     if (!globalToLocalFaceZonePointMapPtr_)
     {
         calcGlobalToLocalFaceZonePointMap();

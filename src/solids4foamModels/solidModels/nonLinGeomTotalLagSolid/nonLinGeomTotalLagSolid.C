@@ -310,61 +310,62 @@ tmp<vectorField> nonLinGeomTotalLagSolid::faceZonePointDisplacementIncrement
     const vectorField& pointDI = pointD_.internalField();
     const vectorField& oldPointDI = pointD_.oldTime().internalField();
 
-    label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
+    // Philip: disable on of30; but what is the best way to do this...
+//     label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
 
-    if (globalZoneIndex != -1)
-    {
-        // global face zone
+//     if (globalZoneIndex != -1)
+//     {
+//         // global face zone
 
-        const labelList& curPointMap =
-            globalToLocalFaceZonePointMap()[globalZoneIndex];
+//         const labelList& curPointMap =
+//             globalToLocalFaceZonePointMap()[globalZoneIndex];
 
-        const labelList& zoneMeshPoints =
-            mesh().faceZones()[zoneID]().meshPoints();
+//         const labelList& zoneMeshPoints =
+//             mesh().faceZones()[zoneID]().meshPoints();
 
-        vectorField zonePointsDisplGlobal
-        (
-            zoneMeshPoints.size(),
-            vector::zero
-        );
+//         vectorField zonePointsDisplGlobal
+//         (
+//             zoneMeshPoints.size(),
+//             vector::zero
+//         );
 
-        //- Inter-proc points are shared by multiple procs
-        //  pointNumProc is the number of procs which a point lies on
-        scalarField pointNumProcs(zoneMeshPoints.size(), 0);
+//         //- Inter-proc points are shared by multiple procs
+//         //  pointNumProc is the number of procs which a point lies on
+//         scalarField pointNumProcs(zoneMeshPoints.size(), 0);
 
-        forAll(zonePointsDisplGlobal, globalPointI)
-        {
-            label localPoint = curPointMap[globalPointI];
+//         forAll(zonePointsDisplGlobal, globalPointI)
+//         {
+//             label localPoint = curPointMap[globalPointI];
 
-            if (zoneMeshPoints[localPoint] < mesh().nPoints())
-            {
-                label procPoint = zoneMeshPoints[localPoint];
+//             if (zoneMeshPoints[localPoint] < mesh().nPoints())
+//             {
+//                 label procPoint = zoneMeshPoints[localPoint];
 
-                zonePointsDisplGlobal[globalPointI] =
-                    pointDI[procPoint] - oldPointDI[procPoint];
+//                 zonePointsDisplGlobal[globalPointI] =
+//                     pointDI[procPoint] - oldPointDI[procPoint];
 
-                pointNumProcs[globalPointI] = 1;
-            }
-        }
+//                 pointNumProcs[globalPointI] = 1;
+//             }
+//         }
 
-        if (Pstream::parRun())
-        {
-            reduce(zonePointsDisplGlobal, sumOp<vectorField>());
-            reduce(pointNumProcs, sumOp<scalarField>());
+//         if (Pstream::parRun())
+//         {
+//             reduce(zonePointsDisplGlobal, sumOp<vectorField>());
+//             reduce(pointNumProcs, sumOp<scalarField>());
 
-            //- now average the displacement between all procs
-            zonePointsDisplGlobal /= pointNumProcs;
-        }
+//             //- now average the displacement between all procs
+//             zonePointsDisplGlobal /= pointNumProcs;
+//         }
 
-        forAll(pointDisplacement, globalPointI)
-        {
-            label localPoint = curPointMap[globalPointI];
+//         forAll(pointDisplacement, globalPointI)
+//         {
+//             label localPoint = curPointMap[globalPointI];
 
-            pointDisplacement[localPoint] =
-                zonePointsDisplGlobal[globalPointI];
-        }
-    }
-    else
+//             pointDisplacement[localPoint] =
+//                 zonePointsDisplGlobal[globalPointI];
+//         }
+//     }
+//     else
     {
         tPointDisplacement() =
             vectorField

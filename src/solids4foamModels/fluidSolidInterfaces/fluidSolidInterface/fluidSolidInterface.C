@@ -1014,7 +1014,9 @@ void Foam::fluidSolidInterface::moveFluidMesh()
 
 
     // Move unused fluid mesh points
-    {
+    // Philip: there will never be unused points in of30 as there are no global
+    // face zones
+    //{
         // PC: hmmnn in fe32, there can be "unused" points where there are more
         // points in allPoints() than in points()
         // so in this case there are no unused points so nothing happens here
@@ -1022,27 +1024,27 @@ void Foam::fluidSolidInterface::moveFluidMesh()
         // do anything special
     	// JN: Ok. I don't have any experience. I guess let's use this and check
 	    // a case, where we have unused points and see what happens
-        vectorField newPoints = fluidMesh().points();
+        //vectorField newPoints = fluidMesh().points();
 
-        const labelList& fluidZoneMeshPoints =
-            fluidMesh().faceZones()[fluidZoneIndex()]().meshPoints();
+        //const labelList& fluidZoneMeshPoints =
+        //    fluidMesh().faceZones()[fluidZoneIndex()]().meshPoints();
 
-        forAll(fluidZonePointsDispl(), pointI)
-        {
-            if (fluidZoneMeshPoints[pointI] >= fluidMesh().nPoints())
-            {
-                newPoints[fluidZoneMeshPoints[pointI]] +=
-                    fluidZonePointsDispl()[pointI]
-                  - fluidZonePointsDisplPrev()[pointI];
-            }
-        }
+//         forAll(fluidZonePointsDispl(), pointI)
+//         {
+//             if (fluidZoneMeshPoints[pointI] >= fluidMesh().nPoints())
+//             {
+//                 newPoints[fluidZoneMeshPoints[pointI]] +=
+//                     fluidZonePointsDispl()[pointI]
+//                   - fluidZonePointsDisplPrev()[pointI];
+//             }
+//         }
 
-        twoDPointCorrector twoDCorrector(fluidMesh());
+//         twoDPointCorrector twoDCorrector(fluidMesh());
 
-        twoDCorrector.correctPoints(newPoints);
+//         twoDCorrector.correctPoints(newPoints);
 
-        fluidMesh_.movePoints(newPoints);
-    }
+//         fluidMesh_.movePoints(newPoints);
+//     }
 }
 
 
