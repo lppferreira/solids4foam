@@ -66,12 +66,6 @@ class icoFluid
         //- Velocity field
         volVectorField U_;
 
-        //- Point mesh
-        pointMesh pMesh_;
-
-        //- Point displacement field
-        pointVectorField pointD_;
-
         //- Pressure field
         volScalarField p_;
 
@@ -203,17 +197,11 @@ public:
                  const label patchID
              ) const;
 
-            //- Return point displacement field
-             virtual const pointVectorField& pointD() const
-             {
-                 return pointD_;
-             }
-
             //- Face zone primitive patch in current configuration
-             virtual tmp<vectorField> currentFaceZonePoints
-             (
-                 const label zoneID
-             ) const;
+             // virtual tmp<vectorField> currentFaceZonePoints
+             // (
+             //     const label zoneID
+             // ) const;
 
         // Edit
 

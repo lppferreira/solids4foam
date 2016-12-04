@@ -142,7 +142,7 @@ class fluidSolidInterface
         vectorField solidPatchPointsDisplRef_;
 
         //- Solid patch pressure
-        scalarField solidPatchPressure_;
+        //scalarField solidPatchPressure_;
 
         //- Current FSI residual
         vectorField residual_;
@@ -410,10 +410,10 @@ public:
             }
 
             //- Return solid patch pressure
-            scalarField& solidPatchPressure()
-            {
-                return solidPatchPressure_;
-            }
+            // scalarField& solidPatchPressure()
+            // {
+            //     return solidPatchPressure_;
+            // }
 
             //- Return current fsi residual
             vectorField& residual()

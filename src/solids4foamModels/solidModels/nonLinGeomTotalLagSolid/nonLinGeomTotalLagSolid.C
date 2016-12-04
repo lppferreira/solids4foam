@@ -287,6 +287,8 @@ nonLinGeomTotalLagSolid::nonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
 {
     D_.oldTime().oldTime();
     pointD_.oldTime();
+    Info<< "Writing D_0" << endl;
+    D_.oldTime().write();
 }
 
 
@@ -297,6 +299,16 @@ tmp<vectorField> nonLinGeomTotalLagSolid::faceZonePointDisplacementIncrement
     const label zoneID
 ) const
 {
+    FatalErrorIn
+    (
+        "tmp<vectorField> nonLinGeomTotalLagSolid::"
+        "faceZonePointDisplacementIncrement\n"
+        "(\n"
+        "    const label zoneID\n"
+        ") const"
+    )   << "This should not be called on the of30 branch"
+        << abort(FatalError);
+
     tmp<vectorField> tPointDisplacement
     (
         new vectorField
@@ -305,10 +317,10 @@ tmp<vectorField> nonLinGeomTotalLagSolid::faceZonePointDisplacementIncrement
             vector::zero
         )
     );
-    vectorField& pointDisplacement = tPointDisplacement();
+    //vectorField& pointDisplacement = tPointDisplacement();
 
-    const vectorField& pointDI = pointD_.internalField();
-    const vectorField& oldPointDI = pointD_.oldTime().internalField();
+    //const vectorField& pointDI = pointD_.internalField();
+    //const vectorField& oldPointDI = pointD_.oldTime().internalField();
 
     // Philip: disable on of30; but what is the best way to do this...
 //     label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
@@ -366,16 +378,38 @@ tmp<vectorField> nonLinGeomTotalLagSolid::faceZonePointDisplacementIncrement
 //         }
 //     }
 //     else
-    {
-        tPointDisplacement() =
-            vectorField
-            (
-                pointDI - oldPointDI,
-                mesh().faceZones()[zoneID]().meshPoints()
-            );
-    }
+    // {
+    //     tPointDisplacement() =
+    //         vectorField
+    //         (
+    //             pointDI - oldPointDI,
+    //             mesh().faceZones()[zoneID]().meshPoints()
+    //         );
+    // }
 
     return tPointDisplacement;
+}
+
+
+tmp<vectorField> nonLinGeomTotalLagSolid::patchDisplacementIncrement
+(
+    const label patchID
+) const
+{
+    tmp<vectorField> tPatchDisplacement
+    (
+        new vectorField
+        (
+            mesh().boundary()[patchID].size(),
+            vector::zero
+        )
+    );
+    vectorField& patchDisplacement = tPatchDisplacement();
+
+    patchDisplacement =
+        D_.boundaryField()[patchID] - D_.oldTime().boundaryField()[patchID];
+
+    return tPatchDisplacement;
 }
 
 
@@ -385,6 +419,16 @@ tmp<tensorField> nonLinGeomTotalLagSolid::faceZoneSurfaceGradientOfVelocity
     const label patchID
 ) const
 {
+    FatalErrorIn
+    (
+        "tmp<tensorField> nonLinGeomTotalLagSolid::"
+        "faceZoneSurfaceGradientOfVelocity\n"
+        "(\n"
+        "    const label zoneID\n"
+        ") const"
+    )   << "This should not be called on the of30 branch"
+        << abort(FatalError);
+
     tmp<tensorField> tVelocityGradient
     (
         new tensorField
@@ -393,68 +437,68 @@ tmp<tensorField> nonLinGeomTotalLagSolid::faceZoneSurfaceGradientOfVelocity
             tensor::zero
         )
     );
-    tensorField& velocityGradient = tVelocityGradient();
-    pointVectorField pPointUField
-    (
-        IOobject
-        (
-            "pPointUField",
-            runTime().timeName(),
-            mesh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        pMesh_,
-        dimensionedVector("0", dimVelocity, vector::zero)
-    );
-    mechanical().volToPoint().interpolate(U_, pPointUField);
-    vectorField pPointU(mesh().boundaryMesh()[patchID].nPoints(), vector::zero);
-    const labelList& meshPoints = mesh().boundaryMesh()[patchID].meshPoints();
+    // tensorField& velocityGradient = tVelocityGradient();
+    // pointVectorField pPointUField
+    // (
+    //     IOobject
+    //     (
+    //         "pPointUField",
+    //         runTime().timeName(),
+    //         mesh(),
+    //         IOobject::NO_READ,
+    //         IOobject::NO_WRITE
+    //     ),
+    //     pMesh_,
+    //     dimensionedVector("0", dimVelocity, vector::zero)
+    // );
+    // mechanical().volToPoint().interpolate(U_, pPointUField);
+    // vectorField pPointU(mesh().boundaryMesh()[patchID].nPoints(), vector::zero);
+    // const labelList& meshPoints = mesh().boundaryMesh()[patchID].meshPoints();
 
-    //volToPoint_.interpolate(U_, pPointU);
-    //vectorField pPointU =
-    //     volToPoint_.interpolate(mesh().boundaryMesh()[patchID], U_);
+    // //volToPoint_.interpolate(U_, pPointU);
+    // //vectorField pPointU =
+    // //     volToPoint_.interpolate(mesh().boundaryMesh()[patchID], U_);
 
-    const faceList& localFaces =
-        mesh().boundaryMesh()[patchID].localFaces();
+    // const faceList& localFaces =
+    //     mesh().boundaryMesh()[patchID].localFaces();
 
-    vectorField localPoints =
-        mesh().boundaryMesh()[patchID].localPoints();
-    localPoints += pointD_.boundaryField()[patchID].patchInternalField();
+    // vectorField localPoints =
+    //     mesh().boundaryMesh()[patchID].localPoints();
+    // localPoints += pointD_.boundaryField()[patchID].patchInternalField();
 
-    PrimitivePatch<face, List, const pointField&> patch
-    (
-        localFaces,
-        localPoints
-    );
+    // PrimitivePatch<face, List, const pointField&> patch
+    // (
+    //     localFaces,
+    //     localPoints
+    // );
 
-    tensorField patchGradU = fvc::fGrad(patch, pPointU);
+    // tensorField patchGradU = fvc::fGrad(patch, pPointU);
 
-    label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
+    // label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
 
-    if (globalZoneIndex != -1)
-    {
-        // global face zone
+    // if (globalZoneIndex != -1)
+    // {
+    //     // global face zone
 
-        const label patchStart =
-            mesh().boundaryMesh()[patchID].start();
+    //     const label patchStart =
+    //         mesh().boundaryMesh()[patchID].start();
 
-        forAll(patchGradU, i)
-        {
-            velocityGradient
-            [
-                mesh().faceZones()[zoneID].whichFace(patchStart + i)
-            ] =
-                patchGradU[i];
-        }
+    //     forAll(patchGradU, i)
+    //     {
+    //         velocityGradient
+    //         [
+    //             mesh().faceZones()[zoneID].whichFace(patchStart + i)
+    //         ] =
+    //             patchGradU[i];
+    //     }
 
-        // Parallel data exchange: collect field on all processors
-        reduce(velocityGradient, sumOp<tensorField>());
-    }
-    else
-    {
-        velocityGradient = patchGradU;
-    }
+    //     // Parallel data exchange: collect field on all processors
+    //     reduce(velocityGradient, sumOp<tensorField>());
+    // }
+    // else
+    // {
+    //     velocityGradient = patchGradU;
+    // }
 
     return tVelocityGradient;
 }
@@ -701,7 +745,7 @@ bool nonLinGeomTotalLagSolid::evolve()
             rho_*fvm::d2dt2(D_)
          == fvm::laplacian(impKf_, D_, "laplacian(DD,D)")
           - fvc::laplacian(impKf_, D_, "laplacian(DD,D)")
-          + fvc::div((J_*sigma_ & Finv_.T()), "div(sigma)")
+          + fvc::div(J_*Finv_ & sigma_, "div(sigma)")
           + rho_*g_
           + mechanical().RhieChowCorrection(D_, gradD_)
         );

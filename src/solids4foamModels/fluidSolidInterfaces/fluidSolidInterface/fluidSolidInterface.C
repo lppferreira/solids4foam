@@ -35,6 +35,8 @@ License
 #include "Time.H"
 #include "addToRunTimeSelectionTable.H"
 
+#include "volPointInterpolation.H"
+
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
@@ -163,9 +165,6 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
             << abort(FatalError);
     }
 
-    FatalErrorIn("void Foam::fluidSolidInterface::calcAMIInterpolator() const")
-        << "WIP" << abort(FatalError);
-
     // Create copy of solid face zone primitive patch in current configuration
 
     // deleteDemandDrivenData(currentSolidZonePatchPtr_);
@@ -173,115 +172,68 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
 
     //currentSolidZonePatch().movePoints(currentSolidZonePoints());
 
-    // AMIPtr_.set
-    // (
-    //     new newAMIPatchToPatchInterpolation
+    AMIPtr_.set
+    (
+        new newAMIPatchToPatchInterpolation
+        (
+            fluidMesh().boundaryMesh()[fluidPatchIndex_],
+            solidMesh().boundaryMesh()[solidPatchIndex_],
+            faceAreaIntersect::tmMesh,
+            true,
+            AMIPatchToPatchInterpolation::imFaceAreaWeight,
+            -1,
+            false // flip
+        )
+    );
+
+    Info<< "Checking fluid-to-solid face interpolator (AMI)" << endl;
+    {
+        const vectorField& fluidPatchFaceCentres =
+            fluidMesh().boundaryMesh()[fluidPatchIndex_].faceCentres();
+
+        const vectorField solidPatchFaceCentres =
+            AMI().interpolateToTarget(fluidPatchFaceCentres);
+
+        const scalar maxDist =
+            gMax
+            (
+                mag
+                (
+                    solidPatchFaceCentres
+                  - solidMesh().boundaryMesh()[solidPatchIndex_].faceCentres()
+                )
+            );
+
+        Info<< "    Fluid-to-solid face interpolation error: " << maxDist
+            << endl;
+    }
+
+    // Info<< "Checking solid-to-fluid point interpolator (AMI)" << endl;
+    // {
+    //     vectorField solidZonePoints_ =
+    //         solidMesh().faceZones()[solidZoneIndex_]().localPoints();
+
+    //     vectorField solidZonePoints =
+    //         AMI().pointInterpolateToSource
+    //         (
+    //             solidZonePoints_
+    //         );
+
+    //     vectorField fluidZonePoints =
+    //         fluidMesh().faceZones()[fluidZoneIndex_]().localPoints();
+
+    //     scalar maxDist = gMax
     //     (
-    //         currentFluidZonePatch(),
-    //         currentSolidZonePatch(),
-    //         faceAreaIntersect::tmMesh,
-    //         true,
-    //         AMIPatchToPatchInterpolation::imFaceAreaWeight,
-    //         -1,
-    //         false // flip
-    //     )
-    // );
+    //         mag
+    //         (
+    //             fluidZonePoints
+    //           - solidZonePoints
+    //         )
+    //     );
 
-//     Info<< "Checking fluid-to-solid face interpolator" << endl;
-
-//     {
-//         vectorField fluidPatchFaceCentres =
-//             vectorField
-//             (
-//                 fluidMesh().boundaryMesh()[fluidPatchIndex_].faceCentres()
-//             );
-
-//         vectorField fluidZoneFaceCentres
-//         (
-//             fluidMesh().faceZones()[fluidZoneIndex_].size(),
-//             vector::zero
-//         );
-
-//         const label fluidPatchStart =
-//             fluidMesh().boundaryMesh()[fluidPatchIndex_].start();
-
-//         forAll (fluidPatchFaceCentres, i)
-//         {
-//             fluidZoneFaceCentres
-//             [
-//                 fluidMesh().faceZones()[fluidZoneIndex_].whichFace
-//                 (
-//                     fluidPatchStart + i
-//                 )
-//             ] =
-//                 fluidPatchFaceCentres[i];
-//         }
-
-//         // Parallel data exchange: collect faceCentres field on all processors
-//         reduce(fluidZoneFaceCentres, sumOp<vectorField>());
-
-//         vectorField solidZoneFaceCentres =
-// //            AMI().interpolateToSource(fluidZoneFaceCentres);
-//             AMI().interpolateToTarget(fluidZoneFaceCentres);//JN: isn't this the correct one?
-
-//         vectorField solidPatchFaceCentres
-//         (
-//             solidMesh().boundaryMesh()[solidPatchIndex_].size(),
-//             vector::zero
-//         );
-
-//         const label solidPatchStart =
-//             solidMesh().boundaryMesh()[solidPatchIndex_].start();
-
-//         forAll(solidPatchFaceCentres, i)
-//         {
-//             solidPatchFaceCentres[i] =
-//                 solidZoneFaceCentres
-//                 [
-//                     solidMesh().faceZones()[solidZoneIndex_]
-//                    .whichFace(solidPatchStart + i)
-//                 ];
-//         }
-
-//         scalar maxDist = gMax
-//         (
-//             mag
-//             (
-//                 solidPatchFaceCentres
-//               - solidMesh().boundaryMesh()[solidPatchIndex_].faceCentres()
-//             )
-//         );
-
-//         Info<< "Fluid-to-solid face interpolation error: " << maxDist
-//             << endl;
-//     }
-
-//     Info<< "Checking solid-to-fluid point interpolator (AMI)" << endl;
-//     {
-//         vectorField solidZonePoints_ =
-//             solidMesh().faceZones()[solidZoneIndex_]().localPoints();
-
-//         vectorField solidZonePoints =
-//             AMI().pointInterpolateToSource
-//             (
-//                 solidZonePoints_
-//             );
-
-//         vectorField fluidZonePoints =
-//             fluidMesh().faceZones()[fluidZoneIndex_]().localPoints();
-
-//         scalar maxDist = gMax
-//         (
-//             mag
-//             (
-//                 fluidZonePoints
-//               - solidZonePoints
-//             )
-//         );
-
-//         Info<< "Solid-to-fluid point interpolation error (AMI): " << maxDist
-//             << endl;
-//     }
+    //     Info<< "Solid-to-fluid point interpolation error (AMI): " << maxDist
+    //         << endl;
+    // }
 
     //Info<< "Number of uncovered master faces: "
     //    << ggiInterpolatorPtr_->uncoveredMasterFaces().size() << endl;
@@ -499,7 +451,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     fluidPatchPointsDisplPrev_(),
     solidPatchPointsDispl_(),
     solidPatchPointsDisplRef_(),
-    solidPatchPressure_(),
+    //solidPatchPressure_(),
     residual_(),
     residualPrev_(),
     maxResidualNorm_(0),
@@ -542,83 +494,38 @@ Foam::fluidSolidInterface::fluidSolidInterface
             << abort(FatalError);
     }
 
+    Info<< "Reading solidPatch: " << solidPatchName << endl;
     solidPatchIndex_ = solidPatch.index();
-
-
-    // Solid face zone index
-    // Philip: zones not used in of30
-    // const word solidZoneName(fsiProperties_.lookup("solidZone"));
-
-    // const faceZoneID solidZone
-    // (
-    //     solidZoneName,
-    //     solidMesh.faceZones()
-    // );
-
-    // if (!solidZone.active())
-    // {
-    //     FatalErrorIn("fluidSolidInterface::fluidSolidInterface(...)")
-    //         << "Solid face zone name " << solidZoneName
-    //         << " not found.  Please check your face zone definition."
-    //         << abort(FatalError);
-    // }
-
-    // solidZoneIndex_ = solidZone.index();
-
 
     // Fluid patch index
 
-    // const word fluidPatchName(fsiProperties_.lookup("fluidPatch"));
+    const word fluidPatchName(fsiProperties_.lookup("fluidPatch"));
 
-    // const polyPatchID fluidPatch
-    // (
-    //     fluidPatchName,
-    //     fluidMesh.boundaryMesh()
-    // );
+    const polyPatchID fluidPatch
+    (
+        fluidPatchName,
+        fluidMesh.boundaryMesh()
+    );
 
-    // if (!fluidPatch.active())
-    // {
-    //     FatalErrorIn("fluidSolidInterface::fluidSolidInterface(...)")
-    //         << "Fluid patch name " << fluidPatchName << " not found."
-    //         << abort(FatalError);
-    // }
+    if (!fluidPatch.active())
+    {
+        FatalErrorIn("fluidSolidInterface::fluidSolidInterface(...)")
+            << "Fluid patch name " << fluidPatchName << " not found."
+            << abort(FatalError);
+    }
 
-    // fluidPatchIndex_ = fluidPatch.index();
+    Info<< "Reading fluidPatch: " << fluidPatchName << endl;
+    fluidPatchIndex_ = fluidPatch.index();
 
-
-    // Fluid face zone index
-
-    // const word fluidZoneName(fsiProperties_.lookup("fluidZone"));
-
-    // const faceZoneID fluidZone
-    // (
-    //     fluidZoneName,
-    //     fluidMesh.faceZones()
-    // );
-
-    // if (!fluidZone.active())
-    // {
-    //     FatalErrorIn("fluidSolidInterface::fluidSolidInterface(...)")
-    //         << "Fluid face zone name " << fluidZoneName
-    //         << " not found.  Please check your face zone definition."
-    //         << abort(FatalError);
-    // }
-
-    // fluidZoneIndex_ = fluidZone.index();
-
-    // Initialize solid zone pressure
-    // solidZonePressure_ =
-    //     scalarField(solidMesh.faceZones()[solidZoneIndex()].size(), 0.0);
-
+    // Philip: why do we initialise the residual here, but we initialise other
+    // interface fields in the initialiseFields function?
     // Initialize residual
-    // residual_ =
-    //     vectorField
-    //     (
-    //         fluidMesh.faceZones()[fluidZoneIndex_]().nPoints(),
-    //         vector::zero
-    //     );
-    WarningIn("Foam::fluidSolidInterface::fluidSolidInterface()")
-        << "To-do: initialise new patch fields and residual field" << endl; 
+    residual_ =
+        vectorField
+        (
+            fluidMesh.boundaryMesh()[fluidPatchIndex_].nPoints(),
+            vector::zero
+        );
 }
 
 
@@ -699,52 +606,49 @@ Foam::fluidSolidInterface::AMI() const
 
 void Foam::fluidSolidInterface::initializeFields()
 {
-    FatalErrorIn("void Foam::fluidSolidInterface::initializeFields()")
-        << "To-do: initialise new patch fields" << abort(FatalError);
+    fluidPatchPointsDispl_ =
+        vectorField
+        (
+            fluidMesh().boundaryMesh()[fluidPatchIndex_].nPoints(),
+            vector::zero
+        );
 
-    // fluidZonePointsDispl_ =
-    //     vectorField
-    //     (
-    //         fluidMesh().faceZones()[fluidZoneIndex_]().nPoints(),
-    //         vector::zero
-    //     );
+    fluidPatchPointsDisplRef_ =
+        vectorField
+        (
+            fluidMesh().boundaryMesh()[fluidPatchIndex_].nPoints(),
+            vector::zero
+        );
 
-    // fluidZonePointsDisplRef_ =
-    //     vectorField
-    //     (
-    //         fluidMesh().faceZones()[fluidZoneIndex_]().nPoints(),
-    //         vector::zero
-    //     );
+    fluidPatchPointsDisplPrev_ =
+        vectorField
+        (
+            fluidMesh().boundaryMesh()[fluidPatchIndex_].nPoints(),
+            vector::zero
+        );
 
-    // fluidZonePointsDisplPrev_ =
-    //     vectorField
-    //     (
-    //         fluidMesh().faceZones()[fluidZoneIndex_]().nPoints(),
-    //         vector::zero
-    //     );
+    solidPatchPointsDispl_ =
+        vectorField
+        (
+            fluidMesh().boundaryMesh()[fluidPatchIndex_].nPoints(),
+            vector::zero
+        );
 
-    // solidZonePointsDispl_ =
-    //     vectorField
-    //     (
-    //         fluidMesh().faceZones()[fluidZoneIndex_]().nPoints(),
-    //         vector::zero
-    //     );
+    solidPatchPointsDisplRef_ =
+        vectorField
+        (
+            fluidMesh().boundaryMesh()[fluidPatchIndex_].nPoints(),
+            vector::zero
+        );
 
-    // solidZonePointsDisplRef_ =
-    //     vectorField
-    //     (
-    //         fluidMesh().faceZones()[fluidZoneIndex_]().nPoints(),
-    //         vector::zero
-    //     );
+    residualPrev_ = residual_;
 
-    // residualPrev_ = residual_;
-
-    // residual_ =
-    //     vectorField
-    //     (
-    //         fluidMesh().faceZones()[fluidZoneIndex_]().nPoints(),
-    //         vector::zero
-    //     );
+    residual_ =
+        vectorField
+        (
+            fluidMesh().boundaryMesh()[fluidPatchIndex_].nPoints(),
+            vector::zero
+        );
 
     maxResidualNorm_ = 0;
 
@@ -775,325 +679,298 @@ void Foam::fluidSolidInterface::updateInterpolator()
 
 void Foam::fluidSolidInterface::moveFluidMesh()
 {
-//     // Get fluid patch displacement from fluid zone displacement
+    // Get fluid patch displacements
+    const vectorField& fluidPatchPointsDispl = this->fluidPatchPointsDispl();
+    const vectorField& fluidPatchPointsDisplPrev =
+        this->fluidPatchPointsDisplPrev();
 
-//     vectorField fluidPatchPointsDispl
-//     (
-//         fluidMesh().boundaryMesh()[fluidPatchIndex()].nPoints(),
-//         vector::zero
-//     );
+    // Move fluid mesh
+    const vectorField& n =
+        fluidMesh().boundaryMesh()[fluidPatchIndex()].pointNormals();
 
-//     vectorField fluidPatchPointsDisplPrev
-//     (
-//         fluidMesh().boundaryMesh()[fluidPatchIndex()].nPoints(),
-//         vector::zero
-//     );
+    // Philip: is it OK to use primitivePatchInterpolation for faceToPoint in
+    // parallel? It will not be correct on shared points!
+    primitivePatchInterpolation patchInterpolator
+    (
+        fluidMesh().boundaryMesh()[fluidPatchIndex()]
+    );
 
-//     const labelList& fluidPatchMeshPoints =
-//         fluidMesh().boundaryMesh()[fluidPatchIndex()].meshPoints();
+    const scalarField pointDeltaCoeffs =
+        patchInterpolator.faceToPointInterpolate
+        (
+            fluidMesh().boundary()[fluidPatchIndex()].deltaCoeffs()
+        );
 
-//     forAll(fluidPatchPointsDispl, pointI)
-//     {
-//         label curMeshPointID = fluidPatchMeshPoints[pointI];
+    const scalar delta =
+        gMax
+        (
+            mag
+            (
+                n
+              & (
+                    accumulatedFluidInterfaceDisplacement()
+                  + fluidPatchPointsDispl
+                  - fluidPatchPointsDisplPrev
+                )
+            )*pointDeltaCoeffs
+        );
 
-//         label curFluidZonePointID =
-//             fluidMesh().faceZones()[fluidZoneIndex()]()
-//            .whichPoint(curMeshPointID);
+    Info<< "Maximal accumulated displacement of interface points: "
+        << delta << endl;
 
-//         fluidPatchPointsDispl[pointI] =
-//             fluidZonePointsDispl()[curFluidZonePointID];
+    if (delta < interfaceDeformationLimit())
+    {
+        // Move only interface points
+        pointField newPoints = fluidMesh().points();
 
-//         fluidPatchPointsDisplPrev[pointI] =
-//             fluidZonePointsDisplPrev()[curFluidZonePointID];
-//     }
+        const labelList& meshPoints =
+            fluidMesh().boundaryMesh()[fluidPatchIndex()].meshPoints();
 
-//     // Move fluid mesh
-//     const vectorField& n =
-//         fluidMesh().boundaryMesh()[fluidPatchIndex()].pointNormals();
+        forAll(fluidPatchPointsDispl, pointI)
+        {
+            newPoints[meshPoints[pointI]] +=
+                fluidPatchPointsDispl[pointI]
+              - fluidPatchPointsDisplPrev[pointI];
+        }
 
-//     primitivePatchInterpolation patchInterpolator
-//     (
-//         fluidMesh().boundaryMesh()[fluidPatchIndex()]
-//     );
+        twoDPointCorrector twoDCorrector(fluidMesh());
 
-//     scalarField pointDeltaCoeffs =
-//         patchInterpolator.faceToPointInterpolate
-//         (
-//             fluidMesh().boundary()[fluidPatchIndex()].deltaCoeffs()
-//         );
+        twoDCorrector.correctPoints(newPoints);
 
-//     scalar delta =
-//         gMax
-//         (
-//             mag
-//             (
-//                 n
-//               & (
-//                     accumulatedFluidInterfaceDisplacement()
-//                   + fluidPatchPointsDispl
-//                   - fluidPatchPointsDisplPrev
-//                 )
-//             )*pointDeltaCoeffs
-//         );
+        fluidMesh_.movePoints(newPoints);
 
-//     Info<< "Maximal accumulated displacement of interface points: "
-//         << delta << endl;
+        // Accumulate interface points displacement
+        accumulatedFluidInterfaceDisplacement() +=
+            fluidPatchPointsDispl
+          - fluidPatchPointsDisplPrev;
+    }
+    else
+    {
+        // Philip comment:
+        // We should consider a nicer way to allow use of different fluid mesh
+        // motion solvers, instead of hard-coding if-else-if loops
 
-//     if (delta < interfaceDeformationLimit())
-//     {
-//         // Move only interface points
-//         pointField newPoints = fluidMesh().points();
+        // Move whole fluid mesh
+        pointField newPoints = fluidMesh().points();
 
-//         const labelList& meshPoints =
-//             fluidMesh().boundaryMesh()[fluidPatchIndex()].meshPoints();
+        const labelList& meshPoints =
+            fluidMesh().boundaryMesh()[fluidPatchIndex()].meshPoints();
 
-//         forAll (fluidPatchPointsDispl, pointI)
+        forAll (accumulatedFluidInterfaceDisplacement(), pointI)
+        {
+            newPoints[meshPoints[pointI]] -=
+                accumulatedFluidInterfaceDisplacement()[pointI];
+        }
+
+        twoDPointCorrector twoDCorrector(fluidMesh());
+
+        twoDCorrector.correctPoints(newPoints);
+
+        fluidMesh_.movePoints(newPoints);
+
+        accumulatedFluidInterfaceDisplacement() +=
+            fluidPatchPointsDispl
+          - fluidPatchPointsDisplPrev;
+
+        // Check mesh motion solver type
+        // bool feMotionSolver =
+        //     fluidMesh().objectRegistry::foundObject<tetPointVectorField>
+        //     (
+        //         "motionU"
+        //     );
+
+        bool fvMotionSolver =
+            fluidMesh().objectRegistry::foundObject<pointVectorField>
+            (
+                "pointMotionU"
+            );
+
+        // bool rbfMotionSolver =
+        //     fluidMesh().objectRegistry::foundObject<RBFMotionSolver>
+        //     (
+        //         "dynamicMeshDict"
+        //     );
+
+//         if (rbfMotionSolver)
 //         {
-//             newPoints[meshPoints[pointI]] +=
-//                 fluidPatchPointsDispl[pointI]
-//               - fluidPatchPointsDisplPrev[pointI];
-//         }
-
-//         twoDPointCorrector twoDCorrector(fluidMesh());
-
-//         twoDCorrector.correctPoints(newPoints);
-
-//         fluidMesh_.movePoints(newPoints);
-
-//         // Accumulate interface points displacement
-//         accumulatedFluidInterfaceDisplacement() +=
-//             fluidPatchPointsDispl
-//           - fluidPatchPointsDisplPrev;
-//     }
-//     else
-//     {
-//         // Move whole fluid mesh
-//         pointField newPoints = fluidMesh().points();
-
-//         const labelList& meshPoints =
-//             fluidMesh().boundaryMesh()[fluidPatchIndex()].meshPoints();
-
-//         forAll (accumulatedFluidInterfaceDisplacement(), pointI)
-//         {
-//             newPoints[meshPoints[pointI]] -=
-//                 accumulatedFluidInterfaceDisplacement()[pointI];
-//         }
-
-//         twoDPointCorrector twoDCorrector(fluidMesh());
-
-//         twoDCorrector.correctPoints(newPoints);
-
-//         fluidMesh_.movePoints(newPoints);
-
-//         accumulatedFluidInterfaceDisplacement() +=
-//             fluidPatchPointsDispl
-//           - fluidPatchPointsDisplPrev;
-
-//         // Check mesh motion solver type
-//         // bool feMotionSolver =
-//         //     fluidMesh().objectRegistry::foundObject<tetPointVectorField>
-//         //     (
-//         //         "motionU"
-//         //     );
-
-//         bool fvMotionSolver =
-//             fluidMesh().objectRegistry::foundObject<pointVectorField>
-//             (
-//                 "pointMotionU"
-//             );
-
-//         // bool rbfMotionSolver =
-//         //     fluidMesh().objectRegistry::foundObject<RBFMotionSolver>
-//         //     (
-//         //         "dynamicMeshDict"
-//         //     );
-
-// //         if (rbfMotionSolver)
-// //         {
-// //             // Grab RBF motion solver
-// //             RBFMotionSolver& ms =
-// //                 const_cast<RBFMotionSolver&>
-// //                 (
-// //                     fluidMesh().objectRegistry::lookupObject<RBFMotionSolver>
-// //                     (
-// //                         "dynamicMeshDict"
-// //                     )
-// //                 );
-
-// //             Info<< "RBF mesh motion" << endl;
-
-// //             const labelList& movingMeshPoints = ms.movingIDs();
-
-// //             vectorField motion(movingMeshPoints.size(), vector::zero);
-
-// //             vectorField fluidPatchDisplacement =
-// //                 accumulatedFluidInterfaceDisplacement();
-// // //                /fluid().runTime().deltaT().value();
-
-// //             const labelList& meshPoints =
-// //                 fluidMesh().boundaryMesh()[fluidPatchIndex()].meshPoints();
-
-// //             forAll(meshPoints, pointI)
-// //             {
-// //                 label curMovingPoint =
-// //                     findIndex(movingMeshPoints, meshPoints[pointI]);
-
-// //                 if (curMovingPoint != -1)
-// //                 {
-// //                     motion[curMovingPoint] = fluidPatchDisplacement[pointI];
-// //                 }
-// //             }
-
-// //             ms.setMotion(motion);
-// //         }
-// //         else if (feMotionSolver)
-// //        if (feMotionSolver)
-// //        {
-// //            tetPointVectorField& motionU =
-// //                const_cast<tetPointVectorField&>
-// //                (
-// //                    fluidMesh().objectRegistry::
-// //                    lookupObject<tetPointVectorField>
-// //                    (
-// //                        "motionU"
-// //                    )
-// //                );
-
-// //            fixedValueTetPolyPatchVectorField& motionUFluidPatch =
-// //                refCast<fixedValueTetPolyPatchVectorField>
-// //                (
-// //                    motionU.boundaryField()[fluidPatchIndex()]
-// //                );
-
-// //            tetPolyPatchInterpolation tppi
-// //            (
-// //                refCast<const faceTetPolyPatch>(motionUFluidPatch.patch())
-// //            );
-
-// //            motionUFluidPatch ==
-// //                tppi.pointToPointInterpolate
-// //                (
-// //                    accumulatedFluidInterfaceDisplacement()
-// //                   /fluid().runTime().deltaT().value()
-// //                );
-// //        }
-// //        else if (fvMotionSolver)
-//         if (fvMotionSolver)
-//         {
-//             Info<< "Using fvMotionSolver for movement of fluid mesh..."
-//                 << endl;
-
-//             pointVectorField& motionU =
-//                 const_cast<pointVectorField&>
+//             // Grab RBF motion solver
+//             RBFMotionSolver& ms =
+//                 const_cast<RBFMotionSolver&>
 //                 (
-//                     fluidMesh().objectRegistry::
-//                     lookupObject<pointVectorField>
+//                     fluidMesh().objectRegistry::lookupObject<RBFMotionSolver>
 //                     (
-//                         "pointMotionU"
+//                         "dynamicMeshDict"
 //                     )
 //                 );
 
-//             fixedValuePointPatchVectorField& motionUFluidPatch =
-//                 refCast<fixedValuePointPatchVectorField>
-//                 (
-//                     motionU.boundaryField()[fluidPatchIndex()]
-//                 );
+//             Info<< "RBF mesh motion" << endl;
 
-//             motionUFluidPatch ==
-//                 accumulatedFluidInterfaceDisplacement()
-//                /fluid().runTime().deltaT().value();
+//             const labelList& movingMeshPoints = ms.movingIDs();
+
+//             vectorField motion(movingMeshPoints.size(), vector::zero);
+
+//             vectorField fluidPatchDisplacement =
+//                 accumulatedFluidInterfaceDisplacement();
+// //                /fluid().runTime().deltaT().value();
+
+//             const labelList& meshPoints =
+//                 fluidMesh().boundaryMesh()[fluidPatchIndex()].meshPoints();
+
+//             forAll(meshPoints, pointI)
+//             {
+//                 label curMovingPoint =
+//                     findIndex(movingMeshPoints, meshPoints[pointI]);
+
+//                 if (curMovingPoint != -1)
+//                 {
+//                     motion[curMovingPoint] = fluidPatchDisplacement[pointI];
+//                 }
+//             }
+
+//             ms.setMotion(motion);
 //         }
-//         else
+//         else if (feMotionSolver)
+//        if (feMotionSolver)
+//        {
+//            tetPointVectorField& motionU =
+//                const_cast<tetPointVectorField&>
+//                (
+//                    fluidMesh().objectRegistry::
+//                    lookupObject<tetPointVectorField>
+//                    (
+//                        "motionU"
+//                    )
+//                );
+
+//            fixedValueTetPolyPatchVectorField& motionUFluidPatch =
+//                refCast<fixedValueTetPolyPatchVectorField>
+//                (
+//                    motionU.boundaryField()[fluidPatchIndex()]
+//                );
+
+//            tetPolyPatchInterpolation tppi
+//            (
+//                refCast<const faceTetPolyPatch>(motionUFluidPatch.patch())
+//            );
+
+//            motionUFluidPatch ==
+//                tppi.pointToPointInterpolate
+//                (
+//                    accumulatedFluidInterfaceDisplacement()
+//                   /fluid().runTime().deltaT().value()
+//                );
+//        }
+//        else if (fvMotionSolver)
+        if (fvMotionSolver)
+        {
+            Info<< "Using fvMotionSolver for movement of fluid mesh..."
+                << endl;
+
+            pointVectorField& motionU =
+                const_cast<pointVectorField&>
+                (
+                    fluidMesh().objectRegistry::
+                    lookupObject<pointVectorField>
+                    (
+                        "pointMotionU"
+                    )
+                );
+
+            fixedValuePointPatchVectorField& motionUFluidPatch =
+                refCast<fixedValuePointPatchVectorField>
+                (
+                    motionU.boundaryField()[fluidPatchIndex()]
+                );
+
+            motionUFluidPatch ==
+                accumulatedFluidInterfaceDisplacement()
+               /fluid().runTime().deltaT().value();
+
+            InfoIn("moveFluidMesh")
+                << "motionUFluidPatch: "
+                << max(mag(motionUFluidPatch)) << endl;
+        }
+        else
+        {
+            FatalErrorIn("fluidSolidInterface::moveFluidMesh()")
+                << "Problem with fluid mesh motion solver selection"
+                << abort(FatalError);
+        }
+
+        fluidMesh_.update();
+
+        accumulatedFluidInterfaceDisplacement() =
+            vectorField
+            (
+                accumulatedFluidInterfaceDisplacement().size(),
+                vector::zero
+            );
+    }
+
+
+    // Move unused fluid mesh points
+    // Philip: there will never be unused points in of30 as there are no global
+    // face zones
+    //{
+        // PC: hmmnn in fe32, there can be "unused" points where there are more
+        // points in allPoints() than in points()
+        // so in this case there are no unused points so nothing happens here
+        // I need to understand better how AMI deals with this and if we need to
+        // do anything special
+    	// JN: Ok. I don't have any experience. I guess let's use this and check
+	    // a case, where we have unused points and see what happens
+        //vectorField newPoints = fluidMesh().points();
+
+        //const labelList& fluidZoneMeshPoints =
+        //    fluidMesh().faceZones()[fluidZoneIndex()]().meshPoints();
+
+//         forAll(fluidZonePointsDispl(), pointI)
 //         {
-//             FatalErrorIn("fluidSolidInterface::moveFluidMesh()")
-//                 << "Problem with fluid mesh motion solver selection"
-//                 << abort(FatalError);
+//             if (fluidZoneMeshPoints[pointI] >= fluidMesh().nPoints())
+//             {
+//                 newPoints[fluidZoneMeshPoints[pointI]] +=
+//                     fluidZonePointsDispl()[pointI]
+//                   - fluidZonePointsDisplPrev()[pointI];
+//             }
 //         }
 
-//         fluidMesh_.update();
+//         twoDPointCorrector twoDCorrector(fluidMesh());
 
-//         accumulatedFluidInterfaceDisplacement() =
-//             vectorField
-//             (
-//                 accumulatedFluidInterfaceDisplacement().size(),
-//                 vector::zero
-//             );
+//         twoDCorrector.correctPoints(newPoints);
+
+//         fluidMesh_.movePoints(newPoints);
 //     }
-
-
-//     // Move unused fluid mesh points
-//     // Philip: there will never be unused points in of30 as there are no global
-//     // face zones
-//     //{
-//         // PC: hmmnn in fe32, there can be "unused" points where there are more
-//         // points in allPoints() than in points()
-//         // so in this case there are no unused points so nothing happens here
-//         // I need to understand better how AMI deals with this and if we need to
-//         // do anything special
-//     	// JN: Ok. I don't have any experience. I guess let's use this and check
-// 	    // a case, where we have unused points and see what happens
-//         //vectorField newPoints = fluidMesh().points();
-
-//         //const labelList& fluidZoneMeshPoints =
-//         //    fluidMesh().faceZones()[fluidZoneIndex()]().meshPoints();
-
-// //         forAll(fluidZonePointsDispl(), pointI)
-// //         {
-// //             if (fluidZoneMeshPoints[pointI] >= fluidMesh().nPoints())
-// //             {
-// //                 newPoints[fluidZoneMeshPoints[pointI]] +=
-// //                     fluidZonePointsDispl()[pointI]
-// //                   - fluidZonePointsDisplPrev()[pointI];
-// //             }
-// //         }
-
-// //         twoDPointCorrector twoDCorrector(fluidMesh());
-
-// //         twoDCorrector.correctPoints(newPoints);
-
-// //         fluidMesh_.movePoints(newPoints);
-// //     }
 }
 
 
 void Foam::fluidSolidInterface::updateForce()
 {
-    // Info<< "Setting traction on solid patch" << endl;
+    Info<< "Setting traction on solid patch" << endl;
 
-    // const vectorField fluidZoneTraction =
-    //     fluid().faceZoneViscousForce
-    //     (
-    //         fluidZoneIndex(),
-    //         fluidPatchIndex()
-    //     );
+    // Philip: there are no face zones on of30 branch, so we instead directly
+    // set patch tractions
 
-    // const scalarField fluidZonePressure =
-    //     fluid().faceZonePressureForce(fluidZoneIndex(), fluidPatchIndex());
+    const vectorField fluidPatchTraction =
+        fluid().patchViscousForce(fluidPatchIndex());
 
+    const scalarField fluidPatchPressure =
+        fluid().patchPressureForce(fluidPatchIndex());
 
-    // // Fluid zone face normals
-    // const vectorField& p =
-    //     fluidMesh().faceZones()[fluidZoneIndex_]().localPoints();
-    // const faceList& f =
-    //     fluidMesh().faceZones()[fluidZoneIndex_]().localFaces();
+    // Fluid patch face normals
+    const vectorField n = fluidMesh().boundary()[fluidPatchIndex_].nf();
 
-    // vectorField n(f.size(), vector::zero);
-    // forAll(n, faceI)
-    // {
-    //     n[faceI] = f[faceI].normal(p);
-    //     n[faceI] /= mag(n[faceI]);
-    // }
+    // Fluid patch total traction
+    const vectorField fluidPatchTotalTraction =
+        fluidPatchTraction - fluidPatchPressure*n;
 
-    // // Fluid zone total traction
-    // const vectorField fluidZoneTotalTraction =
-    //     fluidZoneTraction - fluidZonePressure*n;
+    // Philip: What is this used for?
+    // Solid patch traction
+    // vectorField solidPatchTraction =
+    //     AMI().interpolateToTarget(-fluidPatchTraction);
 
-    // vectorField solidZoneTraction =
-    //     AMI().interpolateToTarget(-fluidZoneTraction);
-
-
-    // vectorField solidZoneTotalTraction =
-    //     AMI().interpolateToTarget(-fluidZoneTotalTraction);
+    // Solid patch total traction
+    vectorField solidPatchTotalTraction =
+        AMI().interpolateToTarget(-fluidPatchTotalTraction);
 
     // const scalarField solidZoneMuEff =
     //     AMI().interpolateToTarget
@@ -1108,15 +985,9 @@ void Foam::fluidSolidInterface::updateForce()
     //         solidPatchIndex()
     //     );
 
-    // const vectorField solidZoneNormal =
-    //     solid().faceZoneNormal
-    //     (
-    //         solidZoneIndex(),
-    //         solidPatchIndex()
-    //     );
-
-    // // Add part of the viscous force present only
-    // // at the deforming and moving walls
+    // Philip: What is this used for?
+    // Add part of the viscous force present only
+    // at the deforming and moving walls
     // solidZoneTraction +=
     //     solidZoneMuEff
     //    *(
@@ -1124,6 +995,7 @@ void Foam::fluidSolidInterface::updateForce()
     //       + (solidZoneSurfaceGradientOfVelocity&solidZoneNormal)
     //     );
 
+    // Philip: What is this used for?
     // const vectorField movingTraction =
     //     solidZoneMuEff
     //    *(
@@ -1131,95 +1003,140 @@ void Foam::fluidSolidInterface::updateForce()
     //       + (solidZoneSurfaceGradientOfVelocity&solidZoneNormal)
     //     );
 
-    // solidZonePressure_ = AMI().interpolateToTarget(fluidZonePressure);
+    // Philip: What is this used for?
+    //solidZonePressure_ = AMI().interpolateToTarget(fluidZonePressure);
 
-    // if (!coupled_)
-    // {
-    //     updateCoupled();
-    // }
+    if (!coupled_)
+    {
+        updateCoupled();
+    }
 
-    // if (coupled())
-    // {
-    //     solid().setTraction
-    //     (
-    //         solidPatchIndex(),
-    //         solidZoneIndex(),
-    //         solidZoneTotalTraction
-    //     );
-    // }
+    if (coupled())
+    {
+        // No face zones on of30 branch, so we instead directly set patch
+        // tractions
+        solid().setTraction
+        (
+            solidPatchIndex(),
+            solidPatchTotalTraction
+        );
+    }
 
-    // // Total force at the fluid side of the interface
-    // {
-    //     const vectorField& p =
-    //         fluidMesh().faceZones()[fluidZoneIndex_]().localPoints();
+    // Total force at the fluid side of the interface
+    {
+        const scalarField& magSf =
+            fluidMesh().boundary()[fluidPatchIndex_].magSf();
 
-    //     const faceList& f =
-    //         fluidMesh().faceZones()[fluidZoneIndex_]().localFaces();
+        const vector totalTractionForce = gSum(fluidPatchTotalTraction*magSf);
 
-    //     vectorField S(f.size(), vector::zero);
+        Info<< "Total force (fluid) = " << totalTractionForce << endl;
+    }
 
-    //     forAll(S, faceI)
-    //     {
-    //         S[faceI] = f[faceI].normal(p);
-    //     }
+    // Total force at the solid side of the interface
+    {
+        const scalarField& magSf =
+            solidMesh().boundary()[solidPatchIndex_].magSf();
 
-    //     const vector totalTractionForce = sum(fluidZoneTotalTraction*mag(S));
+        const vector totalTractionForce = gSum(solidPatchTotalTraction*magSf);
 
-    //     Info<< "Total force (fluid) = "
-    //         << totalTractionForce << endl;
-    // }
-
-    // // Total force at the solid side of the interface
-    // {
-    //     const vectorField& p =
-    //         solidMesh().faceZones()[solidZoneIndex_]().localPoints();
-
-    //     const faceList& f =
-    //         solidMesh().faceZones()[solidZoneIndex_]().localFaces();
-
-    //     vectorField S(f.size(), vector::zero);
-
-    //     forAll(S, faceI)
-    //     {
-    //         S[faceI] = f[faceI].normal(p);
-    //     }
-
-    //     const vector totalTractionForce = sum(solidZoneTotalTraction*mag(S));
-
-    //     Info<< "Total force (solid) = "
-    //         << totalTractionForce << endl;
-    // }
+        Info<< "Total force (solid) = " << totalTractionForce << endl;
+    }
 }
 
 
 Foam::scalar Foam::fluidSolidInterface::updateResidual()
 {
-    // vectorField solidZonePointsDisplAtSolid =
-    //     solid().faceZonePointDisplacementIncrement(solidZoneIndex());
+    // 1. use AMI to interpolate the solid patch face D field to the fluid
+    //    patch faces D
+    // 2. use volPointInterpolation to interpolate the fluid patch faces D to
+    //    the fluid patch points D
 
-    // solidZonePointsDispl() =
-    //     AMI().pointInterpolateToSource
-    //     (
-    //         solidZonePointsDisplAtSolid
-    //     );
+    // Get increment of displacement at solid interface faces
+    const vectorField solidPatchDisplAtSolid =
+        solid().patchDisplacementIncrement(solidPatchIndex());
 
-    // residualPrev() = residual();
+    // Interpolate solid displacements to the fluid interface
+    const vectorField solidPatchDispl =
+        AMI().interpolateToSource(solidPatchDisplAtSolid);
 
-    // residual() = solidZonePointsDispl() - fluidZonePointsDispl();
+    // We will create a volPointInterpolation to interpolate the fluid interface
+    // face values to point values
+    // We should store this to avoid recalculation of weights
+    // This may seem like overkill but volPointInterpolation works in parallel
+    // and it is the most straight-forward method for now.
+    // We could consider implementing a interpolateBoundaryPatch function
+    volPointInterpolation volToPoint(fluidMesh());
+    
+    // Interpolate faces displacements to point displacements
+    volVectorField DD
+    (
+        IOobject
+        (
+            "fluidDD",
+            fluidMesh().time().timeName(),
+            fluidMesh(),
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        fluidMesh(),
+        dimensionedVector("zero", dimLength, vector::zero),
+        calculatedFvPatchVectorField::typeName
+    );
 
-    // scalar residualNorm = ::sqrt(sum(magSqr(residual())));
+    // Set the fluid interface displacement field
+    DD.boundaryField()[fluidPatchIndex_] = solidPatchDispl;
 
-    // if (residualNorm > maxResidualNorm_)
-    // {
-    //     maxResidualNorm_ = residualNorm;
-    // }
+    pointMesh pMesh(fluidMesh());
 
-    // residualNorm /= maxResidualNorm_ + SMALL;
+    pointVectorField pointDD
+    (
+        IOobject
+        (
+            "fluidPointDD",
+            fluidMesh().time().timeName(),
+            fluidMesh(),
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        pMesh,
+        dimensionedVector("zero", dimLength, vector::zero),
+        "calculated"
+    );
 
-    // Info<< "Current FSI relative residual norm: " << residualNorm << endl;
+    volToPoint.interpolateBoundaryField(DD, pointDD);
 
-    // return residualNorm;
-    return 1;
+    // Update the solid patch point displacement field (at the fluid side)
+    const labelList& meshPoints =
+        fluidMesh().boundaryMesh()[fluidPatchIndex_].meshPoints();
+
+    vectorField& solidPatchPointsDispl = this->solidPatchPointsDispl();
+    vectorField& pointDDI = pointDD.internalField();
+
+    forAll(meshPoints, pI)
+    {
+        solidPatchPointsDispl[pI] = pointDDI[meshPoints[pI]];
+    }
+
+    residualPrev() = residual();
+
+    residual() = solidPatchPointsDispl - fluidPatchPointsDispl();
+
+    scalar residualNorm = ::sqrt(gSum(magSqr(residual())));
+
+    if (residualNorm > maxResidualNorm_)
+    {
+        maxResidualNorm_ = residualNorm;
+    }
+
+    residualNorm /= maxResidualNorm_ + SMALL;
+
+    Info<< "Current FSI relative residual norm: " << residualNorm << endl;
+    Info<< "max solidPatchPointsDispl "
+        << max(mag(solidPatchPointsDispl)) << nl
+        << "max fluidPatchPointsDispl "
+        << max(mag(fluidPatchPointsDispl())) << endl;
+
+    return residualNorm;
 }
 
 

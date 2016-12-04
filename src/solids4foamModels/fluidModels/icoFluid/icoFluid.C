@@ -64,20 +64,6 @@ icoFluid::icoFluid(const fvMesh& mesh)
         ),
         mesh
     ),
-    pMesh_(mesh),
-    pointD_
-    (
-        IOobject
-        (
-            "pointD",
-            runTime().timeName(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::AUTO_WRITE
-        ),
-        pMesh_,
-        dimensionedVector("0", dimLength, vector::zero)
-    ),
     p_
     (
         IOobject
@@ -164,25 +150,35 @@ tmp<vectorField> icoFluid::faceZoneViscousForce
     const label patchID
 ) const
 {
-    vectorField pVF = patchViscousForce(patchID);
+    FatalErrorIn
+    (
+        "tmp<vectorField> icoFluid::faceZoneViscousForce\n"
+        "(\n"
+        "    const label zoneID,\n"
+        "    const label patchID\n"
+        ") const"
+   )    << "This should not be called in of30 as there are no zones"
+        << abort(FatalError);
+
+    // vectorField pVF = patchViscousForce(patchID);
 
     tmp<vectorField> tvF
     (
         new vectorField(mesh().faceZones()[zoneID].size(), vector::zero)
     );
-    vectorField& vF = tvF();
+    // vectorField& vF = tvF();
 
-    const label patchStart =
-        mesh().boundaryMesh()[patchID].start();
+    // const label patchStart =
+    //     mesh().boundaryMesh()[patchID].start();
 
-    forAll(pVF, i)
-    {
-        vF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
-            pVF[i];
-    }
+    // forAll(pVF, i)
+    // {
+    //     vF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
+    //         pVF[i];
+    // }
 
-    // Parallel data exchange: collect pressure field on all processors
-    reduce(vF, sumOp<vectorField>());
+    // // Parallel data exchange: collect pressure field on all processors
+    // reduce(vF, sumOp<vectorField>());
 
     return tvF;
 }
@@ -193,25 +189,35 @@ tmp<scalarField> icoFluid::faceZonePressureForce
     const label patchID
 ) const
 {
-    scalarField pPF = patchPressureForce(patchID);
+    FatalErrorIn
+    (
+        "tmp<vectorField> icoFluid::faceZonePressureForce\n"
+        "(\n"
+        "    const label zoneID,\n"
+        "    const label patchID\n"
+        ") const"
+   )    << "This should not be called in of30 as there are no zones"
+        << abort(FatalError);
+
+    // scalarField pPF = patchPressureForce(patchID);
 
     tmp<scalarField> tpF
     (
         new scalarField(mesh().faceZones()[zoneID].size(), 0)
     );
-    scalarField& pF = tpF();
+    // scalarField& pF = tpF();
 
-    const label patchStart =
-        mesh().boundaryMesh()[patchID].start();
+    // const label patchStart =
+    //     mesh().boundaryMesh()[patchID].start();
 
-    forAll(pPF, i)
-    {
-        pF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
-            pPF[i];
-    }
+    // forAll(pPF, i)
+    // {
+    //     pF[mesh().faceZones()[zoneID].whichFace(patchStart + i)] =
+    //         pPF[i];
+    // }
 
-    // Parallel data exchange: collect pressure field on all processors
-    reduce(pF, sumOp<scalarField>());
+    // // Parallel data exchange: collect pressure field on all processors
+    // reduce(pF, sumOp<scalarField>());
 
     return tpF;
 }
@@ -236,96 +242,100 @@ tmp<scalarField> icoFluid::faceZoneMuEff
 }
 
 
-tmp<vectorField> icoFluid::currentFaceZonePoints
-(
-    const label zoneID
-) const
-{
-    vectorField pointDisplacement
-    (
-        mesh().faceZones()[zoneID]().localPoints().size(),
-        vector::zero
-    );
+// tmp<vectorField> icoFluid::currentFaceZonePoints
+// (
+//     const label zoneID
+// ) const
+// {
+//     FatalErrorIn("tmp<vectorField> icoFluid::currentFaceZonePoints")
+//         << "This hsould not be called in the of30 branch"
+//         << abort(FatalError);
 
-    const vectorField& pointDI = pointD_.internalField();
+//     vectorField pointDisplacement
+//     (
+//         mesh().faceZones()[zoneID]().localPoints().size(),
+//         vector::zero
+//     );
 
-    // Philip: disable on of30
-    // Problem: we need to get the point displacement on the patch;
-    // what is the best way to do this in of30...
-//     label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
+//     const vectorField& pointDI = pointD_.internalField();
 
-//     if (globalZoneIndex != -1)
+//     // Philip: disable on of30
+//     // Problem: we need to get the point displacement on the patch;
+//     // what is the best way to do this in of30...
+// //     label globalZoneIndex = findIndex(globalFaceZones(), zoneID);
+
+// //     if (globalZoneIndex != -1)
+// //     {
+// //         // global face zone
+// //         const labelList& curPointMap =
+// //             globalToLocalFaceZonePointMap()[globalZoneIndex];
+
+// //         const labelList& zoneMeshPoints =
+// //             mesh().faceZones()[zoneID]().meshPoints();
+
+// //         vectorField zonePointsDisplGlobal
+// //         (
+// //             zoneMeshPoints.size(),
+// //             vector::zero
+// //         );
+
+// //         //- Inter-proc points are shared by multiple procs
+// //         //  pointNumProc is the number of procs which a point lies on
+// //         scalarField pointNumProcs(zoneMeshPoints.size(), 0);
+
+// //         forAll(zonePointsDisplGlobal, globalPointI)
+// //         {
+// //             label localPoint = curPointMap[globalPointI];
+
+// //             if(zoneMeshPoints[localPoint] < mesh().nPoints())
+// //             {
+// //                 label procPoint = zoneMeshPoints[localPoint];
+
+// //                 zonePointsDisplGlobal[globalPointI] =
+// //                     pointDI[procPoint];
+
+// //                 pointNumProcs[globalPointI] = 1;
+// //             }
+// //         }
+
+// //         if (Pstream::parRun())
+// //         {
+// //             reduce(zonePointsDisplGlobal, sumOp<vectorField>());
+// //             reduce(pointNumProcs, sumOp<scalarField>());
+
+// //             //- now average the displacement between all procs
+// //             zonePointsDisplGlobal /= pointNumProcs;
+// //         }
+
+// //         forAll(pointDisplacement, globalPointI)
+// //         {
+// //             label localPoint = curPointMap[globalPointI];
+
+// //             pointDisplacement[localPoint] =
+// //                 zonePointsDisplGlobal[globalPointI];
+// //         }
+// //     }
+// //     else
 //     {
-//         // global face zone
-//         const labelList& curPointMap =
-//             globalToLocalFaceZonePointMap()[globalZoneIndex];
-
-//         const labelList& zoneMeshPoints =
-//             mesh().faceZones()[zoneID]().meshPoints();
-
-//         vectorField zonePointsDisplGlobal
-//         (
-//             zoneMeshPoints.size(),
-//             vector::zero
-//         );
-
-//         //- Inter-proc points are shared by multiple procs
-//         //  pointNumProc is the number of procs which a point lies on
-//         scalarField pointNumProcs(zoneMeshPoints.size(), 0);
-
-//         forAll(zonePointsDisplGlobal, globalPointI)
-//         {
-//             label localPoint = curPointMap[globalPointI];
-
-//             if(zoneMeshPoints[localPoint] < mesh().nPoints())
-//             {
-//                 label procPoint = zoneMeshPoints[localPoint];
-
-//                 zonePointsDisplGlobal[globalPointI] =
-//                     pointDI[procPoint];
-
-//                 pointNumProcs[globalPointI] = 1;
-//             }
-//         }
-
-//         if (Pstream::parRun())
-//         {
-//             reduce(zonePointsDisplGlobal, sumOp<vectorField>());
-//             reduce(pointNumProcs, sumOp<scalarField>());
-
-//             //- now average the displacement between all procs
-//             zonePointsDisplGlobal /= pointNumProcs;
-//         }
-
-//         forAll(pointDisplacement, globalPointI)
-//         {
-//             label localPoint = curPointMap[globalPointI];
-
-//             pointDisplacement[localPoint] =
-//                 zonePointsDisplGlobal[globalPointI];
-//         }
+//         pointDisplacement =
+//             vectorField
+//             (
+//                 pointDI,
+//                 mesh().faceZones()[zoneID]().meshPoints()
+//             );
 //     }
-//     else
-    {
-        pointDisplacement =
-            vectorField
-            (
-                pointDI,
-                mesh().faceZones()[zoneID]().meshPoints()
-            );
-    }
 
-    tmp<vectorField> tCurrentPoints
-    (
-        new vectorField
-        (
-            mesh().faceZones()[zoneID]().localPoints()
-          + pointDisplacement
-        )
-    );
+//     tmp<vectorField> tCurrentPoints
+//     (
+//         new vectorField
+//         (
+//             mesh().faceZones()[zoneID]().localPoints()
+//           + pointDisplacement
+//         )
+//     );
 
-    return tCurrentPoints;
-}
+//     return tCurrentPoints;
+// }
 
 
 void icoFluid::evolve()
@@ -395,9 +405,21 @@ void icoFluid::evolve()
 
     volScalarField aU = HUEqn.A();
 
+    //if (!consistencyByJasak_)
+    {
+        aU += ddtUEqn.A();
+    }
+
     for (int corr = 0; corr < nCorr; corr++)
     {
-        U_ = HUEqn.H()/aU;
+        //if (consistencyByJasak_)
+        //{
+        //    U_ = HUEqn.H()/aU;
+        //}
+        //else
+        {
+            U_ = (ddtUEqn.H() + HUEqn.H())/aU;
+        }
         phi_ = (fvc::interpolate(U_) & mesh.Sf());
 
         adjustPhi(phi_, U_, p_);
@@ -436,10 +458,17 @@ void icoFluid::evolve()
 
         gradp_ = fvc::grad(p_);
 
-        U_ = 1.0/(aU + ddtUEqn.A())*
-            (
-                U_*aU - gradp_ + ddtUEqn.H()
-            );
+        // if (consistencyByJasak_)
+        // {
+        //     U_ = 1.0/(aU + ddtUEqn.A())*
+        //         (
+        //             U_*aU - gradp_ + ddtUEqn.H()
+        //         );
+        // }
+        // else
+        {
+            U_ -= gradp_/aU;
+        }
         U_.correctBoundaryConditions();
     }
 }

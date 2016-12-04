@@ -190,6 +190,24 @@ public:
                  const label zoneID
             ) const = 0;
 
+            //- Patch displacement increment
+            virtual tmp<vectorField> patchDisplacementIncrement
+            (
+                 const label patchID
+            ) const
+            {
+                FatalErrorIn
+                (
+                    "virtual tmp<vectorField> patchDisplacementIncrement\n"
+                    "(\n"
+                    "    const label patchID\n"
+                    ") const"
+                )   << "WIP: not implemented" << abort(FatalError);
+
+                // Keep compiler happy
+                return tmp<vectorField>(new vectorField(0));
+            }
+
             //- Face zone velocity gradient
             virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
             (

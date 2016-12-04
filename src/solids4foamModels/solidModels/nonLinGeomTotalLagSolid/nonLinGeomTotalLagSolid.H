@@ -212,6 +212,12 @@ public:
                 const label zoneID
             ) const;
 
+            //- Patch displacement increment
+            virtual tmp<vectorField> patchDisplacementIncrement
+            (
+                const label patchID
+            ) const;
+
             //- Face zone velocity surface (tangential) gradient
             virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
             (

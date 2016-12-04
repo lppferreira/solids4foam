@@ -479,21 +479,33 @@ void Foam::solidModel::setTraction
     const vectorField& faceZoneTraction
 )
 {
-    vectorField patchTraction(mesh().boundary()[patchID].size(), vector::zero);
+    // The of30 branch does not use face zones so we instead directly set the
+    // patch tractions
+    FatalErrorIn
+    (
+        "void Foam::solidModel::setTraction\n"
+        "(\n"
+        "    const label patchID,\n"
+        "    const label zoneID,\n"
+        "    const vectorField& faceZoneTraction"
+    )   << "This should not be called on the of30 branch;"
+        << abort(FatalError);
 
-    const label patchStart =
-        mesh().boundaryMesh()[patchID].start();
+    // vectorField patchTraction(mesh().boundary()[patchID].size(), vector::zero);
 
-    forAll(patchTraction, i)
-    {
-        patchTraction[i] =
-            faceZoneTraction
-            [
-                mesh().faceZones()[zoneID].whichFace(patchStart + i)
-            ];
-    }
+    // const label patchStart =
+    //     mesh().boundaryMesh()[patchID].start();
 
-    setTraction(patchID, patchTraction);
+    // forAll(patchTraction, i)
+    // {
+    //     patchTraction[i] =
+    //         faceZoneTraction
+    //         [
+    //             mesh().faceZones()[zoneID].whichFace(patchStart + i)
+    //         ];
+    // }
+
+    // setTraction(patchID, patchTraction);
 }
 
 
