@@ -16,8 +16,8 @@ FoamFile
 
 //solidModel    linearGeometry;
 //solidModel    unsLinearGeometry;
-//solidModel    nonLinearGeometryTotalLagrangian;
-solidModel    nonLinearGeometryUpdatedLagrangian;
+solidModel    nonLinearGeometryTotalLagrangian;
+//solidModel    nonLinearGeometryUpdatedLagrangian;
 //solidModel    unsNonLinearGeometryTotalLagrangian;
 
 "linearGeometryCoeffs|unsLinearGeometryCoeffs"

@@ -287,8 +287,6 @@ nonLinGeomTotalLagSolid::nonLinGeomTotalLagSolid(dynamicFvMesh& mesh)
 {
     D_.oldTime().oldTime();
     pointD_.oldTime();
-    Info<< "Writing D_0" << endl;
-    D_.oldTime().write();
 }
 
 

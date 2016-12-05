@@ -19,10 +19,10 @@ fluidSolidInterface    Aitken;
 AitkenCoeffs
 {
     solidPatch interface;
-    solidZone interface-zone;
+    //solidZone interface-zone;
 
     fluidPatch interface;
-    fluidZone interface-zone;
+    //fluidZone interface-zone;
 
     relaxationFactor 0.4;
 

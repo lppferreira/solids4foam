@@ -35,7 +35,6 @@ License
 #include "Time.H"
 #include "addToRunTimeSelectionTable.H"
 
-#include "volPointInterpolation.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -67,92 +66,6 @@ bool Foam::fluidSolidInterface::updateCoupled()
 }
 
 
-// void Foam::fluidSolidInterface::calcCurrentSolidZonePoints() const
-// {
-//     // Find global face zones
-//     if (currentSolidZonePointsPtr_)
-//     {
-//         FatalErrorIn
-//         (
-//             "void fluidSolidInterface::"
-//             "calcCurrentSolidZonePoints() const"
-//         )   << "Current solid zone points already exist"
-//             << abort(FatalError);
-//     }
-
-//     currentSolidZonePointsPtr_ =
-//         new vectorField(solid().currentFaceZonePoints(solidZoneIndex()));
-// }
-
-
-// void Foam::fluidSolidInterface::calcCurrentSolidZonePatch() const
-// {
-//     // Find global face zones
-//     if (currentSolidZonePatchPtr_)
-//     {
-//         FatalErrorIn
-//         (
-//             "void fluidSolidInterface::"
-//             "calcCurrentSolidZonePatch() const"
-//         )   << "Current solid zone patch already exists"
-//             << abort(FatalError);
-//     }
-
-//     currentSolidZonePatchPtr_ =
-//         new PrimitivePatch<face, SubList, const pointField&>
-//         (
-//             SubList<face>
-//             (
-//                 solidMesh().faceZones()[solidZoneIndex_]().localFaces(),
-//                 solidMesh().faceZones()[solidZoneIndex_]().size()
-//             ),
-//             currentSolidZonePoints()
-//         );
-// }
-
-// void Foam::fluidSolidInterface::calcCurrentFluidZonePoints() const
-// {
-//     // Find global face zones
-//     if (currentFluidZonePointsPtr_)
-//     {
-//         FatalErrorIn
-//         (
-//             "void fluidSolidInterface::"
-//             "calcCurrentFluidZonePoints() const"
-//         )   << "Current fluid zone points alarady exist"
-//             << abort(FatalError);
-//     }
-
-//     currentFluidZonePointsPtr_ =
-//         new vectorField(fluid().currentFaceZonePoints(fluidZoneIndex()));
-// }
-
-// void Foam::fluidSolidInterface::calcCurrentFluidZonePatch() const
-// {
-//     // Find global face zones
-//     if (currentFluidZonePatchPtr_)
-//     {
-//         FatalErrorIn
-//         (
-//             "void fluidSolidInterface::"
-//             "calcCurrentFluidZonePatch() const"
-//         )   << "Current fluid zone patch already exists"
-//             << abort(FatalError);
-//     }
-
-//     currentFluidZonePatchPtr_ =
-//         new PrimitivePatch<face, SubList, const pointField&>
-//         (
-//             SubList<face>
-//             (
-//                 fluidMesh().faceZones()[solidZoneIndex_]().localFaces(),
-//                 fluidMesh().faceZones()[solidZoneIndex_]().size()
-//             ),
-//             currentFluidZonePoints()
-//         );
-// }
-
-
 void Foam::fluidSolidInterface::calcAMIInterpolator() const
 {
     // Create AMI interpolation
@@ -165,16 +78,9 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
             << abort(FatalError);
     }
 
-    // Create copy of solid face zone primitive patch in current configuration
-
-    // deleteDemandDrivenData(currentSolidZonePatchPtr_);
-    // deleteDemandDrivenData(currentSolidZonePointsPtr_);
-
-    //currentSolidZonePatch().movePoints(currentSolidZonePoints());
-
     AMIPtr_.set
     (
-        new newAMIPatchToPatchInterpolation
+        new AMIPatchToPatchInterpolation
         (
             fluidMesh().boundaryMesh()[fluidPatchIndex_],
             solidMesh().boundaryMesh()[solidPatchIndex_],
@@ -207,44 +113,10 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
         Info<< "    Fluid-to-solid face interpolation error: " << maxDist
             << endl;
     }
-
-    // Info<< "Checking solid-to-fluid point interpolator (AMI)" << endl;
-    // {
-    //     vectorField solidZonePoints_ =
-    //         solidMesh().faceZones()[solidZoneIndex_]().localPoints();
-
-    //     vectorField solidZonePoints =
-    //         AMI().pointInterpolateToSource
-    //         (
-    //             solidZonePoints_
-    //         );
-
-    //     vectorField fluidZonePoints =
-    //         fluidMesh().faceZones()[fluidZoneIndex_]().localPoints();
-
-    //     scalar maxDist = gMax
-    //     (
-    //         mag
-    //         (
-    //             fluidZonePoints
-    //           - solidZonePoints
-    //         )
-    //     );
-
-    //     Info<< "Solid-to-fluid point interpolation error (AMI): " << maxDist
-    //         << endl;
-    // }
-
-    //Info<< "Number of uncovered master faces: "
-    //    << ggiInterpolatorPtr_->uncoveredMasterFaces().size() << endl;
-
-    //Info<< "Number of uncovered slave faces: "
-    //    << ggiInterpolatorPtr_ ->uncoveredSlaveFaces().size() << endl;
 }
 
 
-void Foam::fluidSolidInterface::
-calcAccumulatedFluidInterfaceDisplacement() const
+void Foam::fluidSolidInterface::calcAccumulatedFluidInterfaceDisplacement() const
 {
     // Read accumulated displacement
     if (accumulatedFluidInterfaceDisplacementPtr_)
@@ -308,67 +180,6 @@ calcAccumulatedFluidInterfaceDisplacement() const
 }
 
 
-void Foam::fluidSolidInterface::calcMinEdgeLength() const
-{
-    FatalErrorIn("void Foam::fluidSolidInterface::calcMinEdgeLength() const")
-        << "WIP" << abort(FatalError);
-
-    // // Read accumulated displacement
-    // if (minEdgeLengthPtr_)
-    // {
-    //     FatalErrorIn
-    //     (
-    //         "void fluidSolidInterface::"
-    //         "calcMinEdgeLength() const"
-    //     )
-    //         << "Minimal edge lengths already exist"
-    //         << abort(FatalError);
-    // }
-
-    // minEdgeLengthPtr_ =
-    //     new scalarField
-    //     (
-    //         fluidMesh().faceZones()[fluidZoneIndex_]().nPoints(),
-    //         0
-    //     );
-    // scalarField& minEdgeLength = *minEdgeLengthPtr_;
-
-
-    // const edgeList& edges =
-    //     fluidMesh().faceZones()[fluidZoneIndex_]().edges();
-
-    // const vectorField& points =
-    //     fluidMesh().faceZones()[fluidZoneIndex_]().localPoints();
-
-    // const labelListList& pointEdges =
-    //     fluidMesh().faceZones()[fluidZoneIndex_]().pointEdges();
-
-    // forAll(points, pointI)
-    // {
-    //     const labelList& curPointEdges = pointEdges[pointI];
-
-    //     scalar minLength = GREAT;
-
-    //     forAll(curPointEdges, edgeI)
-    //     {
-    //         const edge& curEdge = edges[curPointEdges[edgeI]];
-
-    //         scalar Le = curEdge.mag(points);
-
-    //         if (Le < minLength)
-    //         {
-    //             minLength = Le;
-    //         }
-    //     }
-
-    //     minEdgeLength[pointI] = minLength;
-    // }
-
-//     Pout << "Min edge length: " << min(minEdgeLength) << endl;
-//     Pout << "gMin edge length: " << gMin(minEdgeLength) << endl;
-}
-
-
 Foam::vectorIOField&
 Foam::fluidSolidInterface::accumulatedFluidInterfaceDisplacement()
 {
@@ -378,17 +189,6 @@ Foam::fluidSolidInterface::accumulatedFluidInterfaceDisplacement()
     }
 
     return *accumulatedFluidInterfaceDisplacementPtr_;
-}
-
-
-const Foam::scalarField& Foam::fluidSolidInterface::minEdgeLength() const
-{
-    if (!minEdgeLengthPtr_)
-    {
-        calcMinEdgeLength();
-    }
-
-    return *minEdgeLengthPtr_;
 }
 
 
@@ -418,13 +218,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     solidMesh_(solidMesh),
     solid_(solidModel::New(solidMesh_)),
     solidPatchIndex_(-1),
-    // solidZoneIndex_(-1),
     fluidPatchIndex_(-1),
-    // fluidZoneIndex_(-1),
-    // currentSolidZonePointsPtr_(NULL),
-    // currentSolidZonePatchPtr_(NULL),
-    // currentFluidZonePointsPtr_(NULL),
-    // currentFluidZonePatchPtr_(NULL),
     AMIPtr_(NULL),
     outerCorrTolerance_
     (
@@ -451,7 +245,6 @@ Foam::fluidSolidInterface::fluidSolidInterface
     fluidPatchPointsDisplPrev_(),
     solidPatchPointsDispl_(),
     solidPatchPointsDisplRef_(),
-    //solidPatchPressure_(),
     residual_(),
     residualPrev_(),
     maxResidualNorm_(0),
@@ -460,8 +253,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     (
         fsiProperties_.lookupOrDefault<int>("interpolatorUpdateFrequency", 0)
     ),
-    accumulatedFluidInterfaceDisplacementPtr_(NULL),
-    minEdgeLengthPtr_(NULL)
+    accumulatedFluidInterfaceDisplacementPtr_(NULL)
 {
     // Check if couplingStartTime is specified
     if (couplingStartTime_ > SMALL)
@@ -533,67 +325,15 @@ Foam::fluidSolidInterface::fluidSolidInterface
 
 Foam::fluidSolidInterface::~fluidSolidInterface()
 {
-    // deleteDemandDrivenData(currentSolidZonePointsPtr_);
-    // deleteDemandDrivenData(currentSolidZonePatchPtr_);
-    // deleteDemandDrivenData(currentFluidZonePointsPtr_);
-    // deleteDemandDrivenData(currentFluidZonePatchPtr_);
     AMIPtr_.clear();
     deleteDemandDrivenData(accumulatedFluidInterfaceDisplacementPtr_);
-    deleteDemandDrivenData(minEdgeLengthPtr_);
 }
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 
-// const Foam::vectorField&
-// Foam::fluidSolidInterface::currentSolidZonePoints() const
-// {
-//     if (!currentSolidZonePointsPtr_)
-//     {
-//         calcCurrentSolidZonePoints();
-//     }
-
-//     return *currentSolidZonePointsPtr_;
-// }
-
-
-// const Foam::PrimitivePatch<Foam::face, Foam::SubList, const Foam::pointField&>&
-// Foam::fluidSolidInterface::currentSolidZonePatch() const
-// {
-//     if (!currentSolidZonePatchPtr_)
-//     {
-//         calcCurrentSolidZonePatch();
-//     }
-
-//     return *currentSolidZonePatchPtr_;
-// }
-
-// const Foam::vectorField&
-// Foam::fluidSolidInterface::currentFluidZonePoints() const
-// {
-//     if (!currentFluidZonePointsPtr_)
-//     {
-//         calcCurrentFluidZonePoints();
-//     }
-
-//     return *currentFluidZonePointsPtr_;
-// }
-
-// const Foam::PrimitivePatch<Foam::face, Foam::SubList, const Foam::pointField&>&
-// Foam::fluidSolidInterface::currentFluidZonePatch() const
-// {
-//     if (!currentFluidZonePatchPtr_)
-//     {
-//         calcCurrentFluidZonePatch();
-//     }
-
-//     return *currentFluidZonePatchPtr_;
-// }
-
-
-const Foam::newAMIPatchToPatchInterpolation&
-Foam::fluidSolidInterface::AMI() const
+const Foam::AMIPatchToPatchInterpolation& Foam::fluidSolidInterface::AMI() const
 {
     if (!AMIPtr_.valid())
     {
@@ -690,6 +430,8 @@ void Foam::fluidSolidInterface::moveFluidMesh()
 
     // Philip: is it OK to use primitivePatchInterpolation for faceToPoint in
     // parallel? It will not be correct on shared points!
+    // We could use pointVectorField.correctBoundaryConditions() to sync the
+    // shared points...
     primitivePatchInterpolation patchInterpolator
     (
         fluidMesh().boundaryMesh()[fluidPatchIndex()]
@@ -906,40 +648,6 @@ void Foam::fluidSolidInterface::moveFluidMesh()
                 vector::zero
             );
     }
-
-
-    // Move unused fluid mesh points
-    // Philip: there will never be unused points in of30 as there are no global
-    // face zones
-    //{
-        // PC: hmmnn in fe32, there can be "unused" points where there are more
-        // points in allPoints() than in points()
-        // so in this case there are no unused points so nothing happens here
-        // I need to understand better how AMI deals with this and if we need to
-        // do anything special
-    	// JN: Ok. I don't have any experience. I guess let's use this and check
-	    // a case, where we have unused points and see what happens
-        //vectorField newPoints = fluidMesh().points();
-
-        //const labelList& fluidZoneMeshPoints =
-        //    fluidMesh().faceZones()[fluidZoneIndex()]().meshPoints();
-
-//         forAll(fluidZonePointsDispl(), pointI)
-//         {
-//             if (fluidZoneMeshPoints[pointI] >= fluidMesh().nPoints())
-//             {
-//                 newPoints[fluidZoneMeshPoints[pointI]] +=
-//                     fluidZonePointsDispl()[pointI]
-//                   - fluidZonePointsDisplPrev()[pointI];
-//             }
-//         }
-
-//         twoDPointCorrector twoDCorrector(fluidMesh());
-
-//         twoDCorrector.correctPoints(newPoints);
-
-//         fluidMesh_.movePoints(newPoints);
-//     }
 }
 
 
@@ -1048,8 +756,10 @@ Foam::scalar Foam::fluidSolidInterface::updateResidual()
 {
     // 1. use AMI to interpolate the solid patch face D field to the fluid
     //    patch faces D
-    // 2. use volPointInterpolation to interpolate the fluid patch faces D to
-    //    the fluid patch points D
+    // 2. use primitivePatchInterpolation to interpolate the fluid patch faces D
+    //    to the fluid patch points D
+    // 3. assemble a pointD field and call correctBoundaryConditions to sync
+    //    shared points
 
     // Get increment of displacement at solid interface faces
     const vectorField solidPatchDisplAtSolid =
@@ -1059,35 +769,21 @@ Foam::scalar Foam::fluidSolidInterface::updateResidual()
     const vectorField solidPatchDispl =
         AMI().interpolateToSource(solidPatchDisplAtSolid);
 
-    // We will create a volPointInterpolation to interpolate the fluid interface
-    // face values to point values
-    // We should store this to avoid recalculation of weights
-    // This may seem like overkill but volPointInterpolation works in parallel
-    // and it is the most straight-forward method for now.
-    // We could consider implementing a interpolateBoundaryPatch function
-    volPointInterpolation volToPoint(fluidMesh());
-    
-    // Interpolate faces displacements to point displacements
-    volVectorField DD
+    // Create patch interpolator
+    // Note: the global shared points are not treated correctly in parallel
+    // so we will sync them below
+    primitivePatchInterpolation patchInterp
     (
-        IOobject
-        (
-            "fluidDD",
-            fluidMesh().time().timeName(),
-            fluidMesh(),
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        fluidMesh(),
-        dimensionedVector("zero", dimLength, vector::zero),
-        calculatedFvPatchVectorField::typeName
+        fluidMesh().boundaryMesh()[fluidPatchIndex_]
     );
 
-    // Set the fluid interface displacement field
-    DD.boundaryField()[fluidPatchIndex_] = solidPatchDispl;
+    // Interpolate fluid face values to points
+    solidPatchPointsDispl() = patchInterp.faceToPointInterpolate(solidPatchDispl);
 
+    // Create pointMesh
     pointMesh pMesh(fluidMesh());
 
+    // Create pointDD field to sync global points
     pointVectorField pointDD
     (
         IOobject
@@ -1103,19 +799,28 @@ Foam::scalar Foam::fluidSolidInterface::updateResidual()
         "calculated"
     );
 
-    volToPoint.interpolateBoundaryField(DD, pointDD);
-
-    // Update the solid patch point displacement field (at the fluid side)
+    // Populate pointDD with the interface values
     const labelList& meshPoints =
         fluidMesh().boundaryMesh()[fluidPatchIndex_].meshPoints();
 
-    vectorField& solidPatchPointsDispl = this->solidPatchPointsDispl();
     vectorField& pointDDI = pointDD.internalField();
+    vectorField& solidPatchPointsDispl = this->solidPatchPointsDispl();
 
+    forAll(meshPoints, pI)
+    {
+        pointDDI[meshPoints[pI]] = solidPatchPointsDispl[pI];
+    }
+
+    // Sync the pointDD global shared points
+    pointDD.correctBoundaryConditions();
+
+    // Update the point patch displacements
     forAll(meshPoints, pI)
     {
         solidPatchPointsDispl[pI] = pointDDI[meshPoints[pI]];
     }
+
+    // Update residual
 
     residualPrev() = residual();
 
@@ -1131,10 +836,6 @@ Foam::scalar Foam::fluidSolidInterface::updateResidual()
     residualNorm /= maxResidualNorm_ + SMALL;
 
     Info<< "Current FSI relative residual norm: " << residualNorm << endl;
-    Info<< "max solidPatchPointsDispl "
-        << max(mag(solidPatchPointsDispl)) << nl
-        << "max fluidPatchPointsDispl "
-        << max(mag(fluidPatchPointsDispl())) << endl;
 
     return residualNorm;
 }

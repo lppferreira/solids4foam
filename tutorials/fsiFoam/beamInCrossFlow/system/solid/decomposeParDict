@@ -14,11 +14,12 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains 8;
+numberOfSubdomains 4;
 
-method          metis;
+method          scotch;
 
-globalFaceZones ( interface-zone );
+// Not used in of30
+//globalFaceZones ( interface-zone );
 
 simpleCoeffs
 {

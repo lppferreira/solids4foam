@@ -28,6 +28,8 @@ Class
 Description
     Virtual base class for fluid-solid interface coupling.
 
+    Note: global face zones are not used on the of30 branch
+
 Author
     Zeljko Tukovic, FSB Zagreb.  All rights reserved.
     Philip Cardiff, UCD. All rights reserved.
@@ -48,7 +50,7 @@ SourceFiles
 #include "fluidModel.H"
 #include "solidModel.H"
 #include "coupledPolyPatch.H"
-#include "newAMIPatchToPatchInterpolation.H"
+#include "AMIPatchToPatchInterpolation.H"
 #include "polyBoundaryMesh.H"
 #include "coupleGroupIdentifier.H"
 
@@ -85,31 +87,11 @@ class fluidSolidInterface
         //- Solid interface patch index
         label solidPatchIndex_;
 
-        //- Solid interface face zone index
-        //label solidZoneIndex_;
-
         //- Fluid interface patch index
         label fluidPatchIndex_;
 
-        //- Fluid interface face zone index
-        //label fluidZoneIndex_;
-
-        //- Solid face zone current points
-        //mutable vectorField* currentSolidZonePointsPtr_;
-
-        //- Solid face zone primitive patch in current configuration
-        //mutable PrimitivePatch<face, SubList, const pointField&>*
-        //        currentSolidZonePatchPtr_;
-
-        //- Fluid face zone current points
-        //mutable vectorField* currentFluidZonePointsPtr_;
-
-        //- Fluid face zone primitive patch in current configuration
-        // mutable PrimitivePatch<face, SubList, const pointField&>*
-        //     currentFluidZonePatchPtr_;
-
         //- AMI zone-to-zone interpolation
-        mutable autoPtr<newAMIPatchToPatchInterpolation> AMIPtr_;
+        mutable autoPtr<AMIPatchToPatchInterpolation> AMIPtr_;
 
         //- Outer correction loop stoping tolerance
         scalar outerCorrTolerance_;
@@ -141,9 +123,6 @@ class fluidSolidInterface
         //- Solid patch ref. point displacement
         vectorField solidPatchPointsDisplRef_;
 
-        //- Solid patch pressure
-        //scalarField solidPatchPressure_;
-
         //- Current FSI residual
         vectorField residual_;
 
@@ -162,25 +141,10 @@ class fluidSolidInterface
         //- Accumulated fluid side interface displacement
         mutable vectorIOField* accumulatedFluidInterfaceDisplacementPtr_;
 
-        //- Min edge length for interface points at fluid side
-        mutable scalarField* minEdgeLengthPtr_;
-
     // Private Member Functions
 
         //- Update the coupled switch based on the couplingStartTime
         bool updateCoupled();
-
-        //- Calculate current solid zone points
-        // void calcCurrentSolidZonePoints() const;
-
-        //- Calculate current solid zone primitive patch
-        // void calcCurrentSolidZonePatch() const;
-
-        //- Calculate current solid zone points
-        // void calcCurrentFluidZonePoints() const;
-
-        //- Calculate current solid zone primitive patch
-        // void calcCurrentFluidZonePatch() const;
 
         //- Calculate fluid to solid AMI interpolator
         void calcAMIInterpolator() const;
@@ -188,26 +152,14 @@ class fluidSolidInterface
         //- Accumulated fluid interface displacement
         void calcAccumulatedFluidInterfaceDisplacement() const;
 
-        //- Calculate minimal edge lengths
-        void calcMinEdgeLength() const;
-
         //- Return accumulated interface displacement
         vectorIOField& accumulatedFluidInterfaceDisplacement();
-
-        //- Return minimal edge length
-        const scalarField& minEdgeLength() const;
 
         //- Disallow default bitwise copy construct
         fluidSolidInterface(const fluidSolidInterface&);
 
         //- Disallow default bitwise assignment
         void operator=(const fluidSolidInterface&);
-
-
-protected:
-
-    // Protected member functions
-
 
 
 public:
@@ -314,40 +266,14 @@ public:
                 return solidPatchIndex_;
             }
 
-            //- Return solid face zone index
-            // label solidZoneIndex() const
-            // {
-            //     return solidZoneIndex_;
-            // }
-
             //- Return fluid patch index
             label fluidPatchIndex() const
             {
                 return fluidPatchIndex_;
             }
 
-            //- Return fluid face zone index
-            // label fluidZoneIndex() const
-            // {
-            //     return fluidZoneIndex_;
-            // }
-
-            //- Return current solid zone points
-            // const vectorField& currentSolidZonePoints() const;
-
-            //- Return current solid zone patch
-            // const PrimitivePatch<face, SubList, const pointField&>&
-            //     currentSolidZonePatch() const;
-
-            //- Return current fluid zone points
-            // const vectorField& currentFluidZonePoints() const;
-
-            //- Return current fluid zone patch
-            // const PrimitivePatch<face, SubList, const pointField&>&
-            //     currentFluidZonePatch() const;
-
             //- Return a reference to the AMI interpolator
-            const newAMIPatchToPatchInterpolation& AMI() const;
+            const AMIPatchToPatchInterpolation& AMI() const;
 
             //- Return outer corrector loop tolerance
             scalar outerCorrTolerance() const
@@ -408,12 +334,6 @@ public:
             {
                 return solidPatchPointsDisplRef_;
             }
-
-            //- Return solid patch pressure
-            // scalarField& solidPatchPressure()
-            // {
-            //     return solidPatchPressure_;
-            // }
 
             //- Return current fsi residual
             vectorField& residual()
