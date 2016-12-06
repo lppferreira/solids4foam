@@ -190,9 +190,6 @@ class unsNonLinGeomUpdatedLagSolid
         //- Move the mesh to the deformed configuration
         void moveMesh(const pointField& oldPoints);
 
-        //- Create global face zone point maps
-        void findGlobalFaceZones();
-
         //- Disallow default bitwise copy construct
         unsNonLinGeomUpdatedLagSolid(const unsNonLinGeomUpdatedLagSolid&);
 
@@ -251,31 +248,6 @@ public:
                 return pointD_;
             }
 
-            //- Face zone point displacement increment
-            virtual tmp<vectorField> faceZonePointDisplacementIncrement
-            (
-                const label zoneID
-            ) const;
-
-            //- Face zone velocity surface (tangential) gradient
-            virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
-            (
-                const label zoneID,
-                const label patchID
-            ) const;
-
-            //- Face zone current normal
-            virtual tmp<vectorField> faceZoneNormal
-            (
-                const label zoneID,
-                const label patchID
-            ) const;
-
-            //- Face zone primitive patch in current configuration
-            virtual tmp<vectorField> currentFaceZonePoints
-            (
-                const label zoneID
-            ) const;
 
         // Edit
 

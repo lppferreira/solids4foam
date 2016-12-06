@@ -201,31 +201,6 @@ public:
                 return pointD_;
             }
 
-            //- Face zone point displacement increment
-            virtual tmp<vectorField> faceZonePointDisplacementIncrement
-            (
-                const label zoneID
-            ) const;
-
-            //- Face zone velocity surface (tangential) gradient
-            virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
-            (
-                const label zoneID,
-                const label patchID
-            ) const;
-
-            //- Face zone current normal
-            virtual tmp<vectorField> faceZoneNormal
-            (
-                const label zoneID,
-                const label patchID
-            ) const;
-
-            //- Face zone primitive patch in current configuration
-            virtual tmp<vectorField> currentFaceZonePoints
-            (
-                const label zoneID
-            ) const;
 
         // Edit
 
@@ -243,22 +218,6 @@ public:
             (
                 const label patchID,
                 const scalarField& pressure
-            );
-
-            //- Set traction at specified patch
-            virtual void setTraction
-            (
-                const label patchID,
-                const label zoneID,
-                const vectorField& zoneTraction
-            );
-
-            //- Set pressure at specified patch
-            virtual void setPressure
-            (
-                const label patchID,
-                const label zoneID,
-                const scalarField& zonePressure
             );
 
             //- Evolve the solid solver and solve the mathematical model

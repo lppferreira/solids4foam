@@ -94,7 +94,7 @@ void Foam::fluidSolidInterface::calcAMIInterpolator() const
 
     Info<< "Checking fluid-to-solid face interpolator (AMI)" << endl;
     {
-        const vectorField& fluidPatchFaceCentres =
+        const vectorField fluidPatchFaceCentres =
             fluidMesh().boundaryMesh()[fluidPatchIndex_].faceCentres();
 
         const vectorField solidPatchFaceCentres =

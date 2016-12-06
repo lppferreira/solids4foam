@@ -73,18 +73,18 @@ class solidModel
         mechanicalModel mechanical_;
 
         //- Global face zones
-        mutable labelList* globalFaceZonesPtr_;
+        //mutable labelList* globalFaceZonesPtr_;
 
         //- Global to local face zone point mapping
-        mutable labelListList* globalToLocalFaceZonePointMapPtr_;
+        //mutable labelListList* globalToLocalFaceZonePointMapPtr_;
 
     // Private Member Functions
 
         //- Find global face zones
-        void calcGlobalFaceZones() const;
+        //void calcGlobalFaceZones() const;
 
         //- Find global to local point addressing
-        void calcGlobalToLocalFaceZonePointMap() const;
+        //void calcGlobalToLocalFaceZonePointMap() const;
 
         //- Disallow default bitwise copy construct
         solidModel(const solidModel&);
@@ -185,10 +185,10 @@ public:
             }
 
             //- Face zone point displacement increment
-            virtual tmp<vectorField> faceZonePointDisplacementIncrement
-            (
-                 const label zoneID
-            ) const = 0;
+            // virtual tmp<vectorField> faceZonePointDisplacementIncrement
+            // (
+            //      const label zoneID
+            // ) const = 0;
 
             //- Patch displacement increment
             virtual tmp<vectorField> patchDisplacementIncrement
@@ -209,39 +209,39 @@ public:
             }
 
             //- Face zone velocity gradient
-            virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
-            (
-                const label zoneID,
-                const label patchID
-            ) const = 0;
+            // virtual tmp<tensorField> faceZoneSurfaceGradientOfVelocity
+            // (
+            //     const label zoneID,
+            //     const label patchID
+            // ) const = 0;
 
             //- Face zone current normal
-            virtual tmp<vectorField> faceZoneNormal
-            (
-                const label zoneID,
-                const label patchID
-            ) const = 0;
+            // virtual tmp<vectorField> faceZoneNormal
+            // (
+            //     const label zoneID,
+            //     const label patchID
+            // ) const = 0;
 
             //- Face zone primitive patch in current configuration
-            virtual tmp<vectorField> currentFaceZonePoints
-            (
-                const label zoneID
-            ) const = 0;
+            // virtual tmp<vectorField> currentFaceZonePoints
+            // (
+            //     const label zoneID
+            // ) const = 0;
 
             //- Get global face zones list
-            const labelList& globalFaceZones() const;
+            // const labelList& globalFaceZones() const;
 
             //- Get global to local face zone point addressing
-            const labelListList& globalToLocalFaceZonePointMap() const;
+            // const labelListList& globalToLocalFaceZonePointMap() const;
 
         // Edit
 
             //- Update the points on global face zones when moving the mesh
-            void updateGlobalFaceZoneNewPoints
-            (
-                const pointField& pointDDI,
-                pointField& newPoints
-            );
+            // void updateGlobalFaceZoneNewPoints
+            // (
+            //     const pointField& pointDDI,
+            //     pointField& newPoints
+            // );
 
             //- Set traction at specified patch
             virtual void setTraction
@@ -258,20 +258,20 @@ public:
             ) = 0;
 
             //- Set traction at specified patch
-            virtual void setTraction
-            (
-                const label patchID,
-                const label zoneID,
-                const vectorField& faceZoneTraction
-            );
+            // virtual void setTraction
+            // (
+            //     const label patchID,
+            //     const label zoneID,
+            //     const vectorField& faceZoneTraction
+            // );
 
             //- Set traction at specified patch
-            virtual void setPressure
-            (
-                const label patchID,
-                const label zoneID,
-                const scalarField& faceZonePressure
-            );
+            // virtual void setPressure
+            // (
+            //     const label patchID,
+            //     const label zoneID,
+            //     const scalarField& faceZonePressure
+            // );
 
             //- Evolve the solid model
             virtual bool evolve() = 0;
