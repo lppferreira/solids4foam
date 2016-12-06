@@ -14,7 +14,9 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+// fluidSolidInterface    fixedRelaxation;
 fluidSolidInterface    Aitken;
+// fluidSolidInterface    IQNILS;
 
 AitkenCoeffs
 {
@@ -26,6 +28,32 @@ AitkenCoeffs
 
     relaxationFactor 0.4;
 
+    interfaceDeformationLimit 0;
+
+    outerCorrTolerance 1e-6;
+    nOuterCorr 20;
+
+    interpolatorUpdateFrequency 0;
+
+    couplingReuse 0;
+
+    coupled yes;
+}
+
+IQNILSCoeffs
+{
+    // Solid interface patch
+    solidPatch interface;
+
+    // Fluid interface patch
+    fluidPatch interface;
+
+    // Fluid interface patch
+    //relaxationFactor 0.4;
+
+    // If there interface displacement magnitude is larger than this limit
+    // then the fluid mesh motion solver is called; otherwise, only the
+    // interface points are moved
     interfaceDeformationLimit 0;
 
     outerCorrTolerance 1e-6;
