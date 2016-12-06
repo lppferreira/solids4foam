@@ -243,6 +243,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     fluidPatchPointsDispl_(),
     fluidPatchPointsDisplRef_(),
     fluidPatchPointsDisplPrev_(),
+    fluidPatchPointsDisplRefPrev_(),
     solidPatchPointsDispl_(),
     solidPatchPointsDisplRef_(),
     residual_(),
@@ -628,9 +629,11 @@ void Foam::fluidSolidInterface::moveFluidMesh()
                 accumulatedFluidInterfaceDisplacement()
                /fluid().runTime().deltaT().value();
 
-            InfoIn("moveFluidMesh")
-                << "motionUFluidPatch: "
-                << max(mag(motionUFluidPatch)) << endl;
+	    //JN: parallel output doesn't work in of30
+	    //we get -1e+300 - could cause confusion
+            //InfoIn("moveFluidMesh")
+            //    << "motionUFluidPatch: "
+            //    << max(mag(motionUFluidPatch)) << endl;
         }
         else
         {

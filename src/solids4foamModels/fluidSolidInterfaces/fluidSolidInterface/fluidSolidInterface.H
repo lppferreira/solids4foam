@@ -117,6 +117,9 @@ class fluidSolidInterface
         //- Fluid patch previous point displacement
         vectorField fluidPatchPointsDisplPrev_;
 
+        //- Fluid patch previous ref. point displacement
+        vectorField fluidPatchPointsDisplRefPrev_;
+
         //- Solid patch point displacement
         vectorField solidPatchPointsDispl_;
 
@@ -321,6 +324,12 @@ public:
             vectorField& fluidPatchPointsDisplPrev()
             {
                 return fluidPatchPointsDisplPrev_;
+            }
+
+            //- Return fluid patch previous ref. point displacement
+            vectorField& fluidPatchPointsDisplRefPrev()
+            {
+                return fluidPatchPointsDisplRefPrev_;
             }
 
             //- Return solid patch point displacement

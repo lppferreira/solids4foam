@@ -161,8 +161,8 @@ void IQNILSCouplingInterface::updateDisplacement()
     else if (outerCorr() == 2)
     {
         // Set reference in the first coupling iteration
-        solidZonePointsDisplRef() = solidZonePointsDispl();
-        fluidZonePointsDisplRef() = fluidZonePointsDispl();
+        solidPatchPointsDisplRef() = solidPatchPointsDispl();
+        fluidPatchPointsDisplRef() = fluidPatchPointsDispl();
     }
     else
     {
@@ -170,19 +170,19 @@ void IQNILSCouplingInterface::updateDisplacement()
         fluidPatchPointsV_.append
         (
             (
-                solidZonePointsDispl()
-              - fluidZonePointsDispl()
+                solidPatchPointsDispl()
+              - fluidPatchPointsDispl()
             )
           - (
-                solidZonePointsDisplRef()
-              - fluidZonePointsDisplRef()
+                solidPatchPointsDisplRef()
+              - fluidPatchPointsDisplRef()
             )
         );
 
         fluidPatchPointsW_.append
         (
-            solidZonePointsDispl()
-            - solidZonePointsDisplRef()
+            solidPatchPointsDispl()
+            - fluidPatchPointsDispl()
         );
 
         fluidPatchPointsT_.append
@@ -229,8 +229,8 @@ void IQNILSCouplingInterface::updateDisplacement()
                 (
                     Q[i]
                   & (
-                        fluidZonePointsDispl()
-                      - solidZonePointsDispl()
+                        fluidPatchPointsDispl()
+                      - solidPatchPointsDispl()
                     )
                 );
         }
@@ -272,13 +272,13 @@ void IQNILSCouplingInterface::updateDisplacement()
             }
         }
 
-        fluidZonePointsDisplPrev() = fluidZonePointsDispl();
+        fluidPatchPointsDisplRefPrev() = fluidPatchPointsDisplRef();
 
-        fluidZonePointsDispl() = solidZonePointsDispl();
+        fluidPatchPointsDispl() = solidPatchPointsDispl();
 
         for (label i = 0; i < cols; i++)
         {
-            fluidZonePointsDispl() += fluidPatchPointsW_[i]*C[cols-1-i][0];
+            fluidPatchPointsDispl() += fluidPatchPointsW_[i]*C[cols-1-i][0];
         }
     }
     else
@@ -287,15 +287,15 @@ void IQNILSCouplingInterface::updateDisplacement()
         Info<< "Current fsi under-relaxation factor: "
             << relaxationFactor_ << endl;
 
-        fluidZonePointsDisplPrev() = fluidZonePointsDispl();
+        fluidPatchPointsDisplPrev() = fluidPatchPointsDispl();
 
-        fluidZonePointsDispl() += relaxationFactor_*residual();
+        fluidPatchPointsDispl() += relaxationFactor_*residual();
     }
 
 
     // Make sure that displacement on all processors is equal to one
     // calculated on master processor
-    if (Pstream::parRun())
+/*    if (Pstream::parRun())
     {
         if (!Pstream::master())
         {
@@ -333,7 +333,7 @@ void IQNILSCouplingInterface::updateDisplacement()
                     fluidZonePointsDisplGlobal[globalPointI];
             }
         }
-    }
+    }*/
 }
 
 

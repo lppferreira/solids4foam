@@ -18,11 +18,11 @@ fluidSolidInterfaces/fluidSolidInterface/newFluidSolidInterface.C
 fluidSolidInterfaces/fluidSolidInterface/newAMIPatchToPatchInterpolation/newAMIPatchToPatchInterpolation.C
 /*
 fluidSolidInterfaces/weakCouplingInterface/weakCouplingInterface.C
-fluidSolidInterfaces/fixedRelaxationCouplingInterface/fixedRelaxationCouplingInterface.C
 */
+fluidSolidInterfaces/fixedRelaxationCouplingInterface/fixedRelaxationCouplingInterface.C
 fluidSolidInterfaces/AitkenCouplingInterface/AitkenCouplingInterface.C
-/*
 fluidSolidInterfaces/IQNILSCouplingInterface/IQNILSCouplingInterface.C
+/*
 fluidSolidInterfaces/oneWayCouplingInterface/oneWayCouplingInterface.C
 */
 

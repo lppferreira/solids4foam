@@ -113,14 +113,14 @@ void fixedRelaxationCouplingInterface::updateDisplacement()
 	//JN: No solidZonePointsDispl() here?
 	//JN: Also, no AMI/ggi for the displacement?
 
-    fluidZonePointsDisplPrev() = fluidZonePointsDispl();
+    fluidPatchPointsDisplPrev() = fluidPatchPointsDispl();
 
-    fluidZonePointsDispl() += relaxationFactor_*residual();
+    fluidPatchPointsDispl() += relaxationFactor_*residual();
 
 
     // Make sure that displacement on all processors is equal to one
     // calculated on master processor
-    if (Pstream::parRun())
+/*    if (Pstream::parRun())
     {
         if (!Pstream::master())
         {
@@ -158,7 +158,7 @@ void fixedRelaxationCouplingInterface::updateDisplacement()
                     fluidZonePointsDisplGlobal[globalPointI];
             }
         }
-    }
+    }*/
 }
 
 
