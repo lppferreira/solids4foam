@@ -278,6 +278,26 @@ unsLinGeomSolid::unsLinGeomSolid(dynamicFvMesh& mesh)
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+tmp<vectorField> unsLinGeomSolid::patchDisplacementIncrement
+(
+    const label patchID
+) const
+{
+    tmp<vectorField> tPatchDisplacement
+    (
+        new vectorField
+        (
+            mesh().boundary()[patchID].size(),
+            vector::zero
+        )
+    );
+    vectorField& patchDisplacement = tPatchDisplacement();
+
+    patchDisplacement =
+        D_.boundaryField()[patchID] - D_.oldTime().boundaryField()[patchID];
+
+    return tPatchDisplacement;
+}
 
 void unsLinGeomSolid::setTraction
 (

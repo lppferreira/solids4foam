@@ -209,6 +209,12 @@ public:
                 return pointD_;
             }
 
+            //- Return the displacement increment at the patch
+            virtual tmp<vectorField> patchDisplacementIncrement
+            (
+                const label patchID
+            ) const;
+
 
         // Edit
 

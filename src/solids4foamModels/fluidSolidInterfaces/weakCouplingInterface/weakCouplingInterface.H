@@ -62,12 +62,12 @@ class weakCouplingInterface
     // Private data
 
         //- Solid zone traction (pressure + vicous)
-        vectorField solidZoneTraction_;
+//        vectorField solidZoneTraction_;
 
         //- Solid zone traction (pressure + vicous)
-        vectorField solidZoneTractionPrev_;
+//        vectorField solidZoneTractionPrev_;
 
-        //- Solid zone traction (pressure + vicous)
+        //- Solid zone traction (pressure + vicous) - JN: Do we need this?
         vectorField predictedSolidZoneTraction_;
 
         //- Fixed under-relaxation factor

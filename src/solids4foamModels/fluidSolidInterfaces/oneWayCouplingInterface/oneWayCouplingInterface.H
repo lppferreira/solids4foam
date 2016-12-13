@@ -62,7 +62,7 @@ class oneWayCouplingInterface
     // Private data
 
         //- Solid zone traction (pressure + vicous)
-        vectorField solidZoneTraction_;
+//        vectorField solidZoneTraction_;
 
 
     // Private Member Functions

@@ -56,16 +56,16 @@ weakCouplingInterface::weakCouplingInterface
 )
 :
     fluidSolidInterface(typeName, fluidMesh, solidMesh),
-    solidZoneTraction_(),
-    solidZoneTractionPrev_(),
-    predictedSolidZoneTraction_(),
+//    solidZoneTraction_(),
+//    solidZoneTractionPrev_(),
+    predictedSolidZoneTraction_(),//JN: Do we need this?
     relaxationFactor_
     (
         fsiProperties().lookupOrDefault<scalar>("relaxationFactor", 0.01)
     )
 {
-    // Initialize zone traction fields
-    solidZoneTraction_ =
+    // Initialize zone traction fields - no need for this in of30
+/*    solidZoneTraction_ =
         vectorField
         (
             solidMesh.faceZones()[solidZoneIndex()]().size(),
@@ -77,7 +77,7 @@ weakCouplingInterface::weakCouplingInterface
         (
             solidMesh.faceZones()[solidZoneIndex()]().size(),
             vector::zero
-        );
+        );*/
 }
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -107,7 +107,7 @@ void weakCouplingInterface::initializeFields()
     predictedSolidZoneTraction_ =
         vectorField
         (
-            solidMesh().faceZones()[solidZoneIndex()]().size(),
+            fluidMesh().boundaryMesh()[fluidPatchIndex()].nPoints(),
             vector::zero
         );
 
@@ -117,31 +117,10 @@ void weakCouplingInterface::initializeFields()
 
 void weakCouplingInterface::updateWeakDisplacement()
 {
-    vectorField solidZonePointsDisplAtSolid =
+/*    vectorField solidZonePointsDisplAtSolid =
         solid().faceZonePointDisplacementIncrement(solidZoneIndex());
 
-    // Is this valid?
-    // Or do we really have to interpolate?
-    // For that we have to find an AMI, which is able to interpolate between
-    // points.
-    // Current AMI only interpolated between vectorFields
-    // PC: yep, we need some way to interpolate point data from fluid to solid
-    // and vice versa
-    // JN: Hmmmm. It seems to compile. Strange...
-    // We seem to have full AMI funcionality.
-    //JN: Ok. Fourth try. Here we need pointInterpolateToSource...
-
     solidZonePointsDispl() = AMI().pointInterpolateToSource(solidZonePointsDisplAtSolid);
-
-    //solidZonePointsDispl() = AMI().interpolateToSource(solidZonePointsDisplAtSolid);
-
-    //solidZonePointsDispl() = solidZonePointsDisplAtSolid;
-
-   // solidZonePointsDispl() =
-   //     ggiInterpolator().slaveToMasterPointInterpolate
-   //     (
-   //         solidZonePointsDisplAtSolid
-   //     );
 
     residualPrev() = residual();
 
@@ -149,11 +128,15 @@ void weakCouplingInterface::updateWeakDisplacement()
 
     fluidZonePointsDisplPrev() = fluidZonePointsDispl();
 
-    fluidZonePointsDispl() += residual();
+    fluidZonePointsDispl() += residual();*/
+
+    fluidPatchPointsDisplPrev() = fluidPatchPointsDispl();
+
+    fluidPatchPointsDispl() += relaxationFactor_*residual();
 
     // Make sure that displacement on all processors is equal to one
     // calculated on master processor
-    if (Pstream::parRun())
+/*    if (Pstream::parRun())
     {
         if(!Pstream::master())
         {
@@ -191,7 +174,7 @@ void weakCouplingInterface::updateWeakDisplacement()
                     fluidZonePointsDisplGlobal[globalPointI];
             }
         }
-    }
+    }*/
 }
 
 
@@ -199,7 +182,9 @@ void weakCouplingInterface::updateWeakTraction()
 {
     Info<< "Update weak traction on solid patch" << endl;
 
-    solidZoneTractionPrev_ = solidZoneTraction_;
+    //JN: No more zones in of30
+
+/*    solidZoneTractionPrev_ = solidZoneTraction_;
 
     // Calc fluid traction
 
@@ -228,59 +213,57 @@ void weakCouplingInterface::updateWeakTraction()
 
     solidZoneTraction_ =
         relaxationFactor_*fluidZoneTractionAtSolid
-      + (1.0 - relaxationFactor_)*predictedSolidZoneTraction_;
+      + (1.0 - relaxationFactor_)*predictedSolidZoneTraction_;*/
+
+    //JN: instead of zones use the patches
+
+    const vectorField fluidPatchTraction =
+        fluid().patchViscousForce(fluidPatchIndex());
+
+    const scalarField fluidPatchPressure =
+        fluid().patchPressureForce(fluidPatchIndex());
+
+    // Fluid patch face normals
+    const vectorField n = fluidMesh().boundary()[fluidPatchIndex()].nf();
+
+    // Fluid patch total traction
+    const vectorField fluidPatchTotalTraction =
+        fluidPatchTraction - fluidPatchPressure*n;
+
+    //JN: Where do we update predictedSolidZoneTraction?
+    //If it is zero,  we could delete it.
+    // Solid patch total traction
+    vectorField solidPatchTotalTraction =
+        relaxationFactor_*AMI().interpolateToTarget(-fluidPatchTotalTraction);
+//	+ (1.0 - relaxationFactor_)*predictedSolidZoneTraction_;
 
     if (coupled())
     {
         solid().setTraction
         (
             solidPatchIndex(),
-            solidZoneIndex(),
-            solidZoneTraction_
+            solidPatchTotalTraction
         );
     }
 
     // Total force at the fluid side of the interface
     {
-        const vectorField& p =
-            fluidMesh().faceZones()[fluidZoneIndex()]().localPoints();
+        const scalarField& magSf =
+            fluidMesh().boundary()[fluidPatchIndex()].magSf();
 
-        const faceList& f =
-            fluidMesh().faceZones()[fluidZoneIndex()]().localFaces();
+        const vector totalTractionForce = gSum(fluidPatchTotalTraction*magSf);
 
-        vectorField S(f.size(), vector::zero);
-
-        forAll(S, faceI)
-        {
-            S[faceI] = f[faceI].normal(p);
-        }
-
-        vector totalTractionForce = sum(fluidZoneTraction*mag(S));
-
-        Info<< "Total force (fluid) = "
-            << totalTractionForce << endl;
+        Info<< "Total force (fluid) = " << totalTractionForce << endl;
     }
 
     // Total force at the solid side of the interface
     {
-        const vectorField& p =
-            solidMesh().faceZones()[solidZoneIndex()]().localPoints();
+        const scalarField& magSf =
+            solidMesh().boundary()[solidPatchIndex()].magSf();
 
-        const faceList& f =
-            solidMesh().faceZones()[solidZoneIndex()]().localFaces();
+        const vector totalTractionForce = gSum(solidPatchTotalTraction*magSf);
 
-        vectorField S(f.size(), vector::zero);
-
-        forAll(S, faceI)
-        {
-            S[faceI] = f[faceI].normal(p);
-        }
-
-        vector totalTractionForce =
-            sum(fluidZoneTractionAtSolid*mag(S));
-
-        Info<< "Total force (solid) = "
-            << totalTractionForce << endl;
+        Info<< "Total force (solid) = " << totalTractionForce << endl;
     }
 }
 
