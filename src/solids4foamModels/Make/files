@@ -40,6 +40,9 @@ fluidFvPatchFields = fluidModels/fvPatchFields
 $(fluidFvPatchFields)/transitionalParabolicVelocity/transitionalParabolicVelocityFvPatchVectorField.C
 $(fluidFvPatchFields)/extrapolatedPressure/extrapolatedPressureFvPatchScalarField.C
 
+fluidPointPatchFields = fluidModels/pointPatchFields
+$(fluidPointPatchFields)/timeVaryingVelocity/timeVaryingVelocityPointPatchVectorField.C
+
 functionObjects/setInletVelocity/setInletVelocity.C
 functionObjects/solidForces/solidForces.C
 functionObjects/solidForcesDisplacements/solidForcesDisplacements.C
