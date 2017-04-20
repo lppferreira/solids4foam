@@ -9,6 +9,13 @@ EXE_INC = \
     -I$(LIB_SRC)/tetFiniteElement/lnInclude
 
 EXE_LIBS = \
+    -L/usr/local/lib \
+    -lmumps_common \
+    -ldmumps \
+    -lpord \
+    -lmpiseq \
+    -llapack \
+    -lblas \
     -L$(FOAM_USER_LIBBIN) \
     -lsolids4FoamModels \
     -lblockCoupledSolidTools \
@@ -21,3 +28,4 @@ EXE_LIBS = \
     -ldynamicMesh \
     -lmeshTools \
     -ltopoChangerFvMesh
+

@@ -712,23 +712,28 @@ bool coupledUnsLinGeomLinearElasticSolid::evolve()
 
     // Laplacian
     // non-orthogonal correction is treated implicitly
+    Info<< "Discretising the block laplacian term" << endl;
     BlockLduMatrix<vector> blockMatLap =
         BlockFvm::laplacian(extendedMesh_, muf_, D_, blockB);
 
     // Laplacian transpose == div(mu*gradU.T())
+    Info<< "Discretising the block laplacian transpose term" << endl;
     BlockLduMatrix<vector> blockMatLapTran =
         BlockFvm::laplacianTranspose(extendedMesh_, muf_, D_, blockB);
 
     // Laplacian trace == div(lambda*I*tr(gradU))
+    Info<< "Discretising the block laplacian trace term" << endl;
     BlockLduMatrix<vector> blockMatLapTrac =
         BlockFvm::laplacianTrace(extendedMesh_, lambdaf_, D_, blockB);
 
     // Add diagonal contributions
+    Info<< "Assembling the diagonal" << endl;
     d += blockMatLap.diag().asSquare();
     d += blockMatLapTran.diag().asSquare();
     d += blockMatLapTrac.diag().asSquare();
 
     // Add off-diagonal contributions
+    Info<< "Assembling the upper and lower" << endl;
     u += blockMatLap.upper().asSquare();
     u += blockMatLapTran.upper().asSquare();
     u += blockMatLapTrac.upper().asSquare();
@@ -737,6 +742,7 @@ bool coupledUnsLinGeomLinearElasticSolid::evolve()
     l += blockMatLapTrac.lower().asSquare();
 
     // Add contribution for processor boundaries
+    Info<< "Assembling the processor contributions" << endl;
     blockM.interfaces() = blockMatLap.interfaces();
     forAll(mesh().boundaryMesh(), patchI)
     {
@@ -757,12 +763,14 @@ bool coupledUnsLinGeomLinearElasticSolid::evolve()
     // We manually add the boundary conditions equations
     // More thinking is required to get it to fit cleanly with the rest of
     // the block coupled machinery
+    Info<< "Assembling the boundary conditions" << endl;
     extendedMesh_.insertBoundaryConditions
     (
         blockM, blockB, muf_, lambdaf_, D_
     );
 
     // Add terms temporal and gravity terms to the block matrix and source
+    Info<< "Incldusing temporal and gravity terms" << endl;
     extendedMesh_.addFvMatrix
     (
         blockM,
@@ -772,6 +780,7 @@ bool coupledUnsLinGeomLinearElasticSolid::evolve()
     );
 
     // Block coupled solver call
+    Info<< "Solving the linear system" << endl;
     solverPerfD =
         BlockLduSolver<vector>::New
         (

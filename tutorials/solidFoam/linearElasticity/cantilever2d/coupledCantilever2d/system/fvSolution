@@ -20,8 +20,9 @@ solvers
     // Coupled solver
     "blockDD|blockD"
     {
-        // Direct solver
-        solver              EigenSparseLU;
+        // Direct solvers
+        solver              MUMPS;
+        //solver              EigenSparseLU;
 
         // Iterative solver
         //solver            BiCGStab;
