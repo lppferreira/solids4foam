@@ -163,6 +163,8 @@ void pointGaussLsBlockLaplacianTransposeScheme::insertCoeffsTang
     const Map<vector>& pointFixedComp = solidMesh.pointFixedComponent(vf);
     const Map<symmTensor>& pointFixedDir = solidMesh.pointFixedDirection(vf);
 
+    Warning
+        << "pointFixed disabled!" << endl;
 
     // Perform discretisation
 
@@ -372,8 +374,9 @@ void pointGaussLsBlockLaplacianTransposeScheme::insertCoeffsTang
                         // }
 
                         // Check if the point has any fixed components
-                        const bool pointHasFixedComp =
-                            pointFixedComp.found(sePointID);
+                        // const bool pointHasFixedComp =
+                        //     pointFixedComp.found(sePointID);
+                        const bool pointHasFixedComp = false;
                         symmTensor sePointFixedDir = symmTensor::zero;
                         if (pointHasFixedComp)
                         {

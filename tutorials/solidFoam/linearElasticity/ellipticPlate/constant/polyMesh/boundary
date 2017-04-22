@@ -20,38 +20,38 @@ FoamFile
     outside
     {
         type            patch;
-        nFaces          288;
-        startFace       12960;
+        nFaces          1152;
+        startFace       107136;
     }
     symmx
     {
         type            patch;
-        nFaces          192;
-        startFace       13248;
+        nFaces          768;
+        startFace       108288;
     }
     symmy
     {
         type            patch;
-        nFaces          192;
-        startFace       13440;
+        nFaces          768;
+        startFace       109056;
     }
     inside
     {
         type            patch;
-        nFaces          288;
-        startFace       13632;
+        nFaces          1152;
+        startFace       109824;
     }
     top
     {
         type            patch;
-        nFaces          384;
-        startFace       13920;
+        nFaces          1536;
+        startFace       110976;
     }
     bottom
     {
         type            patch;
-        nFaces          384;
-        startFace       14304;
+        nFaces          1536;
+        startFace       112512;
     }
 )
 

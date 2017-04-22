@@ -1,6 +1,13 @@
 #!/bin/sh
 set -x
 
+# Check MUMPS variables are specified
+if [ -z "$MUMPS_INCLUDE_DIR" ] || [ -z "$MUMPS_LIB_DIR" ]
+then
+    echo "Need to set MUMPS_INCLUDE_DIR and MUMPS_LIB_DIR environment variables";
+    exit 1;
+fi
+
 (cd ThirdParty && ./Allwmake)
 
 wmake libso src/solids4foamModels

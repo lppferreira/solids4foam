@@ -162,9 +162,34 @@ void pointGaussLsDivSigmaScheme::insertCoeffsTang
         solidMesh.gPtNgbProcCellCoeffs();
 
     // Fixed points: value and direction
-    const Map<vector>& pointFixedComp = solidMesh.pointFixedComponent(vf);
-    const Map<symmTensor>& pointFixedDir = solidMesh.pointFixedDirection(vf);
+    //const Map<vector>& pointFixedComp = solidMesh.pointFixedComponent(vf);
+    //const Map<symmTensor>& pointFixedDir = solidMesh.pointFixedDirection(vf);
 
+    // Convert pointFixed Maps to lists as it becomes very expensive to lookup
+    // the Maps
+    boolList pointFixed(points.size(), false);
+    List<vector> pointFixedComp(points.size(), vector::zero);
+    List<symmTensor> pointFixedDir(points.size(), symmTensor::zero);
+
+    const Map<vector>& pointFixedCompMap = solidMesh.pointFixedComponent(vf);
+    const Map<symmTensor>& pointFixedDirMap = solidMesh.pointFixedDirection(vf);
+
+    forAllConstIter(Map<vector>, pointFixedCompMap, iter)
+    {
+        const label pointID = iter.key();
+        const vector& comp = iter();
+
+        pointFixed[pointID] = true;
+        pointFixedComp[pointID] = comp;
+    }
+
+    forAllConstIter(Map<symmTensor>, pointFixedDirMap, iter)
+    {
+        const label pointID = iter.key();
+        const symmTensor& dir = iter();
+
+        pointFixedDir[pointID] = dir;
+    }
 
     // Perform discretisation
 
@@ -381,8 +406,10 @@ void pointGaussLsDivSigmaScheme::insertCoeffsTang
                         // }
 
                         // Check if the point has any fixed components
-                        const bool pointHasFixedComp =
-                            pointFixedComp.found(sePointID);
+                        // const bool pointHasFixedComp =
+                        //     pointFixedComp.found(sePointID);
+                        //const bool pointHasFixedComp = pointFixed[sePointID];
+                        const bool pointHasFixedComp = false;
                         symmTensor sePointFixedDir = symmTensor::zero;
                         if (pointHasFixedComp)
                         {

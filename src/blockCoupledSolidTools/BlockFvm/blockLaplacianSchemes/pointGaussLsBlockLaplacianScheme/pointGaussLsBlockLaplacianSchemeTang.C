@@ -368,8 +368,12 @@ void pointGaussLsBlockLaplacianScheme::insertCoeffsTang
                         // }
 
                         // Check if the point has any fixed components
-                        const bool pointHasFixedComp =
-                            pointFixedComp.found(sePointID);
+                        // const bool pointHasFixedComp =
+                        //     pointFixedComp.found(sePointID);
+                        const bool pointHasFixedComp = false;
+                        // FIX: THIS IS REALLY INEFFICIENT TO SEARCH SO MANY
+                        // TIMES FOR sePointID: I should pre-emptively create
+                        // a list
                         symmTensor sePointFixedDir = symmTensor::zero;
                         if (pointHasFixedComp)
                         {

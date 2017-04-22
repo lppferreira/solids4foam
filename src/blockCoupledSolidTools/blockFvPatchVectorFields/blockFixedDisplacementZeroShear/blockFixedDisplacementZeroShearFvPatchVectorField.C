@@ -405,9 +405,9 @@ void blockFixedDisplacementZeroShearFvPatchVectorField::insertBlockCoeffs
                 }
 
                 // Check if the point has any fixed components
-                const bool pointHasFixedComp =
-                    pointFixedComp.found(sePointID);
-                //const bool pointHasFixedComp = false;
+                //const bool pointHasFixedComp =
+                //    pointFixedComp.found(sePointID);
+                const bool pointHasFixedComp = false;
                 symmTensor sePointFixedDir = symmTensor::zero;
                 if (pointHasFixedComp)
                 {

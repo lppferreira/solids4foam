@@ -21,16 +21,16 @@ solvers
     "blockDD|blockD"
     {
         // Direct solvers
-        solver              MUMPS;
-        //solver              EigenSparseLU;
+        //solver              MUMPS;
+        solver              EigenSparseLU;
 
         // Iterative solver
-        //solver            BiCGStab;
-        //preconditioner    myCholesky;
-        //tolerance         1e-10;
-        //relTol            0;
-        //minIter           0;
-        //maxIter           1000;
+//         solver            BiCGStab;
+//         preconditioner    myCholesky;
+//         tolerance         1e-10;
+//         relTol            0;
+//         minIter           0;
+//         maxIter           10000;
     }
 
     // Segregated solver
