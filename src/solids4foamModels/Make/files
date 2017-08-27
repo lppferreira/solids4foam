@@ -1,7 +1,6 @@
 physicsModel/physicsModel.C
 
 solidModels/solidModel/solidModel.C
-solidModels/coupledHybridLinGeomSolid/coupledHybridLinGeomSolid.C
 solidModels/coupledUnsLinGeomLinearElasticSolid/coupledUnsLinGeomLinearElasticSolid.C
 solidModels/coupledUnsLinGeomSolid/coupledUnsLinGeomSolid.C
 solidModels/freeVibrationSolid/freeVibrationSolid.C
@@ -11,7 +10,6 @@ solidModels/nonLinGeomUpdatedLagSolid/nonLinGeomUpdatedLagSolid.C
 solidModels/nonLinGeomTotalLagSolid/nonLinGeomTotalLagSolid.C
 solidModels/nonLinGeomTotalLagTotalDispSolid/nonLinGeomTotalLagTotalDispSolid.C
 solidModels/poroLinGeomSolid/poroLinGeomSolid.C
-solidModels/simpleHybridLinGeomSolid/simpleHybridLinGeomSolid.C
 solidModels/thermalLinGeomSolid/thermalLinGeomSolid.C
 solidModels/unsLinGeomSolid/unsLinGeomSolid.C
 solidModels/unsNonLinGeomUpdatedLagSolid/unsNonLinGeomUpdatedLagSolid.C
