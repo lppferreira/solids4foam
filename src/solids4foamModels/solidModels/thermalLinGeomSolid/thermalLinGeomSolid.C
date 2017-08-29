@@ -172,15 +172,20 @@ thermalLinGeomSolid::thermalLinGeomSolid
 )
 :
     solidModel(typeName, runTime, region),
-    impK_(mechanical().impK()),
-    impKf_(mechanical().impKf()),
-    rImpK_(1.0/impK_),
-    DEqnRelaxFactor_
+    thermal_(mesh()),
+    rhoC_
     (
-        mesh().solutionDict().relax("DEqn")
-      ? mesh().solutionDict().relaxationFactor("DEqn")
-      : 1.0
+        IOobject
+        (
+            "rhoC",
+            runTime.timeName(),
+            mesh(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        ),
+        thermal_.C()*mechanical().rho()
     ),
+    k_(thermal_.k()),
     T_
     (
         IOobject
@@ -192,19 +197,6 @@ thermalLinGeomSolid::thermalLinGeomSolid
             IOobject::AUTO_WRITE
         ),
         mesh()
-    ),
-    T0_
-    (
-        IOobject
-        (
-            "T0",
-            runTime.timeName(),
-            mesh(),
-            IOobject::READ_IF_PRESENT,
-            IOobject::AUTO_WRITE
-        ),
-        mesh(),
-        dimensionedScalar("T0", dimTemperature, 0.0)
     ),
     gradT_
     (
@@ -219,35 +211,11 @@ thermalLinGeomSolid::thermalLinGeomSolid
         mesh(),
         dimensionedVector("0", dimTemperature/dimLength, vector::zero)
     ),
-    rhoC_
-    (
-        IOobject
-        (
-            "rhoC",
-            runTime.timeName(),
-            mesh(),
-            IOobject::MUST_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh()
-    ),
-    k_
-    (
-        IOobject
-        (
-            "k",
-            runTime.timeName(),
-            mesh(),
-            IOobject::MUST_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh()
-    ),
     TEqnRelaxFactor_
     (
-        mesh().solutionDict().relax("TEqn")
-      ? mesh().solutionDict().relaxationFactor("TEqn")
-      : 1.0
+     mesh().solutionDict().relax("TEqn")
+     ? mesh().solutionDict().relaxationFactor("TEqn")
+     : 1.0
     ),
     absTTol_
     (
@@ -256,7 +224,10 @@ thermalLinGeomSolid::thermalLinGeomSolid
             "absoluteTemperatureTolerance",
             1e-06
         )
-    )
+    ),
+    impK_(mechanical().impK()),
+    impKf_(mechanical().impKf()),
+    rImpK_(1.0/impK_)
 {
     // Store T old time
     T_.oldTime();
@@ -326,11 +297,17 @@ bool thermalLinGeomSolid::evolve()
         // Under-relax the field
         relaxField(D(), iCorr);
 
+        // Update increment of displacement
+        DD() = D() - D().oldTime();
+
         // Update velocity
         U() = fvc::ddt(D());
 
         // Update gradient of displacement
         mechanical().grad(D(), gradD());
+
+        // Update gradient of displacement increment
+        gradDD() = gradD() - gradD().oldTime();
 
         // Calculate the stress using run-time selectable mechanical law
         mechanical().correct(sigma());

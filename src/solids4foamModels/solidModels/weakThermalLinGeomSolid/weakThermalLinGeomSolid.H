@@ -42,7 +42,8 @@ SourceFiles
 #ifndef weakThermalLinGeomSolid_H
 #define weakThermalLinGeomSolid_H
 
-#include "linGeomSolid.H"
+#include "linGeomTotalDispSolid.H"
+#include "thermalModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -60,18 +61,12 @@ namespace solidModels
 
 class weakThermalLinGeomSolid
 :
-    public linGeomSolid
+    public linGeomTotalDispSolid
 {
     // Private data
 
-        //- Temperature field
-        volScalarField T_;
-
-        //- Referemce stress-free temperature field
-        volScalarField T0_;
-
-        //- Cell temperature gradient
-        volVectorField gradT_;
+        //- Thermal model
+        thermalModel thermal_;
 
         //- The product of density and specific heat
         volScalarField rhoC_;
@@ -81,6 +76,15 @@ class weakThermalLinGeomSolid
     
         //- T equation under-relaxation factor
         const scalar TEqnRelaxFactor_;
+
+        //- Temperature
+        volScalarField T_;
+
+        //- Temperature gradient
+        volVectorField gradT_;
+
+        //- Absolute temperature tolerance (in degrees)
+        const scalar absTTol_;
 
     // Private Member Functions
 
