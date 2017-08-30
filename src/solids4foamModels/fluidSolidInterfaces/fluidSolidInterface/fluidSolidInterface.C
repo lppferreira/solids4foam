@@ -35,7 +35,7 @@ License
 #include "tetFemMatrices.H"
 #include "fixedValuePointPatchFields.H"
 #include "ZoneIDs.H"
-#include "ggiInterpolation.H"
+#include "newGgiInterpolation.H"
 #include "TPSFunction.H"
 #include "elasticWallPressureFvPatchScalarField.H"
 #include "movingWallPressureFvPatchScalarField.H"
@@ -251,18 +251,18 @@ void Foam::fluidSolidInterface::calcGgiInterpolator() const
     Info<< "Create GGI zone-to-zone interpolator" << endl;
 
     ggiInterpolatorPtr_ =
-        new ggiZoneInterpolation
+        new newGgiZoneInterpolation
         (
             fluidMesh().faceZones()[fluidZoneIndex_](),
             currentSolidZonePatch(),
             tensorField(0),
             tensorField(0),
             vectorField(0), // Slave-to-master separation. Bug fix
-            true,           // Patch data is complete on all processors
+            //true,           // Patch data is complete on all processors
             SMALL,          // Non-overlapping face tolerances
             SMALL,
             true,           // Rescale weighting factors
-            ggiInterpolation::BB_OCTREE
+            newGgiInterpolation::BB_OCTREE
         );
 
 
@@ -885,7 +885,7 @@ Foam::fluidSolidInterface::fluidToSolid() const
 }
 
 
-const Foam::ggiZoneInterpolation&
+const Foam::newGgiZoneInterpolation&
 Foam::fluidSolidInterface::ggiInterpolator() const
 {
     if (!ggiInterpolatorPtr_)

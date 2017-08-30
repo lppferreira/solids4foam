@@ -49,7 +49,7 @@ SourceFiles
 #include "fluidModel.H"
 #include "solidModel.H"
 #include "dynamicFvMesh.H"
-#include "ggiInterpolation.H"
+#include "newGgiInterpolation.H"
 #include "RBFInterpolation.H"
 
 using namespace rbf;
@@ -102,7 +102,7 @@ class fluidSolidInterface
         mutable std::shared_ptr<RBFInterpolation> fluidToSolidPtr_;
 
         //- Ggi zone-to-zone interpolation
-        mutable ggiZoneInterpolation* ggiInterpolatorPtr_;
+        mutable newGgiZoneInterpolation* ggiInterpolatorPtr_;
 
         //- Solid zone to fluid zone interpolator
         mutable std::shared_ptr<RBFInterpolation> solidToFluidPtr_;
@@ -362,7 +362,7 @@ public:
             const std::shared_ptr<RBFInterpolation>& fluidToSolid() const;
 
             //- Return fluid to solid interpolator
-            const ggiZoneInterpolation& ggiInterpolator() const;
+            const newGgiZoneInterpolation& ggiInterpolator() const;
 
             //- Return fluid to solid interpolator
             const std::shared_ptr<RBFInterpolation>& solidToFluid() const;

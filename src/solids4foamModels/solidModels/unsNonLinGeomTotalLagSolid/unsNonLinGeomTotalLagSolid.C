@@ -231,7 +231,7 @@ bool unsNonLinGeomTotalLagSolid::evolve()
 
     do
     {
-        if (blockLduMatrix::debug)
+        if (lduMatrix::debug)
         {
             Info<< "Time: " << runTime().timeName()
                 << ", outer iteration: " << iCorr << endl;
@@ -327,7 +327,7 @@ bool unsNonLinGeomTotalLagSolid::evolve()
 
         if
         (
-            blockLduMatrix::debug
+            lduMatrix::debug
          || (iCorr % infoFrequency()) == 0
          || res < curConvergenceTolerance
          || maxIterReached() == nCorr()

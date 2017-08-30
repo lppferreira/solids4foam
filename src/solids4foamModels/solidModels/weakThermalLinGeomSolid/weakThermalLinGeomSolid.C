@@ -197,9 +197,9 @@ weakThermalLinGeomSolid::weakThermalLinGeomSolid
     ),
     TEqnRelaxFactor_
     (
-     mesh().solutionDict().relax("TEqn")
-     ? mesh().solutionDict().relaxationFactor("TEqn")
-     : 1.0
+        mesh().solutionDict().relax("TEqn")
+      ? mesh().solutionDict().relaxationFactor("TEqn")
+      : 1.0
     ),
     absTTol_
     (

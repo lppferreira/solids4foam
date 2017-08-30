@@ -85,7 +85,10 @@ class thermalLinGeomSolid
 
         //- D equation under-relaxation factor
         const scalar DEqnRelaxFactor_;
-    
+
+        //- T equation under-relaxation factor
+        const scalar TEqnRelaxFactor_;
+
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;
 

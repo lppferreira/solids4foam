@@ -211,11 +211,17 @@ thermalLinGeomSolid::thermalLinGeomSolid
         mesh(),
         dimensionedVector("0", dimTemperature/dimLength, vector::zero)
     ),
+    DEqnRelaxFactor_
+    (
+        mesh().solutionDict().relax("DEqn")
+      ? mesh().solutionDict().relaxationFactor("DEqn")
+      : 1.0
+    ),
     TEqnRelaxFactor_
     (
-     mesh().solutionDict().relax("TEqn")
-     ? mesh().solutionDict().relaxationFactor("TEqn")
-     : 1.0
+        mesh().solutionDict().relax("TEqn")
+      ? mesh().solutionDict().relaxationFactor("TEqn")
+      : 1.0
     ),
     absTTol_
     (

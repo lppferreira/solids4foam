@@ -73,15 +73,15 @@ class weakThermalLinGeomSolid
 
         //- Thermal conductivity
         volScalarField k_;
-    
-        //- T equation under-relaxation factor
-        const scalar TEqnRelaxFactor_;
 
         //- Temperature
         volScalarField T_;
 
         //- Temperature gradient
         volVectorField gradT_;
+
+        //- T equation under-relaxation factor
+        const scalar TEqnRelaxFactor_;
 
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;
