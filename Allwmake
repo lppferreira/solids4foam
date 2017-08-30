@@ -3,8 +3,8 @@ set -x
 
 (cd ThirdParty && ./Allwmake)
 
-wmake libso src/solids4foamModels
 wmake libso src/blockCoupledSolidTools
+wmake libso src/solids4foamModels
 
 wmake all applications/utilities
 wmake all applications/solvers
