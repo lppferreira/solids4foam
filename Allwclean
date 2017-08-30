@@ -1,6 +1,7 @@
 #!/bin/sh
 set -x
 
+wclean lib src/blockCoupledSolidTools
 wclean lib src/solids4foamModels
 
 wclean applications/utilities/addPatch
