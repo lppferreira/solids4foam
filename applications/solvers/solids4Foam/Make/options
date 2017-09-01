@@ -20,5 +20,6 @@ EXE_LIBS = \
     -lincompressibleTransportModels \
     -ldynamicFvMesh \
     -ldynamicMesh \
+    -lmeshTools \
     -ltopoChangerFvMesh \
-    -lmeshTools
+    -llduSolvers
