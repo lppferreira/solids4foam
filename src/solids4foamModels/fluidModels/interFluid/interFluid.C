@@ -50,16 +50,18 @@ addToRunTimeSelectionTable(fluidModel, interFluid, dictionary);
 
 // * * * * * * * * * * * * * * * Private Members * * * * * * * * * * * * * * //
 
-void interFluid::solveAlphaEqnSubCycle(const pimpleControl& pimple)
+void interFluid::solveAlphaEqnSubCycle()
 {
+    dictionary pimple = mesh().solutionDict().subDict("PIMPLE");
+
     const label nAlphaCorr
     (
-        readLabel(pimple.dict().lookup("nAlphaCorr"))
+        readLabel(pimple.lookup("nAlphaCorr"))
     );
 
     const label nAlphaSubCycles
     (
-        readLabel(pimple.dict().lookup("nAlphaSubCycles"))
+        readLabel(pimple.lookup("nAlphaSubCycles"))
     );
 
     if (nAlphaSubCycles > 1)
@@ -128,8 +130,10 @@ void interFluid::solveAlphaEqn(const label nAlphaCorr)
 }
 
 
-tmp<fvVectorMatrix> interFluid::solveUEqn(pimpleControl& pimple)
+tmp<fvVectorMatrix> interFluid::solveUEqn()
 {
+    dictionary pimple = mesh().solutionDict().subDict("PIMPLE");
+
     const surfaceScalarField muEff
     (
         "muEff",
@@ -151,7 +155,7 @@ tmp<fvVectorMatrix> interFluid::solveUEqn(pimpleControl& pimple)
 
     UEqn.relax();
 
-    if (pimple.momentumPredictor())
+    if (pimple.lookupOrDefault<Switch>("momentumPredictor", true))
     {
         solve
         (
@@ -174,12 +178,15 @@ tmp<fvVectorMatrix> interFluid::solveUEqn(pimpleControl& pimple)
 
 void interFluid::solvePEqn
 (
-    pimpleControl& pimple,
+    const int corr,
+    const int nCorr,
     fvVectorMatrix& UEqn,
     const label pdRefCell,
     const scalar pdRefValue
 )
 {
+    dictionary pimple = mesh().solutionDict().subDict("PIMPLE");
+
     volScalarField rUA = 1.0/UEqn.A();
     surfaceScalarField rUAf = fvc::interpolate(rUA);
 
@@ -200,8 +207,10 @@ void interFluid::solvePEqn
           - ghf_*fvc::snGrad(rho_)
         )*rUAf*mesh().magSf();
 
+    const int nNonOrthCorr =
+        pimple.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
 
-    while (pimple.correctNonOrthogonal())
+    for (int nonOrth = 0; nonOrth <= nNonOrthCorr; nonOrth++)
     {
         fvScalarMatrix pdEqn
         (
@@ -210,12 +219,16 @@ void interFluid::solvePEqn
 
         pdEqn.setReference(pdRefCell, pdRefValue);
 
-        pdEqn.solve
-        (
-            mesh().solutionDict().solver(pd_.select(pimple.finalInnerIter()))
-        );
+        if (corr == nCorr - 1 && nonOrth == nNonOrthCorr)
+        {
+            pdEqn.solve(mesh().solutionDict().solver(pd_.name() + "Final"));
+        }
+        else
+        {
+            pdEqn.solve(mesh().solutionDict().solver(pd_.name()));
+        }
 
-        if (pimple.finalNonOrthogonalIter())
+        if (nonOrth == nNonOrthCorr)
         {
             phi() -= pdEqn.flux();
         }
@@ -315,16 +328,16 @@ interFluid::interFluid
     label pdRefCell = 0;
     scalar pdRefValue = 0.0;
     setRefCell(p(), fluidProperties(), pdRefCell, pdRefValue);
-    mesh().schemesDict().setFluxRequired(pd_.name());
+    //mesh().schemesDict().setFluxRequired(pd_.name());
 
-    // Create pimple control as it is needed to set the p reference
-    pimpleControl pimple(mesh());
+    // Lookup pimple dict
+    dictionary pimple = mesh().solutionDict().subDict("PIMPLE");
 
     scalar pRefValue = 0.0;
 
     if (pd_.needReference())
     {
-        pRefValue = readScalar(pimple.dict().lookup("pRefValue"));
+        pRefValue = readScalar(pimple.lookup("pRefValue"));
 
         p() += dimensionedScalar
         (
@@ -407,8 +420,8 @@ bool interFluid::evolve()
 
     fvMesh& mesh = fluidModel::mesh();
 
-    // Create pimple control
-    pimpleControl pimple(mesh);
+    // Lookup pimple dict
+    dictionary pimple = mesh.solutionDict().subDict("PIMPLE");
 
     // Prepare for the pressure solution
     label pdRefCell = 0;
@@ -419,7 +432,7 @@ bool interFluid::evolve()
 
     if (pd_.needReference())
     {
-        pRefValue = readScalar(pimple.dict().lookup("pRefValue"));
+        pRefValue = readScalar(pimple.lookup("pRefValue"));
     }
 
     // Calculate CourantNo
@@ -430,19 +443,24 @@ bool interFluid::evolve()
         CourantNo(CoNum, meanCoNum, velMag);
     }
 
+    const int nCorr(readInt(pimple.lookup("nCorrectors")));
+
+    const int nOuterCorr =
+        readInt(fluidProperties().lookup("nOuterCorrectors"));
+
     // Pressure-velocity corrector
-    while (pimple.loop())
+    for (int oCorr = 0; oCorr < nOuterCorr; oCorr++)
     {
         twoPhaseProperties_.correct();
 
-        solveAlphaEqnSubCycle(pimple);
+        solveAlphaEqnSubCycle();
 
-        fvVectorMatrix UEqn = solveUEqn(pimple);
+        fvVectorMatrix UEqn = solveUEqn();
 
         // --- PISO loop
-        while (pimple.correct())
+        for (int corr = 0; corr < nCorr; corr++)
         {
-            solvePEqn(pimple, UEqn, pdRefCell, pdRefValue);
+            solvePEqn(corr, nCorr, UEqn, pdRefCell, pdRefValue);
         }
 
         fluidModel::continuityErrs();

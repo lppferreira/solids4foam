@@ -46,7 +46,6 @@ SourceFiles
 #include "interfaceProperties.H"
 #include "twoPhaseMixture.H"
 #include "turbulenceModel.H"
-#include "pimpleControl.H"
 #include "fvm.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -106,18 +105,19 @@ class interFluid
     // Private Member Functions
 
         //- Solve alpha equation with sub cycle
-        void solveAlphaEqnSubCycle(const pimpleControl& pimple);
+        void solveAlphaEqnSubCycle();
 
         //- Solve alpha equation
         void solveAlphaEqn(const label nAlphaCorr);
 
         //- Solve velocity equation
-        tmp<fvVectorMatrix> solveUEqn(pimpleControl& pimple);
+        tmp<fvVectorMatrix> solveUEqn();
 
         //- Solve pressure equation
         void solvePEqn
         (
-            pimpleControl& pimple,
+            const int corr,
+            const int nCorr,
             fvVectorMatrix& UEqn,
             const label pdRefCell,
             const scalar pdRefValue

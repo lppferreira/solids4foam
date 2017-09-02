@@ -79,7 +79,6 @@ PISO
 PIMPLE
 {
     momentumPredictor yes;
-    nOuterCorrectors 1;
     nCorrectors     4;
     nNonOrthogonalCorrectors 0;
     nAlphaCorr      1;

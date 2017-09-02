@@ -17,6 +17,8 @@ FoamFile
 fluidModel interFluid;
 
 interFluidCoeffs
-{}
+{
+    nOuterCorrectors 1;
+}
 
 // ************************************************************************* //
