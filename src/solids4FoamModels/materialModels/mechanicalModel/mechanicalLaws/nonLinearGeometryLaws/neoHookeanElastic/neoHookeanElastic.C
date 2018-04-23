@@ -40,7 +40,7 @@ namespace Foam
 
 // * * * * * * * * * * *  Private Member Funtcions * * * * * * * * * * * * * //
 
-void Foam::neoHookeanElastic::makeF()
+void Foam::neoHookeanElastic::makeF() const
 {
     if (FPtr_)
     {
@@ -66,6 +66,17 @@ void Foam::neoHookeanElastic::makeF()
 
 
 Foam::volTensorField& Foam::neoHookeanElastic::F()
+{
+    if (!FPtr_)
+    {
+        makeF();
+    }
+
+    return *FPtr_;
+}
+
+
+const Foam::volTensorField& Foam::neoHookeanElastic::F() const
 {
     if (!FPtr_)
     {
@@ -174,6 +185,43 @@ Foam::tmp<Foam::volScalarField> Foam::neoHookeanElastic::rho() const
 
 Foam::tmp<Foam::volScalarField> Foam::neoHookeanElastic::impK() const
 {
+    // We will take the average of the trace of the tangent matrix C_ijkl as the
+    // scalar tangent matrix
+
+    // C_iiii = (mu/J^(2/3))*((2/3)*bii + (2/9)*tr(b)) + K*(2*J - 1)*J
+
+    // Calculate the Jacobian of the deformation gradient
+    const volScalarField J = det(F());
+
+    // Calculate the left Cauchy Green strain/stretch tensor
+    const volSymmTensorField bE = symm(F() & F().T());
+
+    // Calculate the diagonal components
+
+    const volScalarField C1111 =
+        (mu_/pow(J, 2.0/3.0))
+       *(
+           (2.0/3.0)*bE.component(symmTensor::XX) + (2.0/9.0)*tr(bE)
+        )
+      + K_*(2.0*J - 1.0)*J;
+
+    const volScalarField C2222 =
+        (mu_/pow(J, 2.0/3.0))
+       *(
+           (2.0/3.0)*bE.component(symmTensor::YY) + (2.0/9.0)*tr(bE)
+        )
+      + K_*(2.0*J - 1.0)*J;
+
+    const volScalarField C3333 =
+        (mu_/pow(J, 2.0/3.0))
+       *(
+           (2.0/3.0)*bE.component(symmTensor::ZZ) + (2.0/9.0)*tr(bE)
+        )
+      + K_*(2.0*J - 1.0)*J;
+
+    const volScalarField Caverage = (C1111 + C2222 + C3333)/3.0;
+
+    // Note: for small strains, Caverage == (4/3)*mu_ + K_ == 2*mu + lambda
     return tmp<volScalarField>
     (
         new volScalarField
@@ -186,8 +234,9 @@ Foam::tmp<Foam::volScalarField> Foam::neoHookeanElastic::impK() const
                 IOobject::NO_READ,
                 IOobject::NO_WRITE
             ),
-            mesh(),
-            (4.0/3.0)*mu_ + K_ // == 2*mu + lambda
+            Caverage
+            //mesh(),
+            //(4.0/3.0)*mu_ + K_ // == 2*mu + lambda
         )
     );
 }
@@ -284,6 +333,8 @@ void Foam::neoHookeanElastic::correct(volSymmTensorField& sigma)
 
     // Calculate the Cauchy stress
     sigma = (1.0/J)*(0.5*K_*(pow(J, 2) - 1)*I + s);
+    // Alternative choice for volumetric term
+    //sigma = (1.0/J)*(K_*J*(J - 1)*I + s);
 }
 
 

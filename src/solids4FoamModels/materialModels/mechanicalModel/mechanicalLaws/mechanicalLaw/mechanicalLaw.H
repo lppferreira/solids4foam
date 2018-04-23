@@ -216,6 +216,13 @@ public:
         //  This is the diffusivity for the Laplacian term
         virtual tmp<surfaceScalarField> impKf() const;
 
+        //- Does the mechanical law update impK as a function of the
+        //  solution?
+        virtual bool updateImpK() const
+        {
+            return false;
+        }
+
         //- Calculate the stress
         virtual void correct(volSymmTensorField& sigma) = 0;
 

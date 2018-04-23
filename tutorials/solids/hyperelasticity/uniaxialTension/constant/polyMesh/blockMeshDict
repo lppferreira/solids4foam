@@ -19,19 +19,20 @@ convertToMeters 1;
 
 vertices
 (
- (0 0 0)
- (0.5 0 0)
- (0.5 0.5 0)
- (0 0.5 0)
- (0 0 0.5)
- (0.5 0 0.5)
- (0.5 0.5 0.5)
- (0 0.5 0.5)
+    (0 0 0)
+    (0.5 0 0)
+    (0.5 0.5 0)
+    (0 0.5 0)
+    (0 0 0.5)
+    (0.5 0 0.5)
+    (0.5 0.5 0.5)
+    (0 0.5 0.5)
 );
 
 blocks
 (
- hex (0 1 2 3 4 5 6 7) (3 3 3) simpleGrading (1 1 1)
+    //hex (0 1 2 3 4 5 6 7) (3 3 3) simpleGrading (1 1 1)
+    hex (0 1 2 3 4 5 6 7) (6 6 6) simpleGrading (1 1 1)
 );
 
 edges
@@ -40,36 +41,36 @@ edges
 
 patches
 (
- patch top
- (
-  (2 3 7 6)
-  )
+    patch top
+    (
+        (2 3 7 6)
+    )
 
- symmetryPlane left
- (
-  (3 0 4 7)
-  )
+    patch left
+    (
+        (3 0 4 7)
+    )
 
- patch right
- (
-  (1 2 6 5)
-  )
+    patch right
+    (
+        (1 2 6 5)
+    )
 
- symmetryPlane bottom
- (
-  (0 1 5 4)
-  )
+    patch bottom
+    (
+        (0 1 5 4)
+    )
 
- patch front
- (
-  (7 6 5 4)
-  )
+    patch front
+    (
+        (7 6 5 4)
+    )
 
- symmetryPlane back
- (
-  (0 1 2 3)
-  )
- );
+    patch back
+    (
+        (0 1 2 3)
+    )
+);
 
 mergePatchPairs
 (

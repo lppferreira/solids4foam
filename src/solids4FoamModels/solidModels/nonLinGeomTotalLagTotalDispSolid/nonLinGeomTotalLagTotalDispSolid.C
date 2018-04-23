@@ -133,7 +133,11 @@ nonLinGeomTotalLagTotalDispSolid::nonLinGeomTotalLagTotalDispSolid
     impKf_(mechanical().impKf()),
     rImpK_(1.0/impK_),
     predict_(solidProperties().lookupOrDefault<Switch>("predict", false))
-{}
+{
+    Info<< type() << nl
+        << "    predict: " << predict_ << nl
+        << "    updateImpK: " << Switch(mechanical().updateImpK()) << endl;
+}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -161,6 +165,14 @@ bool nonLinGeomTotalLagTotalDispSolid::evolve()
         // Store fields for under-relaxation and residual calculation
         D().storePrevIter();
 
+        // Update implicit stiffness (tangent matrix) to improve convergence
+        if (mechanical().updateImpK())
+        {
+            impK_ = mechanical().impK();
+            impKf_ = fvc::interpolate(impK_);
+            rImpK_ = 1.0/impK_;
+        }
+
         // Momentum equation total displacement total Lagrangian form
         fvVectorMatrix DEqn
         (
@@ -169,7 +181,7 @@ bool nonLinGeomTotalLagTotalDispSolid::evolve()
           - fvc::laplacian(impKf_, D(), "laplacian(DD,D)")
           + fvc::div(J_*Finv_ & sigma(), "div(sigma)")
           + rho()*g()
-          + mechanical().RhieChowCorrection(D(), gradD())
+          + mechanical().RhieChowCorrection(D(), gradD(), impKf_)
         );
 
         // Under-relax the linear system

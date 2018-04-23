@@ -87,7 +87,7 @@ class neoHookeanElastic
         const dimensionedScalar K_;
 
         // Total deformation gradient volField
-        volTensorField* FPtr_;
+        mutable volTensorField* FPtr_;
 
         // Total deformation gradient surfaceField
         surfaceTensorField* FfPtr_;
@@ -95,10 +95,13 @@ class neoHookeanElastic
     // Private Member Functions
 
         //- Make the F field
-        void makeF();
+        void makeF() const;
 
         //- Return a reference to the F field
         volTensorField& F();
+
+        //- Return a const reference to the F field
+        const volTensorField& F() const;
 
         //- Make the Ff field
         void makeFf();
@@ -145,6 +148,13 @@ public:
         //- Return the implicit stiffness
         //  This is the diffusivity for the Laplacian term
         virtual tmp<volScalarField> impK() const;
+
+        //- Does the mechanical law update impK as a function of the
+        //  solution?
+        virtual bool updateImpK() const
+        {
+            return true;
+        }
 
         //- Calculate the stress
         virtual void correct(volSymmTensorField& sigma);

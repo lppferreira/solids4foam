@@ -2491,6 +2491,22 @@ Foam::tmp<Foam::volScalarField> Foam::mechanicalModel::impK() const
 }
 
 
+bool Foam::mechanicalModel::updateImpK() const
+{
+    const PtrList<mechanicalLaw>& laws = *this;
+
+    forAll(laws, lawI)
+    {
+        if (laws[lawI].updateImpK())
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 Foam::tmp<Foam::surfaceScalarField> Foam::mechanicalModel::impKf() const
 {
     // Linear interpolation actually seems to give the best convergence

@@ -11,7 +11,7 @@ FoamFile
     format      ascii;
     class       volVectorField;
     location    "0";
-    object      DD;
+    object      D;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -26,47 +26,40 @@ boundaryField
         type           fixedDisplacementZeroShear;
         displacementSeries
         {
-            fileName       "$FOAM_CASE/constant/timeVsDisp";
-            outOfBounds    clamp;
+            fileName "$FOAM_CASE/constant/timeVsDisp";
+            outOfBounds clamp;
         }
+        rate           (0 1 0);
         value          uniform ( 0 0 0 );
     }
-
     right
     {
-        type            solidTraction;
-        traction        uniform ( 0 0 0 );
-        pressure        uniform 0;
-        value           uniform (0 0 0);
+        type           solidTraction;
+        traction       uniform ( 0 0 0 );
+        pressure       uniform 0;
+        value          uniform ( 0 0 0 );
     }
-
-    bottom
-    {
-        type            solidSymmetry;
-        patchType       symmetryPlane;
-        value           uniform (0 0 0);
-    }
-
-    left
-    {
-        type            solidSymmetry;
-        patchType       symmetryPlane;
-        value           uniform (0 0 0);
-    }
-
-    back
-    {
-        type            solidSymmetry;
-        patchType       symmetryPlane;
-        value           uniform (0 0 0);
-    }
-
     front
     {
-        type            solidTraction;
-        traction        uniform ( 0 0 0 );
-        pressure        uniform 0;
-        value           uniform (0 0 0);
+        type           solidTraction;
+        traction       uniform ( 0 0 0 );
+        pressure       uniform 0;
+        value          uniform ( 0 0 0 );
+    }
+    bottom
+    {
+        type           fixedDisplacementZeroShear;
+        value          uniform ( 0 0 0 );
+    }
+    left
+    {
+        type           fixedDisplacementZeroShear;
+        value          uniform ( 0 0 0 );
+    }
+    back
+    {
+        type           fixedDisplacementZeroShear;
+        value          uniform ( 0 0 0 );
     }
 }
 

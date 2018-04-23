@@ -81,15 +81,15 @@ class nonLinGeomTotalLagTotalDispSolid
         //- Implicit stiffness; coefficient of the Laplacian term
         //  The value of this term only affects convergence and not the answer
         //  In the case of Hookean elasticity, (2*mu + lambda) is the optimum
-        const volScalarField impK_;
+        volScalarField impK_;
 
         //- Implicit stiffness surface field
-        const surfaceScalarField impKf_;
+        surfaceScalarField impKf_;
 
         //- Reciprocal of impK
         //  We divide by impK every time tractionBoundarySnGrad is called so we
         //  will store the reciprocal for effficiency
-        const volScalarField rImpK_;
+        volScalarField rImpK_;
 
         //- Predict new time-step fields using the velocity field
         const Switch predict_;

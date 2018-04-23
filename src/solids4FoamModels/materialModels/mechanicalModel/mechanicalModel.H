@@ -384,6 +384,10 @@ public:
             //  This is the diffusivity for the Laplacian term
             tmp<surfaceScalarField> impKf() const;
 
+            //- Does the mechanical law update impK as a function of the
+            //  solution?
+            bool updateImpK() const;
+
             //- Return material residual i.e. a measured of how convergence of
             //  the material model
             scalar residual();
