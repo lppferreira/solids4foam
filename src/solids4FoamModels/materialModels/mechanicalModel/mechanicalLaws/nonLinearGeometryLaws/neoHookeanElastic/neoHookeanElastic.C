@@ -185,6 +185,27 @@ Foam::tmp<Foam::volScalarField> Foam::neoHookeanElastic::rho() const
 
 Foam::tmp<Foam::volScalarField> Foam::neoHookeanElastic::impK() const
 {
+    const bool analyticalTangent = true;
+    if (!analyticalTangent)
+    {
+        return tmp<volScalarField>
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    "impK",
+                    mesh().time().timeName(),
+                    mesh(),
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE
+                ),
+                mesh(),
+                (4.0/3.0)*mu_ + K_ // == 2*mu + lambda
+            )
+        );
+    }
+
     // We will take the average of the trace of the tangent matrix C_ijkl as the
     // scalar tangent matrix
 

@@ -83,6 +83,95 @@ void nonLinGeomTotalLagTotalDispSolid::predict()
 }
 
 
+void nonLinGeomTotalLagTotalDispSolid::updateTangentModulus
+(
+    volScalarField& impK,
+    volTensorField& gradD,
+    volTensorField& F,
+    volScalarField& J,
+    volTensorField& Finv,
+    volSymmTensorField& sigma
+)
+{
+    // Take a copy of F and sigma as we will reset their values at the end
+    const volTensorField unperturbedGradD("unperturbedGradD", gradD);
+    const volTensorField unperturbedF("unperturbedFinv", F);
+    const volScalarField unperturbedJ("unperturbedJ", J);
+    const volTensorField unperturbedFinv("unperturbedFinv", Finv);
+    const volSymmTensorField unperturbedSigma("unperturbedSigma", sigma);
+
+    // Use numerical differentiation to approx the diagonal components of the
+    // tangent matrix
+    // C1111 = (sigma(F + deltaF11) - sigma(F))/deltaF11;
+    // C2222 = (sigma(F + deltaF22) - sigma(F))/deltaF22;
+    // C3333 = (sigma(F + deltaF33) - sigma(F))/deltaF33;
+
+    // Delta for numerical differentiation
+    //const scalar deltaGradD = sqrt(SMALL);
+    scalar deltaGradD = sqrt(SMALL);
+    //const scalar deltaGradD = 0.1;
+
+    // Mechanical laws look gradD or gradDD
+
+    // Calculate C1111 by perturbing F11/gradD11
+    gradD = unperturbedGradD + tensor(deltaGradD, 0, 0, 0, 0, 0, 0, 0, 0);
+    F = I + gradD.T();
+    J = det(F);
+    Finv = inv(F);
+    mechanical().correct(sigma);
+    const volScalarField C1111 =
+        (
+            (
+                (J*Finv & sigma)
+              - (unperturbedJ*unperturbedFinv & unperturbedSigma)
+            )/deltaGradD
+        )().component(tensor::XX);
+
+    // Calculate C2222 by perturbing F22/gradD22
+    gradD = unperturbedGradD + tensor(0, 0, 0, 0, deltaGradD, 0, 0, 0, 0);
+    F = I + gradD.T();
+    J = det(F);
+    Finv = inv(F);
+    mechanical().correct(sigma);
+    const volScalarField C2222 =
+        (
+            (
+                (J*Finv & sigma)
+              - (unperturbedJ*unperturbedFinv & unperturbedSigma)
+            )/deltaGradD
+        )().component(tensor::YY);
+
+    // Calculate C3333 by perturbing F33/gradD33
+    gradD = unperturbedGradD + tensor(0, 0, 0, 0, 0, 0, 0, 0, deltaGradD);
+    F = I + gradD.T();
+    J = det(F);
+    Finv = inv(F);
+    mechanical().correct(sigma);
+    const volScalarField C3333 =
+        (
+            (
+                (J*Finv & sigma)
+              - (unperturbedJ*unperturbedFinv & unperturbedSigma)
+            )/deltaGradD
+        )().component(tensor::ZZ);
+
+    // Set impK as the average (or max) of the diagonal components
+    impK = (C1111 + C2222 + C3333)/3.0;
+    //impK = max(C1111, max(C2222, C3333));
+    //impK = min(C1111, min(C2222, C3333));
+
+    // Reset gradD and sigma
+    gradD = 1.0*unperturbedGradD;
+    F = 1.0*unperturbedF;
+    J = 1.0*unperturbedJ;
+    Finv = 1.0*unperturbedFinv;
+    sigma = 1.0*unperturbedSigma;
+
+    // Reset stress in the mechanical law
+    mechanical().correct(sigma);
+}
+
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 nonLinGeomTotalLagTotalDispSolid::nonLinGeomTotalLagTotalDispSolid
@@ -137,6 +226,10 @@ nonLinGeomTotalLagTotalDispSolid::nonLinGeomTotalLagTotalDispSolid
     Info<< type() << nl
         << "    predict: " << predict_ << nl
         << "    updateImpK: " << Switch(mechanical().updateImpK()) << endl;
+
+    Info<< "initial impK:" << nl
+        << "    min: " << min(impK_.internalField()) << nl
+        << "    max: " << min(impK_.internalField()) << endl;
 }
 
 
@@ -159,6 +252,10 @@ bool nonLinGeomTotalLagTotalDispSolid::evolve()
     Info<< "Solving the total Lagrangian form of the momentum equation for D"
         << endl;
 
+    const Switch numericalTangent =
+        solidProperties().lookupOrDefault<Switch>("numericalTangent", false);
+    Info<< "numericalTangent: " << numericalTangent << endl;
+
     // Momentum equation loop
     do
     {
@@ -166,12 +263,18 @@ bool nonLinGeomTotalLagTotalDispSolid::evolve()
         D().storePrevIter();
 
         // Update implicit stiffness (tangent matrix) to improve convergence
-        if (mechanical().updateImpK())
+        if (numericalTangent)
+        {
+            updateTangentModulus(impK_, gradD(), F_, J_, Finv_, sigma());
+        }
+        else if (mechanical().updateImpK())
         {
             impK_ = mechanical().impK();
-            impKf_ = fvc::interpolate(impK_);
-            rImpK_ = 1.0/impK_;
         }
+
+        // Update surface and reciprocal fields
+        impKf_ = fvc::interpolate(impK_);
+        rImpK_ = 1.0/impK_;
 
         // Momentum equation total displacement total Lagrangian form
         fvVectorMatrix DEqn
@@ -259,6 +362,10 @@ tmp<vectorField> nonLinGeomTotalLagTotalDispSolid::tractionBoundarySnGrad
     // Patch reciprocal implicit stiffness field
     const scalarField& rImpK = rImpK_.boundaryField()[patchID];
 
+    // TEST
+    // const scalarField impK = mechanical().impK()().boundaryField()[patchID];
+    // const scalarField rImpK = 1.0/impK;
+
     // Patch gradient
     const tensorField& pGradD = gradD().boundaryField()[patchID];
 
@@ -287,6 +394,17 @@ tmp<vectorField> nonLinGeomTotalLagTotalDispSolid::tractionBoundarySnGrad
             )*rImpK
         )
     );
+}
+
+
+void nonLinGeomTotalLagTotalDispSolid::writeFields(const Time& runTime)
+{
+    solidModel::writeFields(runTime);
+
+    // Info<< "Writing impK" << nl
+    //     << "    " << min(impK_) << nl
+    //     << "    " << max(impK_) << nl
+    //     << endl;
 }
 
 
