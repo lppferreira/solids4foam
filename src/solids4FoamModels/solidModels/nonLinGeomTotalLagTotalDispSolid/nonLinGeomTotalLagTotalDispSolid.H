@@ -100,6 +100,17 @@ class nonLinGeomTotalLagTotalDispSolid
         //  previous time-steps
         void predict();
 
+        //- Update tangent modulus modulus using finite difference
+        void updateTangentModulus
+        (
+            volScalarField& impK,
+            volTensorField& gradD,
+            volTensorField& F,
+            volScalarField& J,
+            volTensorField& Finv,
+            volSymmTensorField& sigma
+        );
+
         //- Disallow default bitwise copy construct
         nonLinGeomTotalLagTotalDispSolid
         (
@@ -166,6 +177,11 @@ public:
                 const scalarField& pressure,
                 const fvPatch& patch
             ) const;
+
+        //- Write
+
+            //- Write fields
+            virtual void writeFields(const Time& runTime);
 };
 
 
