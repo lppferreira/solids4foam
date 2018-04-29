@@ -1,0 +1,58 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     3.2                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  | For copyright notice see file Copyright         |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      solidProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solidModel     nonLinearGeometryUpdatedLagrangian;
+//solidModel     nonLinearGeometryUpdatedLagrangian;
+//solidModel     unsNonLinearGeometryUpdatedLagrangian;
+//solidModel     unsNonLinearGeometryTotalLagrangian;
+
+"nonLinearGeometryTotalLagrangianTotalDisplacementCoeffs|unsNonLinearGeometryTotalLagrangianCoeffs|nonLinearGeometryUpdatedLagrangianCoeffs"
+{
+    // Maximum number of momentum correctors
+    nCorrectors             10000;
+
+    // Solution tolerance for displacement
+    solutionTolerance       1e-10;
+
+    // Alternative solution tolerance for displacement
+    alternativeTolerance    1e-10;
+
+    // Material law solution tolerance
+    //materialTolerance       1e-05;
+
+    // Write frequency for the residuals
+    infoFrequency           100;
+
+    // Stabilise the hydrostatic pressure calculation with smoothing
+    //stabilisePressure     no;
+
+    // Write relative displacement residual field
+    //writeResidualField     yes;
+
+    // Apply linear prediction step at the start of the time-step to improve
+    // convergence
+    predict         yes;
+
+    // Calculate the tangent matrix numerically
+    numericalTangent yes;
+
+    // Field relaxation method
+    //relaxationMethod    Aitken;
+}
+
+
+// ************************************************************************* //

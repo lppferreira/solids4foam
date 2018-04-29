@@ -90,20 +90,28 @@ class nonLinGeomUpdatedLagSolid
         //- Implicit stiffness; coefficient of the Laplacian term
         //  The value of this term only affects convergence and not the answer
         //  In the case of Hookean elasticity, (2*mu + lambda) is the optimum
-        const volScalarField impK_;
+        volScalarField impK_;
 
         //- Implicit stiffness surface field
-        const surfaceScalarField impKf_;
+        surfaceScalarField impKf_;
 
         //- Reciprocal of impK
         //  We divide by impK every time tractionBoundarySnGrad is called so we
         //  will store the reciprocal for effficiency
-        const volScalarField rImpK_;
+        volScalarField rImpK_;
 
     // Private Member Functions
 
-        //- Create global face zone point maps
-        void findGlobalFaceZones();
+        //- Update tangent modulus modulus using finite difference
+        void updateTangentModulus
+        (
+            volScalarField& impK,
+            volTensorField& gradD,
+            volTensorField& F,
+            volScalarField& J,
+            volTensorField& Finv,
+            volSymmTensorField& sigma
+        );
 
         //- Disallow default bitwise copy construct
         nonLinGeomUpdatedLagSolid(const nonLinGeomUpdatedLagSolid&);
