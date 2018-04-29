@@ -179,6 +179,10 @@ class solidModel
         //- Global to local face zone point mapping
         mutable labelListList* globalToLocalFaceZonePointMapPtr_;
 
+        //- Switch to enable numerical calculation of the tangent modulus
+        //  This is used by some of the nonlinear goemetry solid models
+        const Switch numericalTangent_;
+
 
     // Private Member Functions
 
@@ -292,6 +296,23 @@ protected:
             return maxIterReached_;
         }
 
+        //- Return tangent modulus calculation flag
+        const Switch& numericalTangent() const
+        {
+            return numericalTangent_;
+        }
+
+        //- Update tangent modulus modulus using finite difference approximation
+        void updateTangentModulus
+        (
+            volScalarField& impK,
+            volTensorField& gradD,
+            volTensorField& F,
+            volScalarField& J,
+            volTensorField& Finv,
+            volSymmTensorField& sigma
+        );
+
 
 public:
 
@@ -363,7 +384,7 @@ public:
             {
                 return pMesh_;
             }
-  
+
             //- Return time
             const Time& runTime() const
             {

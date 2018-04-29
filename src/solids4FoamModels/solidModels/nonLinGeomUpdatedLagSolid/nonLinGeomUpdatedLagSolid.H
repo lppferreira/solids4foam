@@ -102,17 +102,6 @@ class nonLinGeomUpdatedLagSolid
 
     // Private Member Functions
 
-        //- Update tangent modulus modulus using finite difference
-        void updateTangentModulus
-        (
-            volScalarField& impK,
-            volTensorField& gradD,
-            volTensorField& F,
-            volScalarField& J,
-            volTensorField& Finv,
-            volSymmTensorField& sigma
-        );
-
         //- Disallow default bitwise copy construct
         nonLinGeomUpdatedLagSolid(const nonLinGeomUpdatedLagSolid&);
 
