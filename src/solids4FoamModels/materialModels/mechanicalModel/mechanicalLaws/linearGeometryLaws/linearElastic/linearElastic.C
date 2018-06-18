@@ -485,6 +485,12 @@ const Foam::dimensionedScalar& Foam::linearElastic::lambda() const
 }
 
 
+const Foam::dimensionedScalar& Foam::linearElastic::rhoScalar() const
+{
+    return rho_;
+}
+
+
 void Foam::linearElastic::correct(volSymmTensorField& sigma)
 {
     // Calculate total strain

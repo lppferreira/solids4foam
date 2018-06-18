@@ -179,6 +179,9 @@ public:
         //- Lambda
         virtual const dimensionedScalar& lambda() const;
 
+        //- Return density as a scalar
+        virtual const dimensionedScalar& rhoScalar() const;
+
         //- Calculate the stress
         virtual void correct(volSymmTensorField& sigma);
 
