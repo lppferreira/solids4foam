@@ -85,17 +85,18 @@ class linGeomPressureVelocitySolid
         //  will store the reciprocal for effficiency
         const volScalarField rImpK_;
 
- volTensorField gradU_;
+        volTensorField gradU_;
 
- volScalarField p_;
+        volScalarField p_;
+        volVectorField gradp_;
 
-    volScalarField mu_;
-    surfaceScalarField muf_;
+        volScalarField mu_;
+        surfaceScalarField muf_;
 
-surfaceScalarField lambdaf_;
-volScalarField kf_;
+        surfaceScalarField lambdaf_;
+        volScalarField kf_;
 
- volScalarField currentRho_;
+        volScalarField currentRho_;
 
 // const int nICorr_;
 

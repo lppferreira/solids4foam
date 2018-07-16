@@ -75,6 +75,7 @@ linGeomPressureVelocitySolid::linGeomPressureVelocitySolid
         ),
         mesh()
     ),
+    gradp_(fvc::grad(p_)),
     mu_
     (
         IOobject
@@ -168,6 +169,8 @@ bool linGeomPressureVelocitySolid::evolve()
 
     for (int oCorr = 0; oCorr < nCorr(); oCorr++)
     {
+        Info<< "oCorr: " << oCorr << endl;
+
         U().storePrevIter();
 
         fvVectorMatrix UEqn
@@ -180,7 +183,9 @@ bool linGeomPressureVelocitySolid::evolve()
           - fvc::div(dev(sigma()))
         );
 
-        solve(UEqn==-fvc::grad(p_));
+        UEqn.relax();
+
+        solve(UEqn == -gradp_);
 
         //UEqn.solve();
         //Info << U() << endl;
@@ -198,9 +203,20 @@ bool linGeomPressureVelocitySolid::evolve()
                 fvm::ddt(rho()/kf_, p_)
                 //+fvc::div(rho(), UEqn.H())
               + fvc::div(rho()*rAU*UEqn.H())
-              + fvc::div(((rho()*rAU)/kf_)*UEqn.H()*p_)
+                //+ fvc::div(((rho()*rAU)/kf_)*UEqn.H()*p_)
+              + fvm::div
+                (
+                    mesh().Sf()
+                  & fvc::interpolate(((rho()*rAU)/kf_)*UEqn.H()),
+                    p_
+                )
                 //-fvm::laplacian(currentRho_*rAU, p_)
              == fvm::laplacian(currentRho_*rAU, p_)
+                // Rhie-Chow
+              + (
+                    fvc::laplacian(currentRho_*rAU, p_)
+                  - fvc::div(currentRho_*rAU*gradp_)
+                )
             );
 
             //           fvScalarMatrix PEqn
@@ -212,12 +228,20 @@ bool linGeomPressureVelocitySolid::evolve()
             //           );
 
             PEqn.setReference(pRefCell, pRefValue);
+
             PEqn.relax();
 
             PEqn.solve();
             //solve(PEqn==0);
 
-            U() = UEqn.H()*rAU-rAU*fvc::grad(p_);
+            p_.relax();
+
+            gradp_ = fvc::grad(p_);
+
+            U() = UEqn.H()*rAU - rAU*gradp_;
+            U().correctBoundaryConditions();
+
+            gradU_ = fvc::grad(U());
 
             // currentRho_ = rho()*(1 + (p_/kf_));
             currentRho_ = rho();
@@ -240,7 +264,8 @@ bool linGeomPressureVelocitySolid::evolve()
         // Calculate the stress using run-time selectable mechanical law
         mechanical().correct(sigma());
 
-        gradU_ = fvc::grad(U());
+        // Replace the volumetric component of stress
+        sigma() = dev(sigma()) - p_*I;
     }
 
     return true;
@@ -257,16 +282,19 @@ tmp<vectorField> linGeomPressureVelocitySolid::tractionBoundarySnGrad
     const label patchID = patch.index();
 
     // Patch mechanical property
-    const scalarField& impK = impK_.boundaryField()[patchID];
+    const scalarField impK = 2.0*muf_.boundaryField()[patchID];
 
     // Patch reciprocal implicit stiffness field
-    const scalarField& rImpK = rImpK_.boundaryField()[patchID];
+    const scalarField rImpK = 1.0/impK;
 
     // Patch gradient
     const tensorField& pGradU = gradU_.boundaryField()[patchID];
 
     // Patch stress
     const symmTensorField& pSigma = sigma().boundaryField()[patchID];
+
+    // Patch pressure
+    const scalarField& pP = p_.boundaryField()[patchID];
 
     // Patch unit normals
     const vectorField n = patch.nf();
@@ -278,7 +306,8 @@ tmp<vectorField> linGeomPressureVelocitySolid::tractionBoundarySnGrad
         (
             (
                 (traction - n*pressure)
-                - (n & (pSigma - runTime().deltaT().value()*impK*pGradU))
+              - (n & (dev(pSigma) - runTime().deltaT().value()*impK*pGradU))
+              + n*pP
             )*rImpK/runTime().deltaT().value()
         )
     );
