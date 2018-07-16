@@ -138,7 +138,7 @@ const PtrList<mechanicalLaw>& mechLaws = mechanical();
     mu_ = mech.mu();
     muf_ = mech.mu();
     //muf_ = fvc::interpolate(mu_);
-    lambdaf_ = mech.lambda(); 
+    lambdaf_ = mech.lambda();
     kf_=mech.K();
     p_.oldTime();
 }
@@ -149,109 +149,101 @@ const PtrList<mechanicalLaw>& mechLaws = mechanical();
 
 bool linGeomPressureVelocitySolid::evolve()
 {
-//nICorr_(solidProperties().lookupOrDefault<int>("nInnerCorrectors", 3))
+    //nICorr_(solidProperties().lookupOrDefault<int>("nInnerCorrectors", 3))
     const int nICorr_ = readInt(solidProperties().lookup("nInnerCorrectors"));
     label pRefCell = 0;
     scalar pRefValue = 0.0;
     setRefCell(p_, solidProperties(), pRefCell, pRefValue);
- 
-//Momentum
+
+    //Momentum
 
     //volScalarField& rho1 = rho();
     //const volScalarField& rho1 = rho();
 
 
-//    const int nICorr = readInt(solidProperties().lookupOrDefault("nInnerCorrectors", 3));
+    //const int nICorr =
+    //    readInt(solidProperties().lookupOrDefault("nInnerCorrectors", 3));
 
 
 
-for (int oCorr = 0; oCorr < nCorr(); oCorr++)
-{
+    for (int oCorr = 0; oCorr < nCorr(); oCorr++)
+    {
+        U().storePrevIter();
 
-U().storePrevIter();
+        fvVectorMatrix UEqn
+        (
+            fvm::ddt(currentRho_, U())
+            //fvm::ddt(rho(), U())
+          - fvm::laplacian(2*muf_*runTime().deltaT(), U())
+            //+fvc::div(2*muf_*runTime().deltaT(), fvc::grad(U()))
+          + fvc::div(2*mu_*runTime().deltaT()*gradU_)
+          - fvc::div(dev(sigma()))
+        );
 
-fvVectorMatrix UEqn
+        solve(UEqn==-fvc::grad(p_));
 
-(
-    fvm::ddt(currentRho_, U())
-    //fvm::ddt(rho(), U())
-    -fvm::laplacian(2*muf_*runTime().deltaT(), U())
-    //+fvc::div(2*muf_*runTime().deltaT(), fvc::grad(U()))
-    +fvc::div(2*mu_*runTime().deltaT()*gradU_)
-    -fvc::div(dev(sigma()))
-);
+        //UEqn.solve();
+        //Info << U() << endl;
 
-solve(UEqn==-fvc::grad(p_));
-//UEqn.solve();
-
-//Info << U() << endl;
-
-volScalarField rAU=1/UEqn.A();
+        volScalarField rAU = 1/UEqn.A();
 
 
+        // Start of Piso Loop
+        for (int iCorr = 0; iCorr < nICorr_; iCorr++)
+        {
+            p_.storePrevIter();
 
-       for (int iCorr = 0; iCorr < nICorr_; iCorr++)
-       //Start of Piso Loop
-           {
-           p_.storePrevIter();
+            fvScalarMatrix PEqn
+            (
+                fvm::ddt(rho()/kf_, p_)
+                //+fvc::div(rho(), UEqn.H())
+              + fvc::div(rho()*rAU*UEqn.H())
+              + fvc::div(((rho()*rAU)/kf_)*UEqn.H()*p_)
+                //-fvm::laplacian(currentRho_*rAU, p_)
+             == fvm::laplacian(currentRho_*rAU, p_)
+            );
 
-           fvScalarMatrix PEqn
-           (
-           fvm::ddt(rho()/kf_, p_)
-           //+fvc::div(rho(), UEqn.H())
-           +fvc::div(rho()*rAU*UEqn.H())
-           +fvc::div(((rho()*rAU)/kf_)*UEqn.H()*p_)
-           //-fvm::laplacian(currentRho_*rAU, p_)
-           ==
-           fvm::laplacian(currentRho_*rAU, p_)
-           );
+            //           fvScalarMatrix PEqn
+            //           (
+            //           fvm::ddt(rho()/kf_, p_)
+            //           +fvm::div((rho()/kf_), U()*p_)
+            //           ==
+            //           -fvc::div(rho()*U())
+            //           );
 
+            PEqn.setReference(pRefCell, pRefValue);
+            PEqn.relax();
 
+            PEqn.solve();
+            //solve(PEqn==0);
 
-//           fvScalarMatrix PEqn
-//           (
-//           fvm::ddt(rho()/kf_, p_)
-//           +fvm::div((rho()/kf_), U()*p_)
-//           ==
-//           -fvc::div(rho()*U())
-//           );
+            U() = UEqn.H()*rAU-rAU*fvc::grad(p_);
 
+            // currentRho_ = rho()*(1 + (p_/kf_));
+            currentRho_ = rho();
+            //Info << currentRho_ << endl;
 
+            //phi() = (fvc::interpolate(U()) & mesh.Sf());
+        }
 
-           PEqn.setReference(pRefCell, pRefValue); 
-        PEqn.relax();
+        DD() = U()*runTime().deltaT();
 
-           PEqn.solve();
-           //solve(PEqn==0);
+        D()= DD() + D().oldTime();
 
-           U() = UEqn.H()*rAU-rAU*fvc::grad(p_);
+        mechanical().grad(D(), gradD());
+        // mechanical().grad(U(), gradU());
 
-          // currentRho_ = rho()*(1 + (p_/kf_));
-           currentRho_ = rho();
-//Info << currentRho_ << endl;
+        // Update gradient of displacement increment
+        gradDD() = gradD() - gradD().oldTime();
+        //gradDD()=gradU()*runTime.deltaT()
 
-           //phi() = (fvc::interpolate(U()) & mesh.Sf());
+        // Calculate the stress using run-time selectable mechanical law
+        mechanical().correct(sigma());
 
-           }
+        gradU_ = fvc::grad(U());
+    }
 
-DD()=U()*runTime().deltaT();
-
-D()=DD()+D().oldTime();
-
-mechanical().grad(D(), gradD());
-// mechanical().grad(U(), gradU());
-
-// Update gradient of displacement increment
-gradDD() = gradD() - gradD().oldTime();  //gradDD()=gradU()*runTime.deltaT()
-
-// Calculate the stress using run-time selectable mechanical law
-mechanical().correct(sigma());
-
-gradU_ = fvc::grad(U());
-
-
-}
-return true;
+    return true;
 }
 
 tmp<vectorField> linGeomPressureVelocitySolid::tractionBoundarySnGrad
@@ -295,4 +287,3 @@ tmp<vectorField> linGeomPressureVelocitySolid::tractionBoundarySnGrad
 }
 
 }
-
