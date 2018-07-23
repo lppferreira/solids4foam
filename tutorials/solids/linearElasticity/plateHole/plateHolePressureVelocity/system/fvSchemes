@@ -32,12 +32,20 @@ gradSchemes
 divSchemes
 {
     default            none;
+
+    // Momentum eqn
     div(dev(sigma))    Gauss linear;
     div((((2*mu)*deltaT)*grad(U))) Gauss linear;
+
+    // Pressure eqn
     div(((rho*(1|A(U)))*grad(p))) Gauss skewCorrected linear;
-    div((S&interpolate((((rho*(1|A(U)))|k)*H(U)))),p) Gauss skewCorrected linear;
     div(((rho*(1|A(U)))*H(U))) Gauss skewCorrected linear;
-    //div((S&interpolate((((rho*(1|A(U)))|k)*H(U)))),p) Gauss upwind;
+    //div(((rho*(1|A(U)))*H(U))) Gauss linear;
+    div(((1|A(U))*H(U))) Gauss skewCorrected linear;
+    div(H(U)) Gauss skewCorrected linear;;
+
+    //div((S&interpolate((((rho*(1|A(U)))|k)*H(U)))),p) Gauss skewCorrected linear;
+    div((S&interpolate((((rho*(1|A(U)))|k)*H(U)))),p) Gauss upwind;
 }
 
 laplacianSchemes
@@ -63,6 +71,9 @@ interpolationSchemes
     interpolate(U) linear;
     interpolate(grad(U)) linear;
     interpolate((((rho*(1|A(U)))|k)*H(U))) skewCorrected linear;
+    interpolate(((1|A(U))*H(U))) skewCorrected linear;
+    interpolate(((rho*(1|A(U)))*H(U)))  skewCorrected linear;
+    interpolate(rho) linear;
 }
 
 // ************************************************************************* //

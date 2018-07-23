@@ -29,9 +29,11 @@ boundaryField
     right
     {
         //type            zeroGradient;
-        type            extrapolatedPressure;
+        //type            extrapolatedPressure;
+        type            extrapolatedPressureValue;
+        relaxFactor 1.0;
         //type            fixedValue;
-        //value           uniform 0;
+        value           uniform 0;
     }
     down
     {
@@ -44,14 +46,20 @@ boundaryField
         type            extrapolatedPressure;
         // value           uniform 0;
         //type           zeroGradient;
+        //type            extrapolatedPressureValue;
+        relaxFactor 1.0;
+        //value           uniform 0;
     }
     hole
     {
         //type            fixedValue;
         //value           uniform 0;
-        type            extrapolatedPressure;
+        //type            extrapolatedPressure;
         //value           uniform 0;
         //type            zeroGradient;
+        type            extrapolatedPressureValue;
+        relaxFactor 1.0;
+        value           uniform 0;
     }
     frontAndBack
     {

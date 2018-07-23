@@ -24,7 +24,7 @@ solidModel     linGeomPressureVelocitySolid;
 "linearGeometryTotalDisplacementCoeffs|linearGeometryTotalDisplacementCoeffs|unsLinearGeometryCoeffs1|velocitySolidCoeffs|linGeomVelocitySolidCoeffs|linGeomPressureVelocitySolidCoeffs"
 {
     // Maximum number of momentum correctors
-    nCorrectors     200;
+    nCorrectors     400;
     nInnerCorrectors 1;
     pRefCell        0;
     pRefValue       0;
