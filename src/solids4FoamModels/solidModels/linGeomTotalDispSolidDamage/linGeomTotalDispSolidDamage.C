@@ -131,7 +131,7 @@ linGeomTotalDispSolidDamage::linGeomTotalDispSolidDamage
 //    h_(dict.lookup("h")),
 //    b_(dict.lookup("b")),
 //    epsilonD_(dict.lookup("epsilonD"))
-    
+
 {
 //const PtrList<mechanicalLaw>& mechLaws = mechanical();
 //    const linearElasticMisesPlastic& mech = refCast<const linearElasticMisesPlastic>(mechLaws[0]);
@@ -236,176 +236,168 @@ bool linGeomTotalDispSolidDamage::evolve()
     }
     while (mesh().update());
 
-//    const int nICorr_ = readInt(solidProperties().lookup("nInnerCorrectors"));
 
- dimensionedScalar S0_=dimensionedScalar(solidProperties().lookup("s0"));
-dimensionedScalar h_=dimensionedScalar(solidProperties().lookup("h"));
-dimensionedScalar b_=dimensionedScalar(solidProperties().lookup("b"));
-scalar mu=readScalar(solidProperties().lookup("mu"));
-scalar lambda=readScalar(solidProperties().lookup("lambda"));
-dimensionedScalar epsilonD_=dimensionedScalar(solidProperties().lookup("epsilonD"));
+    // Calculate Lemaitre damage field
 
-//   dimensionedScalar S0_=readInt(solidProperties().lookup("s0"));
-//dimensionedScalar h_=readInt(solidProperties().lookup("h"));
-//dimensionedScalar b_=readInt(solidProperties().lookup("b"));
-//dimensionedScalar epsilonD_=readInt(solidProperties().lookup("epsilonD"));
+    dimensionedScalar S0_=dimensionedScalar(solidProperties().lookup("s0"));
+    dimensionedScalar h_=dimensionedScalar(solidProperties().lookup("h"));
+    dimensionedScalar b_=readScalar(solidProperties().lookup("b"));
 
-
-
-
-
-//    h_(dict.lookup("h"
-//    b_(dict.lookup("b")),
-//    epsilonD_(dict.lookup("epsilonD"
+    scalar mu = readScalar(solidProperties().lookup("mu"));
+    scalar lambda = readScalar(solidProperties().lookup("lambda"));
+    dimensionedScalar epsilonD_ =
+        dimensionedScalar(solidProperties().lookup("epsilonD"));
 
     // Lookup Kirchhoff stress field
     const volSymmTensorField& sigma =
         mesh().lookupObject<volSymmTensorField>("sigma");
 
     // Calculate equivalent Cauchy stress
-        const volScalarField sigmaEq =
-            sqrt((3.0/2.0)*magSqr(dev(sigma)))
-          + dimensionedScalar("SMALL", dimPressure, SMALL);
+    const volScalarField sigmaEq =
+        sqrt((3.0/2.0)*magSqr(dev(sigma)))
+        + dimensionedScalar("SMALL", dimPressure, SMALL);
 
-        // Calculate hydrostatic Cauchy stress
-        const volScalarField sigmaHyd = (1.0/3.0)*tr(sigma);
+    // Calculate hydrostatic Cauchy stress
+    const volScalarField sigmaHyd = (1.0/3.0)*tr(sigma);
 
-        // Calculate constraint/triality
-        const volScalarField triaxiality = sigmaHyd/sigmaEq;
+    // Calculate constraint/triality
+    const volScalarField triaxiality = sigmaHyd/sigmaEq;
 
     // Lookup plastic strain increment field
     const volScalarField& DEpsilonPEq =
         mesh().lookupObject<volScalarField>("DEpsilonPEq");
 
-     // Lookup plastic strain field
+    // Lookup plastic strain field
     const volScalarField& epsilonPEq =
         mesh().lookupObject<volScalarField>("epsilonPEq");
-  
-//     const volScalarField lambda =
-//            mesh().lookupObject<volScalarField>("lambda");
 
-//     // Lame's second parameter, aka the shear modulus
-//        const volScalarField& mu = mesh().lookupObject<volScalarField>("mu");
+    // Young's modulus
+    const scalar E = mu*(3.0*lambda + 2.0*mu)/(lambda + mu);
 
-        // Young's modulus
-        const scalar E = mu*(3.0*lambda + 2.0*mu)/(lambda + mu);
-
-        // Poisson's ration
-       const  scalar nu = lambda/(2*(lambda + mu));
+    // Poisson's ration
+    const  scalar nu = lambda/(2*(lambda + mu));
     volScalarField Y
-    (
-        IOobject
         (
-            "Y",
-            mesh().time().timeName(),
-            mesh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh(),
-        dimensionedScalar("zero", dimPressure, 0.0),
-        zeroGradientFvPatchScalarField::typeName
-    );
-
-  volScalarField Ystar
-    (
-        IOobject
-        (
-            "Ystar",
-            mesh().time().timeName(),
-            mesh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh(),
-        dimensionedScalar("zero", dimless, 0.0),
-        zeroGradientFvPatchScalarField::typeName
-    );
-     // volScalarField damage
-     //        (
-     //            IOobject
-     //            (
-     //                "damage",
-     //                mesh().time().timeName(),
-     //                mesh(),
-     //                IOobject::READ_IF_PRESENT,
-     //                IOobject::AUTO_WRITE
-     //            ),
-     //            mesh(),
-     //            dimensionedScalar("zero", dimless, 0.0)
-     //        );
-        scalarField& YI = Y.internalField();
-         scalarField& YstarI = Ystar.internalField();
-        const scalarField& sigmaEqI = sigmaEq.internalField();
-        const scalarField& epsilonPEqI = epsilonPEq.internalField();
-     
-        const scalarField& triaxialityI = triaxiality.internalField();
-//        const scalarField& EI = E.internalField();
-//        const scalarField& nuI = nu.internalField();
-        const scalarField& damageLemaitreI = damage_.oldTime().internalField();
-        const scalar epsilonDValue = epsilonD_.value();
-
-        forAll(YI, cellI)
-        {
-            // Calculate damage
-            if
+            IOobject
             (
-                triaxialityI[cellI] > (-1.0/3.0)
-             && epsilonPEqI[cellI] > epsilonDValue
-            )
-            {
-                // Calculate Lemaitre Y parameter
-                const scalar denom =
-                    (2.0/3.0)*(1.0 + nu)
-                  + 3.0*(1.0 - 2.0*nu)*pow(triaxialityI[cellI], 2.0);
+                "Y",
+                mesh().time().timeName(),
+                mesh(),
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh(),
+            dimensionedScalar("zero", dimPressure, 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        );
 
-                if (triaxialityI[cellI] > 0.0)
-                {
-                    // Damage in tension
-                    YI[cellI]=
-                       -(
-                            pow(sigmaEqI[cellI], 2.0)
-                           /(
-                               2.0*E
-                              *pow(1.0 - damageLemaitreI[cellI], 2.0)
-                           )
-                        )*denom;
-                }
-                else
-                {
-                    // Damage in compression is less than in tension; this
-                    // depends on the h_ parameter
-                    YI[cellI] =
-                        -(
-                            h_.value()*pow(sigmaEqI[cellI], 2.0)
-                           /(
-                                2.0*E
-                               *pow
-                                (
-                                    1.0 - h_.value()*damageLemaitreI[cellI],
-                                    2.0
-                                )
-                            )
-                        )*denom;
-                }
+    volScalarField Ystar
+        (
+            IOobject
+            (
+                "Ystar",
+                mesh().time().timeName(),
+                mesh(),
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh(),
+            dimensionedScalar("zero", dimless, 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        );
 
-                YstarI[cellI]=pow(-YI[cellI]/S0_.value(), b_.value());
-            }
+    scalarField& YI = Y.internalField();
+    scalarField& YstarI = Ystar.internalField();
+    const scalarField& sigmaEqI = sigmaEq.internalField();
+    const scalarField& epsilonPEqI = epsilonPEq.internalField();
+    const scalarField& triaxialityI = triaxiality.internalField();
+    const scalar epsilonDValue = epsilonD_.value();
+    scalarField& damageI = damage_.internalField();
+    const scalarField damageOldI = damage_.oldTime().internalField();
+    const scalarField& DepsilonPeqI = DEpsilonPEq.internalField();
+
+    if (debug)
+    {
+        Info<< nl << "Calculating damage" << endl;
+    }
+
+    forAll(YI, cellI)
+    {
+        if (debug > 1)
+        {
+            Info<< nl << "Cell = " << cellI << endl;
         }
 
-     Y.correctBoundaryConditions();
-     Ystar.correctBoundaryConditions();
-     damage_ = damage_.oldTime() + Ystar*DEpsilonPEq/(1 - damage_);
+        if
+        (
+            triaxialityI[cellI] > (-1.0/3.0)
+         && epsilonPEqI[cellI] > epsilonDValue
+        )
+        {
+            const scalar denom =
+                (2.0/3.0)*(1.0 + nu)
+                + 3.0*(1.0 - 2.0*nu)*pow(triaxialityI[cellI], 2.0);
 
+            YI[cellI]=
+                -(
+                    pow(sigmaEqI[cellI], 2.0)
+                    /(
+                        2.0*E
+                        // *pow(1.0 - damageLemaitreI[cellI], 2.0)
+                    )
+                )*denom;
 
-           // volScalarField term3("damage",damage);
+            if (debug > 1)
+            {
+                Info <<"YI: " << YI[cellI] << endl;
+            }
 
-           //  // term1.write();
-           //  // term2.write();
-           //  // term3.write();
-           //  term3.write();
+            YstarI[cellI] =
+                pow(-YI[cellI]/S0_.value(), b_.value())*DepsilonPeqI[cellI];
 
+            if (debug > 1)
+            {
+                Info<< "YstarI: " << YstarI[cellI] << endl;
+            }
 
+            scalar d1 = damageI[cellI];
+
+            for (int i = 1; i <= 100; ++i)
+            {
+                scalar fx = d1 - YstarI[cellI]*pow(1.0-d1, -2.0*b_.value());
+
+                if (debug > 1)
+                {
+                    Info<< "Newton iteration = " << i << nl
+                        << "fx: " << fx << endl;
+                }
+                scalar dfx =
+                    1
+                  + YstarI[cellI]*2.0*b_.value()*pow(1.0-d1, -2.0*b_.value()-1);
+
+                if (debug > 1)
+                {
+                    Info<< "dfx: " << dfx << endl;
+                }
+
+                d1 = d1 - fx/dfx;
+
+                if (debug > 1)
+                {
+                    Info<< "d1: " << d1 << endl;
+                }
+            }
+
+            damageI[cellI] = d1;
+        }
+    }
+
+    Y.correctBoundaryConditions();
+    Ystar.correctBoundaryConditions();
+    damage_.correctBoundaryConditions();
+
+    volScalarField term1("ystar", Ystar);
+    term1.write();
 
     return true;
 }
@@ -449,6 +441,74 @@ tmp<vectorField> linGeomTotalDispSolidDamage::tractionBoundarySnGrad
     );
 }
 
+
+
+//        forAll(YI, cellI)
+//        {
+//            // Calculate damage
+//            if
+//            (
+//                triaxialityI[cellI] > (-1.0/3.0)
+//             && epsilonPEqI[cellI] > epsilonDValue
+//            )
+//            {
+//                // Calculate Lemaitre Y parameter
+//                const scalar denom =
+//                    (2.0/3.0)*(1.0 + nu)
+//                  + 3.0*(1.0 - 2.0*nu)*pow(triaxialityI[cellI], 2.0);
+
+//Info <<"denom: "<< denom << endl;
+
+//                if (triaxialityI[cellI] > 0.0)
+//                {
+//                    // Damage in tension
+//                    YI[cellI]=
+//                       -(
+//                            pow(sigmaEqI[cellI], 2.0)
+//                           /(
+//                               2.0*E
+//                              *pow(1.0 - damageLemaitreI[cellI], 2.0)
+//                           )
+//                        )*denom;
+//Info << "Y: "<<YI[cellI] << endl;
+//                }
+//                else
+//                {
+//                    // Damage in compression is less than in tension; this
+//                    // depends on the h_ parameter
+//                    YI[cellI] =
+//                        -(
+//                            h_.value()*pow(sigmaEqI[cellI], 2.0)
+//                           /(
+//                                2.0*E
+//                               *pow
+//                                (
+//                                    1.0 - h_.value()*damageLemaitreI[cellI],
+//                                    2.0
+//                                )
+//                            )
+//                        )*denom;
+//Info << "compressionY: " <<YI[cellI] << endl;
+//
+//                }
+
+//                YstarI[cellI]=pow(-YI[cellI]/S0_.value(), b_.value());
+
+
+
+
+//Info << "Ystar: " << YstarI[cellI] <<endl;
+//            }
+//        }
+
+//     Y.correctBoundaryConditions();
+//     Ystar.correctBoundaryConditions();
+//     damage_ = damage_.oldTime() + Ystar*DEpsilonPEq/(1 - damage_);
+//volScalarField term1("ystar", Ystar);
+//term1.write();
+
+
+//Info <<damage_<<endl;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
