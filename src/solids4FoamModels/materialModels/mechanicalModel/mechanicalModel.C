@@ -2402,7 +2402,7 @@ Foam::tmp<Foam::volScalarField> Foam::mechanicalModel::rho() const
             (
                 IOobject
                 (
-                    "rhoLaw",
+                    "rho",
                     mesh().time().timeName(),
                     mesh(),
                     IOobject::NO_READ,

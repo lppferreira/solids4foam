@@ -159,7 +159,7 @@ Foam::tmp<Foam::volScalarField> Foam::StVenantKirchhoffElastic::rho() const
         (
             IOobject
             (
-                "rhoLaw",
+                "rho",
                 mesh().time().timeName(),
                 mesh(),
                 IOobject::NO_READ,
