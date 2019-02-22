@@ -117,7 +117,7 @@ class buoyantBoussinesqPimpleFluid
         volScalarField rhok_;
 
 	//- Fourier number
-	scalar fourierNum_;
+	scalar FourierNo_;
 
 
     // Private Member Functions
@@ -170,7 +170,7 @@ public:
         // Access
 
             //- Return Fourier Number
-            virtual const scalar& fourierNum() const;
+            virtual const scalar& FourierNo() const;
 
             //- Patch viscous force (N/m2)
             virtual tmp<vectorField> patchViscousForce

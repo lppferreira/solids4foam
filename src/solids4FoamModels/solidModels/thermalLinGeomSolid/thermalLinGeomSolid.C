@@ -222,7 +222,7 @@ thermalLinGeomSolid::thermalLinGeomSolid
     impK_(mechanical().impK()),
     impKf_(mechanical().impKf()),
     rImpK_(1.0/impK_),
-    DiNum_(0)
+    DiNo_(0)
 {
     DisRequired();
 
@@ -233,11 +233,11 @@ thermalLinGeomSolid::thermalLinGeomSolid
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const scalar& thermalSolid::DiNum() const
+const scalar& thermalSolid::DiNo() const
 {
     //- calculate solid Diffusion number
-    DiNum_ = 0.0;
-    scalar meanDiNum = 0.0;
+    DiNo_ = 0.0;
+    scalar meanDiNo = 0.0;
 
     //- Can have fluid domains with 0 cells so do not test.
     if (mesh().nInternalFaces())
@@ -247,15 +247,15 @@ const scalar& thermalSolid::DiNum() const
              * fvc::interpolate(k_)
              / fvc::interpolate(rhoC_);
 
-           DiNum_ = max(kRhoCbyDelta.internalField())*runTime().deltaT().value();
+           DiNo_ = max(kRhoCbyDelta.internalField())*runTime().deltaT().value();
 
-           meanDiNum = (average(kRhoCbyDelta)).value()*runTime().deltaT().value();
+           meanDiNo = (average(kRhoCbyDelta)).value()*runTime().deltaT().value();
     }
 
-    Info<< "Diffusion Number mean: " << meanDiNum
-        << " max: " << DiNum_ << endl;
+    Info<< "Diffusion Number mean: " << meanDiNo
+        << " max: " << DiNo_ << endl;
 
-    return DiNum_;
+    return DiNo_;
 }
 
 
@@ -370,7 +370,7 @@ bool thermalLinGeomSolid::evolve()
     blockLduMatrix::debug = 0;
 
     // calculate diffusion number
-    DiNum();
+    DiNo();
 
     Info<< "Solving coupled energy and displacements equation for T and D"
         << endl;

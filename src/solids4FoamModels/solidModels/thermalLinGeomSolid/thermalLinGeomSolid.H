@@ -100,7 +100,7 @@ class thermalLinGeomSolid
         const volScalarField rImpK_;
 
 	//- Diffusion number
-	scalar DiNum_;
+	scalar DiNo_;
 
     // Private Member Functions
 
@@ -178,7 +178,7 @@ public:
             }
 
             //- Return Diffusion Number
-            virtual const scalar& DiNum() const;
+            virtual const scalar& DiNo() const;
 
             //- Patch thermal flux
             virtual tmp<scalarField> patchThermalFlux

@@ -207,7 +207,7 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
         ),
         1.0 - beta_*(T_ - TRef_)
     ),
-    fourierNum_(0.0)
+    FourierNo_(0.0)
 {
     UisRequired();
     pisRequired();
@@ -223,13 +223,13 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const scalar& buoyantBoussinesqPimpleFluid::fourierNum() const
+const scalar& buoyantBoussinesqPimpleFluid::FourierNo() const
 {
     // Finds the characteristic size
     const volScalarField& cellDims = cellDimension(runTime());
 
-    fourierNum_ = 0.0;
-    scalar meanFourierNum = 0.0;
+    FourierNo_ = 0.0;
+    scalar meanFourierNo = 0.0;
 
     const volScalarField kappaEff
     (
@@ -237,18 +237,18 @@ const scalar& buoyantBoussinesqPimpleFluid::fourierNum() const
         turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_
     );
 
-    fourierNum_ = 
+    FourierNo_ = 
       gMax((kappaEff + turbulence_->nut())
            *runTime().deltaT0Value() / pow(cellDims.field(), 2));
 
-    meanFourierNum = 
+    meanFourierNo = 
       gAverage((kappaEff + turbulence_->nut())
                *runTime().deltaT0Value() / pow(cellDims.field(), 2));
 
-    Info<< "Fourier number mean: " << meanFourierNum
-        << " max calculated: " << fourierNum_ << endl;
+    Info<< "Fourier number mean: " << meanFourierNo
+        << " max calculated: " << FourierNo_ << endl;
 
-    return fourierNum_;
+    return FourierNo_;
 }
 
 
@@ -414,7 +414,7 @@ bool buoyantBoussinesqPimpleFluid::evolve()
     setRefCell(p(), pimple.dict(), pRefCell, pRefValue);
 
     // Calculate fourier number
-    fourierNum();
+    FourierNo();
 
     // Calculate CourantNo
     {
