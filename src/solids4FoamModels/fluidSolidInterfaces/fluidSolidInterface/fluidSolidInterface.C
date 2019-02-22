@@ -1589,7 +1589,7 @@ void Foam::fluidSolidInterface::updateSolidPatchTemperatureBC()
         solid().setTemperature
         (
             solidZoneTemperature,
-	    solidZoneKDelta
+            solidZoneKDelta
         );
     }
 }
@@ -1625,7 +1625,7 @@ void Foam::fluidSolidInterface::updateFluidPatchTemperatureBC()
         fluid().setTemperature
         (
             fluidZoneTemperature,
-	    fluidZoneKDelta
+            fluidZoneKDelta
         );
     }
 }
@@ -1662,7 +1662,7 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
         thermalResidual_ /= maxThermalResidual_ + SMALL;
 
         Info<< "Relative flux residual = " 
-	    <<  thermalResidual_ << "\n" << endl;
+            <<  thermalResidual_ << "\n" << endl;
     }
 
     return thermalResidual_;
