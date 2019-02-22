@@ -115,6 +115,9 @@ class fluidSolidInterface
         //- Fsi coupling on/off
         Switch coupled_;
 
+        //- thermal coupling on/off
+        Switch conjugate_;
+
         //- Optional: enable coupling after specified time
         const scalar couplingStartTime_;
 
@@ -162,6 +165,12 @@ class fluidSolidInterface
 
         //- Maximal interface displacement norm
         scalar maxIntDisplNorm_;
+
+        //- Current thermal flux residual
+        scalar thermalResidual_;
+
+	//- Maximal thermal residual norm
+	scalar maxThermalResidual_;
 
         //- Outer corrector
         label outerCorr_;
@@ -381,6 +390,18 @@ public:
                 return coupled_;
             }
 
+            //- Is it fluid and solid thermaly coupled?
+            const Switch& conjugate() const
+            {
+                return conjugate_;
+            }
+
+            //- Is it fluid and solid thermaly coupled?
+            Switch& conjugate()
+            {
+                return conjugate_;
+            }
+
             //- Return predictor switch
             const Switch& predictor() const
             {
@@ -526,6 +547,15 @@ public:
             (
                 vectorField& fluidZonePointsDispl
             );
+
+            //- Update interface temperature and flux (Solid Side)
+            virtual void updateSolidPatchTemperatureBC();
+
+            //- Update interface temperature and flux (Fluid Side)
+            virtual void updateFluidPatchTemperatureBC();
+
+            //- Update interface thermal residual
+            virtual scalar updateThermalResidual();
 
             //- Write fields
             virtual void writeFields(const Time& runTime);

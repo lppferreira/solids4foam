@@ -586,6 +586,10 @@ Foam::fluidSolidInterface::fluidSolidInterface
     (
         fsiProperties_.lookupOrDefault<Switch>("coupled", true)
     ),
+    conjugate_
+    (
+        fsiProperties_.lookupOrDefault<Switch>("conjugate_", false)
+    ),
     couplingStartTime_
     (
         fsiProperties_.lookupOrDefault<scalar>("couplingStartTime", -1.0)
@@ -611,6 +615,8 @@ Foam::fluidSolidInterface::fluidSolidInterface
     residualPrev_(),
     maxResidualNorm_(0),
     maxIntDisplNorm_(0),
+    thermalResidual_(0),
+    maxThermalResidual_(0),
     outerCorr_(0),
     interpolatorUpdateFrequency_
     (
@@ -863,6 +869,10 @@ void Foam::fluidSolidInterface::initializeFields()
         );
 
     maxResidualNorm_ = 0;
+
+    thermalResidual_ = 0;
+
+    maxThermalResidual_ = 0;
 
     outerCorr_ = 0;
 
@@ -1547,6 +1557,117 @@ void Foam::fluidSolidInterface::syncFluidZonePointsDispl
         }
     }
 }
+
+
+void Foam::fluidSolidInterface::updateSolidPatchTemperatureBC()
+{
+    if (conjugate())
+    {
+        const scalarField fluidZoneTemperature =
+            fluid().faceZoneTemperature();
+
+        const scalarField fluidZoneKDelta = fluid().faceZoneKDelta();
+
+        scalarField solidZoneTemperature =
+            scalarField(solid().globalPatch().globalPatch().size(), 0.0);
+
+        solidZoneTemperature =
+            ggiInterpolator().masterToSlave
+            (
+                fluidZoneTemperature
+            );
+
+        scalarField solidZoneKDelta =
+            scalarField(solid().globalPatch().globalPatch().size(), 0.0);
+
+        solidZoneKDelta =
+            ggiInterpolator().masterToSlave
+            (
+                fluidZoneKDelta
+            );
+
+        solid().setTemperature
+        (
+            solidZoneTemperature,
+	    solidZoneKDelta
+        );
+    }
+}
+
+
+void Foam::fluidSolidInterface::updateFluidPatchTemperatureBC()
+{
+    if (conjugate())
+    {
+        const scalarField solidZoneTemperature =
+            solid().faceZoneTemperature();
+
+        const scalarField solidZoneKDelta = solid().faceZoneKDelta();
+
+        scalarField fluidZoneTemperature =
+            scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
+
+        fluidZoneTemperature =
+            ggiInterpolator().slaveToMaster
+            (
+                solidZoneTemperature
+            );
+
+        scalarField fluidZoneKDelta =
+            scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
+
+        fluidZoneKDelta =
+            ggiInterpolator().slaveToMaster
+            (
+                solidZoneKDelta
+            );
+
+        fluid().setTemperature
+        (
+            fluidZoneTemperature,
+	    fluidZoneKDelta
+        );
+    }
+}
+
+Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
+{
+    if (conjugate())
+    {
+        const scalarField fluidZoneThermalFlux =
+            fluid().faceZoneThermalFlux();
+
+        const scalarField solidZoneThermalFlux =
+            solid().faceZoneThermalFlux();
+
+        scalarField nbrFluidZoneThermalFlux =
+            ggiInterpolator().slaveToMaster
+            (
+                solidZoneThermalFlux
+            );
+
+        scalarField thermalFluxRes
+        (
+             mag(nbrFluidZoneThermalFlux)
+           - mag(fluidZoneThermalFlux)
+        );
+
+        thermalResidual_ = ::sqrt(gSum(magSqr(thermalFluxRes)));
+
+        if (thermalResidual_ > maxThermalResidual_)
+        {
+            maxThermalResidual_ = thermalResidual_;
+        }
+
+        thermalResidual_ /= maxThermalResidual_ + SMALL;
+
+        Info<< "Relative flux residual = " 
+	    <<  thermalResidual_ << "\n" << endl;
+    }
+
+    return thermalResidual_;
+}
+
 
 void Foam::fluidSolidInterface::writeFields(const Time& runTime)
 {

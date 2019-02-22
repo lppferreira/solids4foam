@@ -86,6 +86,7 @@ bool IQNILSCouplingInterface::evolve()
     updateInterpolatorAndGlobalPatches();
 
     scalar residualNorm = 0;
+    scalar thermalResidualNorm = 0;
 
     if (predictSolid_)
     {
@@ -107,17 +108,26 @@ bool IQNILSCouplingInterface::evolve()
         // Move the fluid mesh
         moveFluidMesh();
 
+	// Transfer temperature and flux from the solid to the fluid
+	updateFluidPatchTemperatureBC();
+
         // Solve fluid
         fluid().evolve();
 
         // Transfer the force from the fluid to the solid
         updateForce();
 
+	// Transfer temperature and flux from the fluid to the solid
+	updateSolidPatchTemperatureBC();
+
         // Solve solid
         solid().evolve();
 
         // Calculate the FSI residual
         residualNorm = updateResidual();
+
+        // Calculate thermal residual
+        thermalResidualNorm = updateThermalResidual();
     }
     while (residualNorm > outerCorrTolerance() && outerCorr() < nOuterCorr());
 

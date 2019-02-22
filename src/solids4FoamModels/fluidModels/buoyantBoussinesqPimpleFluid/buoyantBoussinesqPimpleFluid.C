@@ -362,36 +362,15 @@ void buoyantBoussinesqPimpleFluid::setTemperature
 
 void buoyantBoussinesqPimpleFluid::setTemperature
 (
-    const label patchID,
-    const label zoneID,
     const scalarField& faceZoneTemperature,
     const scalarField& faceZoneKDelta
 )
 {
-    scalarField nbrpatchTemperature(mesh().boundary()[patchID].size(), 0.0);
+    scalarField nbrpatchTemperature =
+	globalPatch().globalFaceToPatch(faceZoneTemperature);
 
-    const label patchStart =
-        mesh().boundaryMesh()[patchID].start();
-
-    forAll(nbrpatchTemperature, i)
-    {
-        nbrpatchTemperature[i] =
-            faceZoneTemperature
-            [
-                mesh().faceZones()[zoneID].whichFace(patchStart + i)
-            ];
-    }
-
-    scalarField nbrpatchKDelta(mesh().boundary()[patchID].size(), 0.0);
-
-    forAll(nbrpatchKDelta, i)
-    {
-        nbrpatchKDelta[i] =
-            faceZoneKDelta
-            [
-                mesh().faceZones()[zoneID].whichFace(patchStart + i)
-            ];
-    }
+    scalarField nbrpatchKDelta =
+	globalPatch().globalFaceToPatch(faceZoneKDelta);
 
     setTemperature(patchID, nbrpatchTemperature, nbrpatchKDelta);
 }

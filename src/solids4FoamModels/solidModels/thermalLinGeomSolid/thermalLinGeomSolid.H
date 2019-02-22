@@ -211,8 +211,6 @@ public:
             //- Set temperature and flux at specified patch
             virtual void setTemperature
             (
-                const label patchID,
-                const label zoneID,
     		const scalarField& faceZoneTemperature,
     		const scalarField& faceZoneKDelta
             );
