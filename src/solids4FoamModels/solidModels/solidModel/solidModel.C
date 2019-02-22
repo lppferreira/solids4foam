@@ -1372,6 +1372,67 @@ Foam::vector Foam::solidModel::pointU(const label pointID) const
 }
 
 
+const Foam::scalar& Foam::solidModel::DiNum() const
+{
+    notImplemented("solidModel::DiNum() const");
+    return *reinterpret_cast<scalar*>(0);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::solidModel::patchThermalFlux
+(
+    const label patchID
+) const
+{
+    notImplemented("solidModel::patchThermalFlux(const label) const");
+
+    return tmp<scalarField>
+    (
+        new scalarField
+        (
+            mesh().boundary()[patchID].size(),
+	    scalar(0)
+        )
+    );
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::solidModel::patchTemperature
+(
+    const label patchID
+) const
+{
+    notImplemented("solidModel::patchTemperature(const label) const");
+
+    return tmp<scalarField>
+    (
+        new scalarField
+        (
+            mesh().boundary()[patchID].size(),
+	    scalar(0)
+        )
+    );
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::solidModel::patchKDelta
+(
+    const label patchID
+) const
+{
+    notImplemented("solidModel::patchKDelta(const label) const");
+
+    return tmp<scalarField>
+    (
+        new scalarField
+        (
+            mesh().boundary()[patchID].size(),
+	    scalar(0)
+        )
+    );
+}
+
+
 Foam::tmp<Foam::vectorField>
 Foam::solidModel::faceZonePointDisplacementIncrement() const
 {
@@ -1503,6 +1564,34 @@ Foam::tmp<Foam::vectorField> Foam::solidModel::faceZoneNormal() const
 
     // Global patch field
     return globalPatch().patchFaceToGlobal(patchNormals);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneThermalFlux() const
+{
+    const scalarField patchTF =
+        patchThermalFlux(globalPatch().patch().index());
+
+    return globalPatch().patchFaceToGlobal(patchTF);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneTemperature() const
+{
+    const scalarField patchT =
+        patchTemperature(globalPatch().patch().index());
+
+    return globalPatch().patchFaceToGlobal(patchT);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneKDelta() const
+{
+
+    const scalarField patchKD =
+        patchKDelta(globalPatch().patch().index());
+
+    return globalPatch().patchFaceToGlobal(patchKD);
 }
 
 

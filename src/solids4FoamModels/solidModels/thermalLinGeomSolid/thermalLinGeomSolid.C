@@ -221,7 +221,8 @@ thermalLinGeomSolid::thermalLinGeomSolid
     ),
     impK_(mechanical().impK()),
     impKf_(mechanical().impKf()),
-    rImpK_(1.0/impK_)
+    rImpK_(1.0/impK_),
+    DiNum_(0)
 {
     DisRequired();
 
@@ -231,6 +232,133 @@ thermalLinGeomSolid::thermalLinGeomSolid
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+const scalar& thermalSolid::DiNum() const
+{
+    return DiNum_;
+}
+
+
+tmp<scalarField> thermalLinGeomSolid::patchThermalFlux
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> ttF
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+    ttF() = k_.boundaryField()[patchID]
+	   * mesh().boundary()[patchID].magSf()
+	   * T_.boundaryField()[patchID].snGrad();
+
+    return ttF;
+}
+
+
+tmp<scalarField> thermalLinGeomSolid::patchTemperature
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> tT
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+    tT() = T_.boundaryField()[patchID].patchInternalField();
+
+    return tT;
+}
+
+
+tmp<scalarField> thermalLinGeomSolid::patchKDelta
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> tKD
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+    tKD() = k_.boundaryField()[patchID]*mesh().boundary()[patchID].deltaCoeffs();
+
+    return tKD;
+}
+
+
+void thermalLinGeomSolid::setTemperature
+(
+    const label patchID,
+    const scalarField& temperature,
+    const scalarField& nbrKDelta
+)
+{
+    if
+    (
+        T_.boundaryField()[patchID].type()
+     != mixedFvPatchScalarField::typeName
+    )
+    {
+        FatalErrorIn("void thermalSolid::setTemperature(...)")
+            << "Bounary condition on " << T_.name()
+                <<  " is "
+                << T_.boundaryField()[patchID].type()
+                << "for patch" << mesh().boundary()[patchID].name()
+                << ", instead "
+                << mixedFvPatchScalarField::typeName
+                << abort(FatalError);
+    }
+
+    mixedFvPatchScalarField& patchT =
+        refCast<mixedFvPatchScalarField>
+        (
+            T_.boundaryField()[patchID]
+        );
+
+    patchT.refValue() = temperature;
+    patchT.refGrad() = 0.0;
+    patchT.valueFraction() = nbrKDelta / (nbrKDelta + patchKDelta(patchID));
+    patchT.evaluate();
+}
+
+void thermalLinGeomSolid::setTemperature
+(
+    const label patchID,
+    const label zoneID,
+    const scalarField& faceZoneTemperature,
+    const scalarField& faceZoneKDelta
+)
+{
+    scalarField nbrpatchTemperature(mesh().boundary()[patchID].size(), 0.0);
+
+    const label patchStart =
+        mesh().boundaryMesh()[patchID].start();
+
+    forAll(nbrpatchTemperature, i)
+    {
+        nbrpatchTemperature[i] =
+            faceZoneTemperature
+            [
+                mesh().faceZones()[zoneID].whichFace(patchStart + i)
+            ];
+    }
+
+    scalarField nbrpatchKDelta(mesh().boundary()[patchID].size(), 0.0);
+
+    forAll(nbrpatchKDelta, i)
+    {
+        nbrpatchKDelta[i] =
+            faceZoneKDelta
+            [
+                mesh().faceZones()[zoneID].whichFace(patchStart + i)
+            ];
+    }
+
+    setTemperature(patchID, nbrpatchTemperature, nbrpatchKDelta);
+}
 
 
 bool thermalLinGeomSolid::evolve()

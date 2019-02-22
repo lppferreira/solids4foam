@@ -99,6 +99,9 @@ class thermalLinGeomSolid
         //  will store the reciprocal for effficiency
         const volScalarField rImpK_;
 
+	//- Diffusion number
+	scalar DiNum_;
+
     // Private Member Functions
 
         //- Check if the momentum equation is converged
@@ -174,7 +177,45 @@ public:
                 return T_;
             }
 
+            //- Return Diffusion Number
+            virtual const scalar& DiNum() const;
+
+            //- Patch thermal flux
+            virtual tmp<scalarField> patchThermalFlux
+            (
+                const label patchID
+            ) const;
+
+            //- Patch temperature (K)
+            virtual tmp<scalarField> patchTemperature
+            (
+                const label patchID
+            ) const;
+
+            //- Patch KDelta
+            virtual tmp<scalarField> patchKDelta
+            (
+                const label patchID
+            ) const;
+
         // Edit
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                const scalarField& temperature,
+		const scalarField& nbrKDelta
+            );
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                const label zoneID,
+    		const scalarField& faceZoneTemperature,
+    		const scalarField& faceZoneKDelta
+            );
 
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();

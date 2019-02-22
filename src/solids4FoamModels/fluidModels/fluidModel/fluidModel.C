@@ -523,12 +523,74 @@ Foam::pimpleControl& Foam::fluidModel::pimple()
     return pimplePtr_();
 }
 
+
 #if FOAMEXTEND > 40
 const Foam::oversetMesh& Foam::fluidModel::osMesh() const
 {
     return oversetMesh::New(mesh());
 }
 #endif
+
+
+const Foam::scalar& Foam::fluidModel::fourierNum() const
+{
+    notImplemented("fluidModel::fourierNum() const");
+    return *reinterpret_cast<scalar*>(0);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::fluidModel::patchThermalFlux
+(
+    const label patchID
+) const
+{
+    notImplemented("fluidModel::patchThermalFlux(const label) const");
+
+    return tmp<scalarField>
+    (
+        new scalarField
+        (
+            mesh().boundary()[patchID].size(),
+	    scalar(0)
+        )
+    );
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::fluidModel::patchTemperature
+(
+    const label patchID
+) const
+{
+    notImplemented("fluidModel::patchTemperature(const label) const");
+
+    return tmp<scalarField>
+    (
+        new scalarField
+        (
+            mesh().boundary()[patchID].size(),
+	    scalar(0)
+        )
+    );
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::fluidModel::patchKDelta
+(
+    const label patchID
+) const
+{
+    notImplemented("fluidModel::patchKDelta(const label) const");
+
+    return tmp<scalarField>
+    (
+        new scalarField
+        (
+            mesh().boundary()[patchID].size(),
+	    scalar(0)
+        )
+    );
+}
 
 Foam::tmp<Foam::vectorField> Foam::fluidModel::faceZoneViscousForce() const
 {
@@ -545,6 +607,34 @@ Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZonePressureForce() const
         patchPressureForce(globalPatch().patch().index());
 
     return globalPatch().patchFaceToGlobal(patchPF);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneThermalFlux() const
+{
+    const scalarField patchTF =
+        patchThermalFlux(globalPatch().patch().index());
+
+    return globalPatch().patchFaceToGlobal(patchTF);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneTemperature() const
+{
+    const scalarField patchT =
+        patchTemperature(globalPatch().patch().index());
+
+    return globalPatch().patchFaceToGlobal(patchT);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneKDelta() const
+{
+
+    const scalarField patchKD =
+        patchKDelta(globalPatch().patch().index());
+
+    return globalPatch().patchFaceToGlobal(patchKD);
 }
 
 

@@ -362,6 +362,9 @@ public:
                 return phi_;
             }
 
+            //- Return Fourier Number
+            virtual const scalar& fourierNum() const;
+
             //- Non-const access to the fsiMeshUpdate flag
             virtual bool& fsiMeshUpdate()
             {
@@ -373,6 +376,12 @@ public:
             {
                 return fsiMeshUpdateChanged_;
             }
+
+            //- Patch thermal flux
+            virtual tmp<scalarField> patchThermalFlux
+            (
+                const label patchID
+            ) const;
 
             //- Patch viscous force (N/m2)
             virtual tmp<vectorField> patchViscousForce
@@ -386,11 +395,51 @@ public:
                 const label patchID
             ) const = 0;
 
+            //- Patch temperature (K)
+            virtual tmp<scalarField> patchTemperature
+            (
+                const label patchID
+            ) const;
+
+            //- Patch K*Delta
+            virtual tmp<scalarField> patchKDelta
+            (
+                const label patchID
+            ) const;
+
             //- Patch viscous force (N/m2)
             virtual tmp<vectorField> faceZoneViscousForce() const;
 
             //- Patch pressure force (N/m2)
             virtual tmp<scalarField> faceZonePressureForce() const;
+
+            //- Face zone thermal flux
+            virtual tmp<scalarField> faceZoneThermalFlux() const;
+
+            //- faceZone temperature (K)
+            virtual tmp<scalarField> faceZoneTemperature() const;
+
+            //- faceZone K*Delta
+            virtual tmp<scalarField> faceZoneKDelta() const;
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                const scalarField& temperature,
+		const scalarField& nbrKDelta
+            )
+	    {}
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                const label zoneID,
+    		const scalarField& faceZoneTemperature,
+    		const scalarField& faceZoneKDelta
+            )
+	    {}
 
             //- This function will check that the U field was read from disk
             virtual void UisRequired();

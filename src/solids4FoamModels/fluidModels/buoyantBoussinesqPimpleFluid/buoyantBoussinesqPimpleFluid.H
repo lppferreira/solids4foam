@@ -116,6 +116,9 @@ class buoyantBoussinesqPimpleFluid
         //- Kinematic density for buoyancy force
         volScalarField rhok_;
 
+	//- Fourier number
+	scalar fourierNum_;
+
 
     // Private Member Functions
 
@@ -166,6 +169,9 @@ public:
 
         // Access
 
+            //- Return Fourier Number
+            virtual const scalar& fourierNum() const;
+
             //- Patch viscous force (N/m2)
             virtual tmp<vectorField> patchViscousForce
             (
@@ -177,6 +183,41 @@ public:
             (
                 const label patchID
             ) const;
+
+            //- Patch thermal flux
+            virtual tmp<scalarField> patchThermalFlux
+            (
+                const label patchID
+            ) const;
+
+            //- Patch temperature (K)
+            virtual tmp<scalarField> patchTemperature
+            (
+                const label patchID
+            ) const;
+
+            //- Patch KDelta
+            virtual tmp<scalarField> patchKDelta
+            (
+                const label patchID
+            ) const;
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                const scalarField& temperature,
+		const scalarField& nbrKDelta
+            );
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                const label zoneID,
+    		const scalarField& faceZoneTemperature,
+    		const scalarField& faceZoneKDelta
+            );
 
         // Edit
 
