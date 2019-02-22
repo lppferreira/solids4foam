@@ -551,7 +551,7 @@ Foam::tmp<Foam::scalarField> Foam::fluidModel::patchThermalFlux
         new scalarField
         (
             mesh().boundary()[patchID].size(),
-	    scalar(0)
+            scalar(0)
         )
     );
 }
@@ -569,7 +569,7 @@ Foam::tmp<Foam::scalarField> Foam::fluidModel::patchTemperature
         new scalarField
         (
             mesh().boundary()[patchID].size(),
-	    scalar(0)
+            scalar(0)
         )
     );
 }
@@ -587,7 +587,7 @@ Foam::tmp<Foam::scalarField> Foam::fluidModel::patchKDelta
         new scalarField
         (
             mesh().boundary()[patchID].size(),
-	    scalar(0)
+            scalar(0)
         )
     );
 }
