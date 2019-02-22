@@ -462,6 +462,19 @@ Foam::fluidModel::fluidModel
         ),
         fvc::interpolate(U_) & mesh().Sf()
     ),
+    cellDims_
+    (
+        IOobject
+        (
+            "cellDims",
+            runTime.timeName(),
+            mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh(),
+        dimensionedScalar("zero", dimLength, 0.0)
+    ),
     adjustTimeStep_
     (
         runTime.controlDict().lookupOrDefault<Switch>("adjustTimeStep", false)
@@ -530,6 +543,57 @@ const Foam::oversetMesh& Foam::fluidModel::osMesh() const
     return oversetMesh::New(mesh());
 }
 #endif
+
+
+const Foam::volScalarField& Foam::fluidModel::cellDimension
+(
+    const Time& runTime
+) const
+{
+    volScalarField maxCellDims
+    (
+        IOobject
+        (
+            "maxCellDims",
+            runTime.timeName(),
+            mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+         ),
+         mesh(),
+         dimensionedScalar("zero", dimLength, 0)
+    );
+
+    const cellList& cells = mesh().cells();
+
+    forAll(cells, c) // over all cells
+    {
+        scalar Dim = GREAT;
+        scalar MaxDim = SMALL;
+
+        const labelList& curEdges = mesh().cellEdges()[c];
+
+        // Now go through cell edges and get min
+        forAll (curEdges, e)
+        {
+            scalar len = mesh().edges()[ curEdges[e] ].mag( mesh().points() );
+            if (len < Dim)
+            {  
+                Dim = len;
+            }
+            if (len > MaxDim)
+            {
+                MaxDim = Dim;
+            }
+        }
+        cellDims_[c] = Dim;
+        maxCellDims[c] = MaxDim;
+    }
+
+    Info<< "Minimum cell dimension: " <<  gMin(cellDims_) << endl;
+
+    return cellDims_;
+}
 
 
 const Foam::scalar& Foam::fluidModel::fourierNum() const

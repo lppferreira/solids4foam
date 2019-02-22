@@ -225,6 +225,29 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
 
 const scalar& buoyantBoussinesqPimpleFluid::fourierNum() const
 {
+    // Finds the characteristic size
+    const volScalarField& cellDims = cellDimension(runTime());
+
+    fourierNum_ = 0.0;
+    scalar meanFourierNum = 0.0;
+
+    const volScalarField kappaEff
+    (
+        "kappaEff",
+        turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_
+    );
+
+    fourierNum_ = 
+      gMax((kappaEff + turbulence_->nut())
+           *runTime().deltaT0Value() / pow(cellDims.field(), 2));
+
+    meanFourierNum = 
+      gAverage((kappaEff + turbulence_->nut())
+               *runTime().deltaT0Value() / pow(cellDims.field(), 2));
+
+    Info<< "Fourier number mean: " << meanFourierNum
+        << " max calculated: " << fourierNum_ << endl;
+
     return fourierNum_;
 }
 
@@ -389,6 +412,9 @@ bool buoyantBoussinesqPimpleFluid::evolve()
     label pRefCell = 0;
     scalar pRefValue = 0.0;
     setRefCell(p(), pimple.dict(), pRefCell, pRefValue);
+
+    // Calculate fourier number
+    fourierNum();
 
     // Calculate CourantNo
     {

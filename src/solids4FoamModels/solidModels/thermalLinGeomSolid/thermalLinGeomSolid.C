@@ -235,6 +235,26 @@ thermalLinGeomSolid::thermalLinGeomSolid
 
 const scalar& thermalSolid::DiNum() const
 {
+    //- calculate solid Diffusion number
+    DiNum_ = 0.0;
+    scalar meanDiNum = 0.0;
+
+    //- Can have fluid domains with 0 cells so do not test.
+    if (mesh().nInternalFaces())
+    {
+           surfaceScalarField kRhoCbyDelta =
+               mesh().surfaceInterpolation::deltaCoeffs()
+             * fvc::interpolate(k_)
+             / fvc::interpolate(rhoC_);
+
+           DiNum_ = max(kRhoCbyDelta.internalField())*runTime().deltaT().value();
+
+           meanDiNum = (average(kRhoCbyDelta)).value()*runTime().deltaT().value();
+    }
+
+    Info<< "Diffusion Number mean: " << meanDiNum
+        << " max: " << DiNum_ << endl;
+
     return DiNum_;
 }
 
@@ -348,6 +368,9 @@ bool thermalLinGeomSolid::evolve()
     lduSolverPerformance solverPerfD;
     lduSolverPerformance solverPerfT;
     blockLduMatrix::debug = 0;
+
+    // calculate diffusion number
+    DiNum();
 
     Info<< "Solving coupled energy and displacements equation for T and D"
         << endl;

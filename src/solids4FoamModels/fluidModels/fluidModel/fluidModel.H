@@ -113,6 +113,9 @@ class fluidModel
         //- Flux field
         surfaceScalarField phi_;
 
+        //- cells dimension field
+        volScalarField cellDims_;
+
         //- Adjustable time-step switch
         const Switch adjustTimeStep_;
 
@@ -361,6 +364,9 @@ public:
             {
                 return phi_;
             }
+
+            //- Return cells dimension
+            virtual const volScalarField& cellDimension(const Time&) const;
 
             //- Return Fourier Number
             virtual const scalar& fourierNum() const;
