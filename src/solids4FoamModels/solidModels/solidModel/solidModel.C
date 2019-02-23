@@ -1372,9 +1372,9 @@ Foam::vector Foam::solidModel::pointU(const label pointID) const
 }
 
 
-const Foam::scalar& Foam::solidModel::DiNo() const
+Foam::scalar& Foam::solidModel::DiNo()
 {
-    notImplemented("solidModel::DiNo() const");
+    notImplemented("solidModel::DiNo()");
     return *reinterpret_cast<scalar*>(0);
 }
 

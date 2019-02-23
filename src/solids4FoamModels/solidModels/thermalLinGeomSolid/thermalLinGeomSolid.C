@@ -29,6 +29,7 @@ License
 #include "fvc.H"
 #include "fvMatrices.H"
 #include "addToRunTimeSelectionTable.H"
+#include "mixedFvPatchFields.H"
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -233,7 +234,7 @@ thermalLinGeomSolid::thermalLinGeomSolid
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const scalar& thermalSolid::DiNo() const
+scalar& thermalLinGeomSolid::DiNo()
 {
     //- calculate solid Diffusion number
     DiNo_ = 0.0;

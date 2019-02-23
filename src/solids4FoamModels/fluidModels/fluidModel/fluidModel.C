@@ -596,9 +596,9 @@ const Foam::volScalarField& Foam::fluidModel::cellDimension
 }
 
 
-const Foam::scalar& Foam::fluidModel::FourierNo() const
+Foam::scalar& Foam::fluidModel::FourierNo()
 {
-    notImplemented("fluidModel::FourierNo() const");
+    notImplemented("fluidModel::FourierNo()");
     return *reinterpret_cast<scalar*>(0);
 }
 

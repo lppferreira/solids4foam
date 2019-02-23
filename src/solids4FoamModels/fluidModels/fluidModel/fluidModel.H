@@ -369,7 +369,7 @@ public:
             virtual const volScalarField& cellDimension(const Time&) const;
 
             //- Return Fourier Number
-            virtual const scalar& FourierNo() const;
+            virtual scalar& FourierNo();
 
             //- Non-const access to the fsiMeshUpdate flag
             virtual bool& fsiMeshUpdate()

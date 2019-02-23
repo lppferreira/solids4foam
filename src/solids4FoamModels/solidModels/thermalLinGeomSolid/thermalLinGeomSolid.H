@@ -178,7 +178,7 @@ public:
             }
 
             //- Return Diffusion Number
-            virtual const scalar& DiNo() const;
+            virtual scalar& DiNo();
 
             //- Patch thermal flux
             virtual tmp<scalarField> patchThermalFlux

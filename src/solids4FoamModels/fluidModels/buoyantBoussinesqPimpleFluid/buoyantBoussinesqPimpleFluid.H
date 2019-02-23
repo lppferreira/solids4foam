@@ -170,7 +170,7 @@ public:
         // Access
 
             //- Return Fourier Number
-            virtual const scalar& FourierNo() const;
+            virtual scalar& FourierNo();
 
             //- Patch viscous force (N/m2)
             virtual tmp<vectorField> patchViscousForce

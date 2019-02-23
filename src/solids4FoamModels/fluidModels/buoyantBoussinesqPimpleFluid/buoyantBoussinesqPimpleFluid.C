@@ -32,6 +32,7 @@ License
 #include "addToRunTimeSelectionTable.H"
 #include "findRefCell.H"
 #include "adjustPhi.H"
+#include "mixedFvPatchFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -223,7 +224,7 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const scalar& buoyantBoussinesqPimpleFluid::FourierNo() const
+scalar& buoyantBoussinesqPimpleFluid::FourierNo()
 {
     // Finds the characteristic size
     const volScalarField& cellDims = cellDimension(runTime());
