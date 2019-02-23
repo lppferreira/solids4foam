@@ -366,7 +366,7 @@ public:
             }
 
             //- Return cells dimension
-            virtual const volScalarField& cellDimension(const Time&) const;
+            virtual volScalarField& cellDimension(const Time&);
 
             //- Return Fourier Number
             virtual scalar& FourierNo();

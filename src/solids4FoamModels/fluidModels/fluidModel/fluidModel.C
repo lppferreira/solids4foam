@@ -545,10 +545,10 @@ const Foam::oversetMesh& Foam::fluidModel::osMesh() const
 #endif
 
 
-const Foam::volScalarField& Foam::fluidModel::cellDimension
+Foam::volScalarField& Foam::fluidModel::cellDimension
 (
     const Time& runTime
-) const
+)
 {
     volScalarField maxCellDims
     (
