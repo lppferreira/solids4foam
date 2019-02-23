@@ -590,6 +590,10 @@ Foam::fluidSolidInterface::fluidSolidInterface
     (
         fsiProperties_.lookupOrDefault<Switch>("conjugate_", false)
     ),
+    thermalTolerance_
+    (
+        fsiProperties_.lookupOrDefault<scalar>("thermalTolerance", 1e-05)
+    ),
     couplingStartTime_
     (
         fsiProperties_.lookupOrDefault<scalar>("couplingStartTime", -1.0)

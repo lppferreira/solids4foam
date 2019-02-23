@@ -118,6 +118,9 @@ class fluidSolidInterface
         //- thermal coupling on/off
         Switch conjugate_;
 
+        //- Outer correction loop stoping tolerance
+        scalar thermalTolerance_;
+
         //- Optional: enable coupling after specified time
         const scalar couplingStartTime_;
 
@@ -400,6 +403,12 @@ public:
             Switch& conjugate()
             {
                 return conjugate_;
+            }
+
+            //- Return outer thermal corrector loop tolerance
+            scalar thermalTolerance() const
+            {
+                return thermalTolerance_;
             }
 
             //- Return predictor switch

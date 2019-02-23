@@ -118,7 +118,11 @@ bool AitkenCouplingInterface::evolve()
         // Calculate thermal residual
         thermalResidualNorm = updateThermalResidual();
     }
-    while (residualNorm > outerCorrTolerance() && outerCorr() < nOuterCorr());
+    while
+    (
+        (residualNorm > outerCorrTolerance() || thermalResidualNorm > thermalTolerance())
+     && (outerCorr() < nOuterCorr())
+    );
 
     solid().updateTotalFields();
 
