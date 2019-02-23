@@ -2,11 +2,19 @@
 cd ${0%/*} || exit 1    # run from this directory
 
 # Replace files in the main foam libraries
-(cd filesToReplaceInOF && ./Allcheck)
-if [ $? -ne 0 ]
+if [ "$WM_PROJECT" = "foam" ]
 then
-    echo "Please fix the filesToReplaceInOF above!"
-    exit 1
+    if (( $(echo "$WM_PROJECT_VERSION < 4.1" |bc -l) ))
+    then
+        (cd filesToReplaceInOF && ./Allcheck)
+        if [ $? -ne 0 ]
+        then
+            echo "Please fix the filesToReplaceInOF above!"
+            exit 1
+        fi
+    else
+        echo "This is foam-extend-4.1, you are in a safe hands!"
+    fi
 fi
 
 # Download ThirdParty software
