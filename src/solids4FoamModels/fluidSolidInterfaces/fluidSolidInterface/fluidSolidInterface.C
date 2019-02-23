@@ -1588,6 +1588,7 @@ void Foam::fluidSolidInterface::updateSolidPatchTemperatureBC()
 
         solid().setTemperature
         (
+            solidPatchIndex(),
             solidZoneTemperature,
             solidZoneKDelta
         );
@@ -1624,6 +1625,7 @@ void Foam::fluidSolidInterface::updateFluidPatchTemperatureBC()
 
         fluid().setTemperature
         (
+            fluidPatchIndex(),
             fluidZoneTemperature,
             fluidZoneKDelta
         );

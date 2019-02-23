@@ -313,8 +313,8 @@ tmp<scalarField> thermalLinGeomSolid::patchKDelta
 void thermalLinGeomSolid::setTemperature
 (
     const label patchID,
-    const scalarField& temperature,
-    const scalarField& nbrKDelta
+    const scalarField& faceZoneTemperature,
+    const scalarField& faceZoneKDelta
 )
 {
     if
@@ -323,15 +323,21 @@ void thermalLinGeomSolid::setTemperature
      != mixedFvPatchScalarField::typeName
     )
     {
-        FatalErrorIn("void thermalSolid::setTemperature(...)")
+        FatalErrorIn("void buoyantBoussinesqPimpleFluid::setTemperature(...)")
             << "Bounary condition on " << T_.name()
                 <<  " is "
                 << T_.boundaryField()[patchID].type()
                 << "for patch" << mesh().boundary()[patchID].name()
-                << ", instead "
+                << ", instead of "
                 << mixedFvPatchScalarField::typeName
                 << abort(FatalError);
     }
+
+    scalarField nbrPatchTemperature =
+	globalPatch().globalFaceToPatch(faceZoneTemperature);
+
+    scalarField nbrPatchKDelta =
+	globalPatch().globalFaceToPatch(faceZoneKDelta);
 
     mixedFvPatchScalarField& patchT =
         refCast<mixedFvPatchScalarField>
@@ -339,25 +345,10 @@ void thermalLinGeomSolid::setTemperature
             T_.boundaryField()[patchID]
         );
 
-    patchT.refValue() = temperature;
+    patchT.refValue() = nbrPatchTemperature;
     patchT.refGrad() = 0.0;
-    patchT.valueFraction() = nbrKDelta / (nbrKDelta + patchKDelta(patchID));
+    patchT.valueFraction() = nbrPatchKDelta / (nbrPatchKDelta + patchKDelta(patchID));
     patchT.evaluate();
-}
-
-void thermalLinGeomSolid::setTemperature
-(
-    const scalarField& faceZoneTemperature,
-    const scalarField& faceZoneKDelta
-)
-{
-    scalarField nbrpatchTemperature =
-	globalPatch().globalFaceToPatch(faceZoneTemperature);
-
-    scalarField nbrpatchKDelta =
-	globalPatch().globalFaceToPatch(faceZoneKDelta);
-
-    setTemperature(patchID, nbrpatchTemperature, nbrpatchKDelta);
 }
 
 

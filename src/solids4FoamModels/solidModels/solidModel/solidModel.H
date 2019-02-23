@@ -643,14 +643,6 @@ public:
             virtual void setTemperature
             (
                 const label patchID,
-                const scalarField& temperature,
-		const scalarField& nbrKDelta
-            )
-	    {}
-
-            //- Set temperature and flux at specified patch
-            virtual void setTemperature
-            (
     		const scalarField& faceZoneTemperature,
     		const scalarField& faceZoneKDelta
             )
