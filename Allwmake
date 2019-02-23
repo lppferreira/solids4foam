@@ -13,7 +13,7 @@ then
             exit 1
         fi
     else
-        echo "This is foam-extend-4.1, you are in a safe hands!"
+        echo "This is foam-extend-4.1, you are in safe hands!"
     fi
 fi
 
