@@ -204,8 +204,8 @@ public:
             virtual void setTemperature
             (
                 const label patchID,
-    		const scalarField& faceZoneTemperature,
-    		const scalarField& faceZoneKDelta
+                const scalarField& faceZoneTemperature,
+                const scalarField& faceZoneKDelta
             );
 
             //- Evolve the solid solver and solve the mathematical model
