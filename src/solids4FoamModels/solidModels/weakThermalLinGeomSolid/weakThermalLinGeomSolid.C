@@ -232,6 +232,7 @@ bool weakThermalLinGeomSolid::evolve()
         (
             rhoC_*fvm::ddt(T_)
          == fvm::laplacian(k_, T_, "laplacian(k,T)")
+          - fvm::SuSp(-thermal_.S()/T_, T_)
         );
 
         // Under-relaxation the linear system
