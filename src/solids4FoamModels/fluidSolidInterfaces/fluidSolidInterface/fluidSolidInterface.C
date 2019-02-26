@@ -588,7 +588,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     ),
     conjugate_
     (
-        fsiProperties_.lookupOrDefault<Switch>("conjugate_", false)
+        fsiProperties_.lookupOrDefault<Switch>("conjugate", false)
     ),
     thermalTolerance_
     (
