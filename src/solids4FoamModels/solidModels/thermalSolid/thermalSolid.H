@@ -108,7 +108,7 @@ protected:
         //- Return nonlinear geometry enumerator
         virtual nonLinearGeometry::nonLinearType nonLinGeom() const
         {
-            return nonLinearGeometry::OFF;
+            return nonLinearGeometry::LINEAR_GEOMETRY;
         }
 
 

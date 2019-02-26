@@ -187,8 +187,6 @@ thermalSolid::thermalSolid
     ),
     DiNo_(0)
 {
-    DisRequired();
-
     // Store T old time
     T_.oldTime();
 }
