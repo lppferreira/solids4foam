@@ -15,37 +15,38 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-
 ddtSchemes
 {
-}
-
-d2dt2Schemes
-{
-}
-
-interpolationSchemes
-{
-}
-
-divSchemes
-{
+    default         Euler;
 }
 
 gradSchemes
 {
+    default         Gauss linear;
+    grad(U)         Gauss linear;
+    grad(alpha1)    Gauss linear;
 }
 
-snGradSchemes
+divSchemes
 {
+    div(rho*phi,U)  Gauss limitedLinearV 1;
+    div(phi,alpha)  Gauss vanLeer01;
+    div(phirb,alpha) Gauss interfaceCompression;
 }
 
 laplacianSchemes
 {
+    default         Gauss linear corrected;
 }
 
-fluxRequired
+interpolationSchemes
 {
+    default         linear;
+}
+
+snGradSchemes
+{
+    default         corrected;
 }
 
 
