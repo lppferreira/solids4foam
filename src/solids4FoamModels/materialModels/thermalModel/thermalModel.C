@@ -63,10 +63,62 @@ thermalModel::thermalModel(const fvMesh& mesh)
     ),
     mesh_(mesh),
     lawPtr_(thermalLaw::New("law", mesh, subDict("thermal")))
-{}
+{
+    {
+        PtrList<entry> entries(subDict("thermal").lookup("sources"));
+        sourcePtr_.setSize(entries.size());
+
+        forAll (sourcePtr_, sourceI)
+        {
+            sourcePtr_.set
+            (
+                sourceI,
+                thermalSource::New
+                (
+                    entries[sourceI].keyword(),
+                    mesh,
+                    entries[sourceI].dict()
+                )
+            );
+        }
+    }
+}
 
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
+
+tmp<volScalarField> thermalModel::S() const
+{
+    tmp<volScalarField> tsource
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "heatSource",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh_,
+            dimensionedScalar
+            (
+                "zero",
+                dimEnergy/dimTime/dimVolume,
+                scalar(0.0)
+            )
+        )
+    );
+
+    forAll(sourcePtr_, sourceI)
+    {
+        sourcePtr_[sourceI].addSource(tsource());
+    }
+
+    return tsource;
+}
+
 
 bool thermalModel::read()
 {

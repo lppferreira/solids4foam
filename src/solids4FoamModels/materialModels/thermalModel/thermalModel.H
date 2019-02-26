@@ -44,6 +44,7 @@ SourceFiles
 #include "volFields.H"
 #include "tmp.H"
 #include "thermalLaw.H"
+#include "thermalSource.H"
 #include "Switch.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -66,6 +67,9 @@ class thermalModel
 
         //- Thermal law
         autoPtr<thermalLaw> lawPtr_;
+
+        //- Thermal Source
+        PtrList<thermalSource> sourcePtr_;
 
 
     // Private Member Functions
@@ -119,6 +123,9 @@ public:
         {
             return lawPtr_->k();
         }
+
+        //- Return the aggregated source
+        tmp<volScalarField> S() const;
 
         //- Read thermalProperties dictionary
         virtual bool read();
