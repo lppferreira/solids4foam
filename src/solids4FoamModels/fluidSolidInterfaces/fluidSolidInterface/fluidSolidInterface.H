@@ -169,11 +169,8 @@ class fluidSolidInterface
         //- Maximal interface displacement norm
         scalar maxIntDisplNorm_;
 
-        //- Current thermal flux residual
-        scalar thermalResidual_;
-
 	//- Maximal thermal residual norm
-	scalar maxThermalResidual_;
+	scalar maxThermalResidualNorm_;
 
         //- Outer corrector
         label outerCorr_;

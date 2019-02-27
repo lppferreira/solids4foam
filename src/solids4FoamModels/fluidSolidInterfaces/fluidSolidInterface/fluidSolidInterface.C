@@ -619,8 +619,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     residualPrev_(),
     maxResidualNorm_(0),
     maxIntDisplNorm_(0),
-    thermalResidual_(0),
-    maxThermalResidual_(0),
+    maxThermalResidualNorm_(0),
     outerCorr_(0),
     interpolatorUpdateFrequency_
     (
@@ -874,9 +873,7 @@ void Foam::fluidSolidInterface::initializeFields()
 
     maxResidualNorm_ = 0;
 
-    thermalResidual_ = 0;
-
-    maxThermalResidual_ = 0;
+    maxThermalResidualNorm_ = 0;
 
     outerCorr_ = 0;
 
@@ -1658,20 +1655,24 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
           - nbrFluidZoneThermalFlux
         );
 
-        thermalResidual_ = ::sqrt(gSum(magSqr(thermalFluxRes)));
+        scalar thermalResidualNorm = ::sqrt(gSum(magSqr(thermalFluxRes)));
 
-        if (thermalResidual_ > maxThermalResidual_)
+        if (thermalResidualNorm > maxThermalResidualNorm_)
         {
-            maxThermalResidual_ = thermalResidual_;
+            maxThermalResidualNorm_ = thermalResidualNorm;
         }
 
-        thermalResidual_ /= maxThermalResidual_ + SMALL;
+        thermalResidualNorm /= maxThermalResidualNorm_ + SMALL;
 
         Info<< "Relative flux residual = " 
-            <<  thermalResidual_ << "\n" << endl;
-    }
+            <<  thermalResidualNorm << "\n" << endl;
 
-    return thermalResidual_;
+        return thermalResidualNorm;
+    }
+    else
+    {
+        return 0.0;
+    }
 }
 
 
