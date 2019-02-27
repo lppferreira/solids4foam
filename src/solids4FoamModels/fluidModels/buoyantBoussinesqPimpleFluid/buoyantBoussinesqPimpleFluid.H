@@ -104,6 +104,9 @@ class buoyantBoussinesqPimpleFluid
         //- Density of phase 1
         autoPtr<incompressible::RASModel> turbulence_;
 
+        //- Effective fluid conductivity
+        volScalarField kappaEff_;
+
         //- Density
         dimensionedScalar rho_;
 

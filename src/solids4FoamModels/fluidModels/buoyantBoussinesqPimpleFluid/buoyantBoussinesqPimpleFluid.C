@@ -83,17 +83,14 @@ tmp<fvVectorMatrix> buoyantBoussinesqPimpleFluid::solveUEqn()
 
 void buoyantBoussinesqPimpleFluid::solveTEqn()
 {
-    const volScalarField kappaEff
-    (
-        "kappaEff",
-        turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_
-    );
+    kappaEff_ =
+        turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_;
 
     fvScalarMatrix TEqn
     (
         fvm::div(phi(), T_)
       - fvm::Sp(fvc::div(phi()), T_)
-      - fvm::laplacian(kappaEff, T_)
+      - fvm::laplacian(kappaEff_, T_)
     );
 
     TEqn.relax();
@@ -185,6 +182,18 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
     (
         incompressible::RASModel::New(U(), phi(), laminarTransport_)
     ),
+    kappaEff_
+    (
+        IOobject
+        (
+            "kappaEff",
+            runTime.timeName(),
+            mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_
+    ),
     rho_(laminarTransport_.lookup("rho")),
     g_
     (
@@ -232,18 +241,12 @@ scalar& buoyantBoussinesqPimpleFluid::FourierNo()
     FourierNo_ = 0.0;
     scalar meanFourierNo = 0.0;
 
-    const volScalarField kappaEff
-    (
-        "kappaEff",
-        turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_
-    );
-
     FourierNo_ = 
-      gMax((kappaEff + turbulence_->nut())
+      gMax((kappaEff_ + turbulence_->nut())
            *runTime().deltaT0Value() / pow(cellDims.field(), 2));
 
     meanFourierNo = 
-      gAverage((kappaEff + turbulence_->nut())
+      gAverage((kappaEff_ + turbulence_->nut())
                *runTime().deltaT0Value() / pow(cellDims.field(), 2));
 
     Info<< "Fourier number mean: " << meanFourierNo
@@ -292,20 +295,14 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchThermalFlux
     const label patchID
 ) const
 {
-    const volScalarField kappaEff
-    (
-        "kappaEff",
-        turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_
-    );
-
     tmp<scalarField> ttF
     (
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() = kappaEff.boundaryField()[patchID]
-	   * mesh().boundary()[patchID].magSf()
-	   * T_.boundaryField()[patchID].snGrad();
+    ttF() = kappaEff_.boundaryField()[patchID]
+	  * mesh().boundary()[patchID].magSf()
+	  * T_.boundaryField()[patchID].snGrad();
 
     return ttF;
 }
@@ -332,18 +329,13 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchKDelta
     const label patchID
 ) const
 {
-    const volScalarField kappaEff
-    (
-        "kappaEff",
-        turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_
-    );
-
     tmp<scalarField> tKD
     (
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tKD() = kappaEff.boundaryField()[patchID]*mesh().boundary()[patchID].deltaCoeffs();
+    tKD() = kappaEff_.boundaryField()[patchID]
+          * mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;
 }
