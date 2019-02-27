@@ -1646,16 +1646,16 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
         const scalarField solidZoneThermalFlux =
             solid().faceZoneThermalFlux();
 
-        scalarField nbrFluidZoneThermalFlux =
+        const scalarField nbrFluidZoneThermalFlux =
             ggiInterpolator().slaveToMaster
             (
-                solidZoneThermalFlux
+              - solidZoneThermalFlux
             );
 
-        scalarField thermalFluxRes
+        const scalarField thermalFluxRes
         (
-             mag(nbrFluidZoneThermalFlux)
-           - mag(fluidZoneThermalFlux)
+            fluidZoneThermalFlux
+          - nbrFluidZoneThermalFlux
         );
 
         thermalResidual_ = ::sqrt(gSum(magSqr(thermalFluxRes)));
