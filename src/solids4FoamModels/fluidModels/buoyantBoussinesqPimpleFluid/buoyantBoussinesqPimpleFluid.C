@@ -301,8 +301,8 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchThermalFlux
     );
 
     ttF() = kappaEff_.boundaryField()[patchID]
-	  * mesh().boundary()[patchID].magSf()
-	  * T_.boundaryField()[patchID].snGrad();
+          * mesh().boundary()[patchID].magSf()
+          * T_.boundaryField()[patchID].snGrad();
 
     return ttF;
 }

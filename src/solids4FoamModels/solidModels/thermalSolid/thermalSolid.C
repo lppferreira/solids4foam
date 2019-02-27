@@ -231,8 +231,8 @@ tmp<scalarField> thermalSolid::patchThermalFlux
     );
 
     ttF() = k_.boundaryField()[patchID]
-	   * mesh().boundary()[patchID].magSf()
-	   * T_.boundaryField()[patchID].snGrad();
+          * mesh().boundary()[patchID].magSf()
+          * T_.boundaryField()[patchID].snGrad();
 
     return ttF;
 }
@@ -264,7 +264,8 @@ tmp<scalarField> thermalSolid::patchKDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tKD() = k_.boundaryField()[patchID]*mesh().boundary()[patchID].deltaCoeffs();
+    tKD() = k_.boundaryField()[patchID]
+          * mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;
 }
