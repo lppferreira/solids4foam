@@ -407,7 +407,7 @@ void thermalSolid::writeFields(const Time& runTime)
     Info<< "Max magnitude of heat flux = " << max(mag(heatFlux)).value()
         << endl;
 
-    solidModel::writeFields(runTime);
+    physicsModel::writeFields(runTime);
 }
 
 
