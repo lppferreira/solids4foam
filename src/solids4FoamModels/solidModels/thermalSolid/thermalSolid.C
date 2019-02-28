@@ -319,7 +319,7 @@ bool thermalSolid::evolve()
 
     int iCorr = 0;
     lduSolverPerformance solverPerfT;
-    blockLduMatrix::debug = 1;
+    blockLduMatrix::debug = 0;
 
     // calculate diffusion number
     DiNo();
@@ -355,6 +355,8 @@ bool thermalSolid::evolve()
         !converged(iCorr, solverPerfT, T_)
      && ++iCorr < nCorr()
     );
+
+    blockLduMatrix::debug = 1;
 
     return true;
 }
