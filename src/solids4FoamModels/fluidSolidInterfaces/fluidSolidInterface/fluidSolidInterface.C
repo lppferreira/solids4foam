@@ -1796,20 +1796,28 @@ void Foam::fluidSolidInterface::updateSolidPatchTemperatureBC()
         scalarField solidZoneTemperature =
             scalarField(solid().globalPatch().globalPatch().size(), 0.0);
 
-        solidZoneTemperature =
-            ggiInterpolator().masterToSlave
-            (
-                fluidZoneTemperature
-            );
+        transferFacesZoneToZone
+        (
+            "fluid",                             // from region name
+            "solid",                             // to region name
+            fluid().globalPatch().globalPatch(), // from zone
+            solid().globalPatch().globalPatch(), // to zone
+            fluidZoneTemperature,                // from field
+            solidZoneTemperature                 // to field
+        );
 
         scalarField solidZoneKDelta =
             scalarField(solid().globalPatch().globalPatch().size(), 0.0);
 
-        solidZoneKDelta =
-            ggiInterpolator().masterToSlave
-            (
-                fluidZoneKDelta
-            );
+        transferFacesZoneToZone
+        (
+            "fluid",                             // from region name
+            "solid",                             // to region name
+            fluid().globalPatch().globalPatch(), // from zone
+            solid().globalPatch().globalPatch(), // to zone
+            fluidZoneKDelta,                     // from field
+            solidZoneKDelta                      // to field
+        );
 
         solid().setTemperature
         (
@@ -1833,20 +1841,28 @@ void Foam::fluidSolidInterface::updateFluidPatchTemperatureBC()
         scalarField fluidZoneTemperature =
             scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
 
-        fluidZoneTemperature =
-            ggiInterpolator().slaveToMaster
-            (
-                solidZoneTemperature
-            );
+        transferFacesZoneToZone
+        (
+            "solid",                             // from region name
+            "fluid",                             // to region name
+            solid().globalPatch().globalPatch(), // from zone
+            fluid().globalPatch().globalPatch(), // to zone
+            solidZoneTemperature,                // from field
+            fluidZoneTemperature                 // to field
+        );
 
         scalarField fluidZoneKDelta =
             scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
 
-        fluidZoneKDelta =
-            ggiInterpolator().slaveToMaster
-            (
-                solidZoneKDelta
-            );
+        transferFacesZoneToZone
+        (
+            "solid",                             // from region name
+            "fluid",                             // to region name
+            solid().globalPatch().globalPatch(), // from zone
+            fluid().globalPatch().globalPatch(), // to zone
+            solidZoneKDelta,                     // from field
+            fluidZoneKDelta                      // to field
+        );
 
         fluid().setTemperature
         (
@@ -1867,11 +1883,18 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
         const scalarField solidZoneThermalFlux =
             solid().faceZoneThermalFlux();
 
-        const scalarField nbrFluidZoneThermalFlux =
-            ggiInterpolator().slaveToMaster
-            (
-              - solidZoneThermalFlux
-            );
+        scalarField nbrFluidZoneThermalFlux =
+            scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
+
+        transferFacesZoneToZone
+        (
+            "solid",                             // from region name
+            "fluid",                             // to region name
+            solid().globalPatch().globalPatch(), // from zone
+            fluid().globalPatch().globalPatch(), // to zone
+            (-solidZoneThermalFlux)(),           // from field
+            nbrFluidZoneThermalFlux              // to field
+        );
 
         const scalarField thermalFluxRes
         (
@@ -1879,7 +1902,7 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
           - nbrFluidZoneThermalFlux
         );
 
-        scalar thermalResidualNorm = ::sqrt(gSum(magSqr(thermalFluxRes)));
+        scalar thermalResidualNorm = Foam::sqrt(gSum(magSqr(thermalFluxRes)));
 
         if (thermalResidualNorm > maxThermalResidualNorm_)
         {
