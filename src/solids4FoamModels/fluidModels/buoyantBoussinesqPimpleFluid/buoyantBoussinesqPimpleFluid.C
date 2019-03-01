@@ -195,6 +195,7 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
         turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_
     ),
     rho_(laminarTransport_.lookup("rho")),
+    C_(laminarTransport_.lookup("C")),
     g_
     (
         IOobject
@@ -300,7 +301,8 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchThermalFlux
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() = kappaEff_.boundaryField()[patchID]
+    ttF() = fvc::interpolate(kappaEff_)().boundaryField()[patchID]
+          * rho_.value() * C_.value()
           * mesh().boundary()[patchID].magSf()
           * T_.boundaryField()[patchID].snGrad();
 
@@ -334,7 +336,8 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchKDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tKD() = kappaEff_.boundaryField()[patchID]
+    tKD() = fvc::interpolate(kappaEff_)().boundaryField()[patchID]
+          * rho_.value() * C_.value()
           * mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;
