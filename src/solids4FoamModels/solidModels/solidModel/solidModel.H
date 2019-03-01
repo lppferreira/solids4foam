@@ -646,7 +646,7 @@ public:
                 const scalarField& faceZoneTemperature,
                 const scalarField& faceZoneKDelta
             )
-	    {}
+            {}
 
             //- Check if solid model is diverging using the Jacobian field
             virtual Switch& checkEnforceLinear(const volScalarField& J);

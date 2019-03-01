@@ -97,8 +97,8 @@ bool AitkenCouplingInterface::evolve()
         // Move the fluid mesh
         moveFluidMesh();
 
-	// Transfer temperature and flux from the solid to the fluid
-	updateFluidPatchTemperatureBC();
+        // Transfer temperature and flux from the solid to the fluid
+        updateFluidPatchTemperatureBC();
 
         // Solve fluid
         fluid().evolve();
@@ -106,8 +106,8 @@ bool AitkenCouplingInterface::evolve()
         // Transfer the force from the fluid to the solid
         updateForce();
 
-	// Transfer temperature and flux from the fluid to the solid
-	updateSolidPatchTemperatureBC();
+        // Transfer temperature and flux from the fluid to the solid
+        updateSolidPatchTemperatureBC();
 
         // Solve solid
         solid().evolve();
