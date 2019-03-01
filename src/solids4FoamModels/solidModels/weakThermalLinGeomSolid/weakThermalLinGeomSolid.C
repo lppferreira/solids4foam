@@ -254,6 +254,8 @@ bool weakThermalLinGeomSolid::evolve()
     // thermal stress is to be included in the momentum equation.
     linGeomTotalDispSolid::evolve();
 
+    blockLduMatrix::debug = 1;
+
     return true;
 }
 

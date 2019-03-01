@@ -57,25 +57,29 @@ tmp<fvVectorMatrix> buoyantBoussinesqPimpleFluid::solveUEqn()
 
     tmp<fvVectorMatrix> tUEqn
     (
-        fvm::div(phi(), U())
+        fvm::ddt(U())
+      + fvm::div(phi(), U())
       + turbulence_->divDevReff()
     );
     fvVectorMatrix& UEqn = tUEqn();
 
     UEqn.relax();
 
-    solve
-    (
-        UEqn
-      ==
-        fvc::reconstruct
+    if (pimple().momentumPredictor())
+    {
+        solve
         (
+            UEqn
+         ==
+            fvc::reconstruct
             (
-                fvc::interpolate(rhok_)*(g_ & mesh().Sf())
-              - fvc::snGrad(p())*mesh().magSf()
+                (
+                    fvc::interpolate(rhok_)*(g_ & mesh().Sf())
+                  - fvc::snGrad(p())*mesh().magSf()
+                )
             )
-        )
-    );
+        );
+    }
 
     return tUEqn;
 }
@@ -88,8 +92,8 @@ void buoyantBoussinesqPimpleFluid::solveTEqn()
 
     fvScalarMatrix TEqn
     (
-        fvm::div(phi(), T_)
-      - fvm::Sp(fvc::div(phi()), T_)
+        fvm::ddt(T_)
+      + fvm::div(phi(), T_)
       - fvm::laplacian(kappaEff_, T_)
     );
 
@@ -103,10 +107,7 @@ void buoyantBoussinesqPimpleFluid::solveTEqn()
 
 void buoyantBoussinesqPimpleFluid::solvePEqn
 (
-    pimpleControl& pimple,
-    tmp<fvVectorMatrix>& UEqn,
-    const label pRefCell,
-    const scalar pRefValue
+    tmp<fvVectorMatrix>& UEqn
 )
 {
     volScalarField rUA("rUA", 1.0/UEqn().A());
@@ -122,18 +123,18 @@ void buoyantBoussinesqPimpleFluid::solvePEqn
         rUAf*fvc::interpolate(rhok_)*(g_ & mesh().Sf());
     phi() += buoyancyPhi;
 
-    while (pimple.correctNonOrthogonal())
+    while (pimple().correctNonOrthogonal())
     {
         fvScalarMatrix pEqn
         (
             fvm::laplacian(rUAf, p()) == fvc::div(phi())
         );
 
-        pEqn.setReference(pRefCell, pRefValue);
+        pEqn.setReference(pRefCell_, pRefValue_);
 
         pEqn.solve();
 
-        if (pimple.finalNonOrthogonalIter())
+        if (pimple().finalNonOrthogonalIter())
         {
             // Calculate the conservative fluxes
             phi() -= pEqn.flux();
@@ -180,7 +181,10 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
     Prt_(laminarTransport_.lookup("Prt")),
     turbulence_
     (
-        incompressible::RASModel::New(U(), phi(), laminarTransport_)
+        incompressible::turbulenceModel::New
+        (
+            U(), phi(), laminarTransport_
+        )
     ),
     kappaEff_
     (
@@ -218,17 +222,14 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
         ),
         1.0 - beta_*(T_ - TRef_)
     ),
-    FourierNo_(0.0)
+    pRefCell_(0),
+    pRefValue_(0),
+    FourierNo_(0)
 {
     UisRequired();
     pisRequired();
 
-    // Create pimple control as it is needed to set the p reference
-    pimpleControl pimple(mesh());
-
-    label pRefCell = 0;
-    scalar pRefValue = 0.0;
-    setRefCell(p(), pimple.dict(), pRefCell, pRefValue);
+    setRefCell(p(), pimple().dict(), pRefCell_, pRefValue_);
     mesh().schemesDict().setFluxRequired(p().name());
 }
 
@@ -392,13 +393,26 @@ bool buoyantBoussinesqPimpleFluid::evolve()
 
     fvMesh& mesh = fluidModel::mesh();
 
-    // Create pimple control
-    pimpleControl pimple(mesh);
+    bool meshChanged = false;
+    if (fluidModel::fsiMeshUpdate())
+    {
+        // The FSI interface is in charge of calling mesh.update()
+        meshChanged = fluidModel::fsiMeshUpdateChanged();
+    }
+    else
+    {
+        meshChanged = refCast<dynamicFvMesh>(mesh).update();
+        reduce(meshChanged, orOp<bool>());
+    }
 
-    // Prepare for the pressure solution
-    label pRefCell = 0;
-    scalar pRefValue = 0.0;
-    setRefCell(p(), pimple.dict(), pRefCell, pRefValue);
+    if (meshChanged)
+    {
+        const Time& runTime = fluidModel::runTime();
+#       include "volContinuity.H"
+    }
+
+    // Make the fluxes relative to the mesh motion
+    fvc::makeRelative(phi(), U());
 
     // Calculate fourier number
     FourierNo();
@@ -412,7 +426,7 @@ bool buoyantBoussinesqPimpleFluid::evolve()
     }
 
     // Pressure-velocity corrector
-    while (pimple.loop())
+    while (pimple().loop())
     {
         // Momentum equation
         tmp<fvVectorMatrix> UEqn = solveUEqn();
@@ -421,12 +435,18 @@ bool buoyantBoussinesqPimpleFluid::evolve()
         solveTEqn();
 
         // Pressure equation
-        solvePEqn(pimple, UEqn, pRefCell, pRefValue);
+        solvePEqn(UEqn);
+
+        // Make the fluxes relative to the mesh motion
+        fvc::makeRelative(phi(), U());
 
         gradU() = fvc::grad(U());
 
         turbulence_->correct();
     }
+
+    // Make the fluxes absolut to the mesh motion
+    fvc::makeAbsolute(phi(), U());
 
     return 0;
 }

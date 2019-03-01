@@ -456,6 +456,8 @@ bool thermalLinGeomSolid::evolve()
     // Increment of point displacement
     pointDD() = pointD() - pointD().oldTime();
 
+    blockLduMatrix::debug = 1;
+
     return true;
 }
 
