@@ -84,6 +84,9 @@ bool thermoCouplingInterface::evolve()
     {
         outerCorr()++;
 
+        Info<< "Time = " << fluid().runTime().timeName()
+            << ", iteration: " << outerCorr() << endl;
+
         // Transfer temperature and flux from the solid to the fluid
         updateFluidPatchTemperatureBC();
 
