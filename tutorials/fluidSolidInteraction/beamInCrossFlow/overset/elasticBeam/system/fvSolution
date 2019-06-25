@@ -14,63 +14,11 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-solvers
-{
-    "p|pFinal"
-    {
-        solver           BiCGStab;
-        preconditioner   DILU;
+// The is only needed to suppress "cat: No such file or directory" error in
+// foam-extend-4.1!
 
-//         solver           CG;
-//         preconditioner   DIC;
-
-        maxIter          1000;
-        tolerance        1e-7;
-        relTol           0;
-    }
-
-    U
-    {
-        solver           BiCGStab;
-        preconditioner   DILU;
-
-        tolerance        1e-06;
-        relTol           0;
-        maxIter          200;
-    }
-    
-    cellMotionU
-    {
-        solver          GAMG;
-        tolerance       1e-06;
-        relTol          0.001;
-        minIter         1;
-        maxIter         100;
-        smoother        GaussSeidel;
-        nPreSweeps      0;
-        nPostSweeps     2;
-        nFinestSweeps   2;
-        scaleCorrection true;
-        directSolveCoarsest false;
-        cacheAgglomeration true;
-        nCellsInCoarsestLevel 20;
-        agglomerator    faceAreaPair;
-        mergeLevels     1;
-    }
-}
-
-PIMPLE 
-{
-    nOuterCorrectors 2;
-    nCorrectors     3;
-    nNonOrthogonalCorrectors 1;
-}
-
-relaxationFactors
-{
-    U    1;
-    UFinal 1;
-    // p    0.3;
-}
+// Users need to know that the actual discretization schemes and solution
+// methods of each regions is being read from system/fluid or system/solid
+// directories.
 
 // ************************************************************************* //

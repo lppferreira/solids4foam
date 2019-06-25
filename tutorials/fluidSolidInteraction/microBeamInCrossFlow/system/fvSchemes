@@ -14,48 +14,11 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-ddtSchemes
-{
-    default         Euler;
-}
+// The is only needed to suppress "cat: No such file or directory" error in
+// foam-extend-4.1!
 
-gradSchemes
-{
-    default         Gauss linear;
-}
-
-divSchemes
-{
-    default         none;
-    div(phi,U)      Gauss upwind;
-}
-
-laplacianSchemes
-{
-    default         none;
-    laplacian(nu,U) Gauss linear corrected;
-    laplacian(diffusivity,cellMotionU) Gauss linear corrected;
-    laplacian(rAU,p) Gauss linear corrected;
-    laplacian((1|A(U)),p) Gauss linear corrected;
-}
-
-interpolationSchemes
-{
-    default        linear;
-    interpolate(y) linear;
-    interpolate(U) skewCorrected linear;
-}
-
-snGradSchemes
-{
-    default         corrected;
-}
-
-fluxRequired
-{
-    default         no;
-    p;
-}
-
+// Users need to know that the actual discretization schemes and solution
+// methods of each regions is being read from system/fluid or system/solid
+// directories.
 
 // ************************************************************************* //
