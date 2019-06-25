@@ -30,8 +30,7 @@ Description
     Dynamic mesh is not supported.
 
 Author
-    Zeljko Tukovic, FSB Zagreb.  All rights reserved.
-    Philip Cardiff, UCD. All rights reserved.
+    Danial Khazaei, NIT. All rights reserved.
 
 SourceFiles
     thermoCouplingInterface.C
@@ -52,7 +51,7 @@ namespace fluidSolidInterfaces
 {
 
 /*---------------------------------------------------------------------------*\
-                        Class thermoCouplingInterface Declaration
+                 Class thermoCouplingInterface Declaration
 \*---------------------------------------------------------------------------*/
 
 class thermoCouplingInterface

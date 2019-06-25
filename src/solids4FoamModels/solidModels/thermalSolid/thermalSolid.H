@@ -30,7 +30,7 @@ Description
     The heat transfer solver for solid models.
 
 Author
-    Philip Cardiff, UCD.  All rights reserved.
+    Danial Khazaei, NIT.  All rights reserved.
 
 SourceFiles
     thermalSolid.C
