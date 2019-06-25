@@ -28,10 +28,10 @@ solidModel explicitLinearGeometryTotalDisplacement;
     // 0.0 is no smoothing
     // 1.0 is standard smoothing
     // >1.0 is extra smoothing
-    RhieChowScale   0.7;
+    //RhieChowScale   0.7;
 
-    // Numerical viscosity for 1st temporal derivative term
-    numericalViscosity    eta [ 0 0 -1 0 0 0 0 ] 0;
+    // Laplacian smoothing
+    laplacianSmoothingCoeff     0.05;
 }
 
 

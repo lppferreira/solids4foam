@@ -19,39 +19,39 @@ FoamFile
 (
     top
     {
-        type            patch;
-        nFaces          500;
-        startFace       13900;
+        type            empty;
+        nFaces          100;
+        startFace       99;
     }
     left
     {
         type            patch;
-        nFaces          100;
-        startFace       14400;
+        nFaces          1;
+        startFace       199;
     }
     right
     {
         type            patch;
-        nFaces          100;
-        startFace       14500;
+        nFaces          1;
+        startFace       200;
     }
     bottom
     {
-        type            patch;
-        nFaces          500;
-        startFace       14600;
+        type            empty;
+        nFaces          100;
+        startFace       201;
     }
     front
     {
-        type            patch;
-        nFaces          500;
-        startFace       15100;
+        type            empty;
+        nFaces          100;
+        startFace       301;
     }
     back
     {
-        type            patch;
-        nFaces          500;
-        startFace       15600;
+        type            empty;
+        nFaces          100;
+        startFace       401;
     }
 )
 

@@ -67,7 +67,9 @@ Foam::tmp<Foam::volVectorField> Foam::momentumStabilisation::stabilisation
             vf.mesh(),
             dimensionedVector
             (
-                "zero", gamma.dimensions()*gradVf.dimensions()/dimLength, vector::zero
+                "zero",
+                gamma.dimensions()*gradVf.dimensions()/dimLength,
+                vector::zero
             )
         )
     );
@@ -76,12 +78,11 @@ Foam::tmp<Foam::volVectorField> Foam::momentumStabilisation::stabilisation
     // Lookup method
     const word method = word(dict_.lookup("type"));
 
-    // Lookup scale factor
-    const scalar scaleFactor = readScalar(dict_.lookup("scaleFactor"));
-
     // Calculate stabilisation term
     if (method == "RhieChow")
     {
+        const scalar scaleFactor = readScalar(dict_.lookup("scaleFactor"));
+
         result = scaleFactor
        *(
            fvc::laplacian(gamma, vf, "laplacian(DD,D)") - fvc::div(gamma*gradVf)
@@ -89,6 +90,8 @@ Foam::tmp<Foam::volVectorField> Foam::momentumStabilisation::stabilisation
     }
     else if (method == "JamesonSchmidtTurkel")
     {
+        const scalar scaleFactor = readScalar(dict_.lookup("scaleFactor"));
+
         result = -scaleFactor*fvc::laplacian
         (
             vf.mesh().magSf(),
@@ -99,13 +102,15 @@ Foam::tmp<Foam::volVectorField> Foam::momentumStabilisation::stabilisation
     }
     else if (method == "Laplacian")
     {
+        const scalar scaleFactor = readScalar(dict_.lookup("scaleFactor"));
+
         result = scaleFactor*fvc::laplacian(gamma, vf);
     }
-    else
+    else if (method != "none")
     {
         FatalErrorIn(type() + "::stabilisation() const")
             << "Unknown method = " << method << nl
-            << "Methods are: RhieChow, JamesonSchmidtTurek and Laplacian"
+            << "Methods are: none, RhieChow, JamesonSchmidtTurkel and Laplacian"
             <<  abort(FatalError);
     }
 

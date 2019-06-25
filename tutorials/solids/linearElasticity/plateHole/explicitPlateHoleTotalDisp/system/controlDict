@@ -22,15 +22,15 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         1e-03;
+endTime         1;
 
 deltaT          1e-06;
 
-maxCo           0.7;
+maxCo           0.5;
 
 writeControl    adjustableRunTime;
 
-writeInterval   1e-05;
+writeInterval   1e-01;
 
 cycleWrite      0;
 
@@ -46,13 +46,13 @@ timePrecision   6;
 
 runTimeModifiable no;
 
-functions
-{
-    forceDisp1
-    {
-        type          solidForcesDisplacements;
-        historyPatch  right;
-    }
-}
+// functions
+// {
+//     forceDisp1
+//     {
+//         type          solidForcesDisplacements;
+//         historyPatch  right;
+//     }
+// }
 
 // ************************************************************************* //
