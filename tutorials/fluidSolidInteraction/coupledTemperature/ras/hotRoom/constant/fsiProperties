@@ -1,0 +1,47 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     3.0                                |
+|   \\  /    A nd           | Web:         http://www.extend-project.de       |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fsiProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+fluidSolidInterface    thermoCoupling;
+
+thermoCouplingCoeffs
+{
+    // Solid interface patch and faceZone
+    solidPatch           floor;
+    solidZone            floorZone;
+
+    // Fluid interface patch and faceZone
+    fluidPatch           floor;
+    fluidZone            floorZone;
+
+    // Tolerance for the thermal loop within each time-step
+    thermalTolerance     1e-5;
+
+    // Maximum number of outer FSI loop correctors within each time-step
+    nOuterCorr           5;
+
+    // Enable/disable coupling from the start
+    coupled              no;
+
+    // Enable/disable thermal coupling
+    conjugate            yes;
+
+    // Method for transferring information between the interfaces
+    interfaceTransferMethod directMap;
+    //interfaceTransferMethod RBF;
+    //interfaceTransferMethod GGI;
+}
+
+// ************************************************************************* //
