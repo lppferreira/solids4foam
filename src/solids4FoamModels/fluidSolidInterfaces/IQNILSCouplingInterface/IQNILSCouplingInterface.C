@@ -128,6 +128,15 @@ bool IQNILSCouplingInterface::evolve()
 
         // Calculate thermal residual
         thermalResidualNorm = updateThermalResidual();
+
+        // Optional: write residuals to file
+        if (writeResidualsToFile() && Pstream::master())
+        {
+            residualFile()
+                << runTime().value() << " "
+                << outerCorr() << " "
+                << residualNorm << endl;
+        }
     }
     while
     (
