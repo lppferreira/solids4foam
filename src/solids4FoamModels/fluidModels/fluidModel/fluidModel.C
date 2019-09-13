@@ -422,6 +422,7 @@ Foam::fluidModel::fluidModel
     g_(readG()),
     Uheader_("U", runTime.timeName(), mesh(), IOobject::MUST_READ),
     pheader_("p", runTime.timeName(), mesh(), IOobject::MUST_READ),
+    Theader_("T", runTime.timeName(), mesh(), IOobject::MUST_READ),
     U_
     (
         IOobject
@@ -447,6 +448,19 @@ Foam::fluidModel::fluidModel
         ),
         mesh(),
         dimensionedScalar("zero", dimPressure, 0.0)
+    ),
+    T_
+    (
+        IOobject
+        (
+            "T",
+            runTime.timeName(),
+            mesh(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
+        ),
+        mesh(),
+        dimensionedScalar("zero", dimTemperature, 0.0)
     ),
     gradU_(fvc::grad(U_)),
     gradp_(fvc::grad(p_)),
@@ -612,11 +626,7 @@ Foam::tmp<Foam::scalarField> Foam::fluidModel::patchThermalFlux
 
     return tmp<scalarField>
     (
-        new scalarField
-        (
-            mesh().boundary()[patchID].size(),
-            scalar(0)
-        )
+        new scalarField(mesh().boundary()[patchID].size(), 0.0)
     );
 }
 
@@ -630,11 +640,7 @@ Foam::tmp<Foam::scalarField> Foam::fluidModel::patchTemperature
 
     return tmp<scalarField>
     (
-        new scalarField
-        (
-            mesh().boundary()[patchID].size(),
-            scalar(0)
-        )
+        new scalarField(mesh().boundary()[patchID].size(), 0.0)
     );
 }
 
@@ -648,11 +654,7 @@ Foam::tmp<Foam::scalarField> Foam::fluidModel::patchKDelta
 
     return tmp<scalarField>
     (
-        new scalarField
-        (
-            mesh().boundary()[patchID].size(),
-            scalar(0)
-        )
+        new scalarField(mesh().boundary()[patchID].size(), 0.0)
     );
 }
 
@@ -719,6 +721,17 @@ void Foam::fluidModel::pisRequired()
     {
         FatalErrorIn(type() + "::pisRequired()")
             << "This fluidModel requires the 'p' field to be specified!"
+            << abort(FatalError);
+    }
+}
+
+
+void Foam::fluidModel::TisRequired()
+{
+    if (!Theader_.headerOk())
+    {
+        FatalErrorIn(type() + "::TisRequired()")
+            << "This fluidModel requires the 'T' field to be specified!"
             << abort(FatalError);
     }
 }

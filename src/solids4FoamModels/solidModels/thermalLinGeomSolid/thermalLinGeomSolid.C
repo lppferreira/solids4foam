@@ -187,31 +187,6 @@ thermalLinGeomSolid::thermalLinGeomSolid
         thermal_.C()*mechanical().rho()
     ),
     k_(thermal_.k()),
-    T_
-    (
-        IOobject
-        (
-            "T",
-            runTime.timeName(),
-            mesh(),
-            IOobject::MUST_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh()
-    ),
-    gradT_
-    (
-        IOobject
-        (
-            "grad(T)",
-            runTime.timeName(),
-            mesh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh(),
-        dimensionedVector("0", dimTemperature/dimLength, vector::zero)
-    ),
     absTTol_
     (
         solidModelDict().lookupOrDefault<scalar>
@@ -226,9 +201,10 @@ thermalLinGeomSolid::thermalLinGeomSolid
     DiNo_(0)
 {
     DisRequired();
+    TisRequired();
 
     // Store T old time
-    T_.oldTime();
+    T().oldTime();
 }
 
 
@@ -272,7 +248,7 @@ tmp<scalarField> thermalLinGeomSolid::patchThermalFlux
 
     ttF() = fvc::interpolate(k_)().boundaryField()[patchID]
           * mesh().boundary()[patchID].magSf()
-          * T_.boundaryField()[patchID].snGrad();
+          * T().boundaryField()[patchID].snGrad();
 
     return ttF;
 }
@@ -288,7 +264,7 @@ tmp<scalarField> thermalLinGeomSolid::patchTemperature
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tT() = T_.boundaryField()[patchID].patchInternalField();
+    tT() = T().boundaryField()[patchID].patchInternalField();
 
     return tT;
 }
@@ -320,14 +296,14 @@ void thermalLinGeomSolid::setTemperature
 {
     if
     (
-        T_.boundaryField()[patchID].type()
+        T().boundaryField()[patchID].type()
      != mixedFvPatchScalarField::typeName
     )
     {
-        FatalErrorIn("void buoyantBoussinesqPimpleFluid::setTemperature(...)")
-            << "Bounary condition on " << T_.name()
+        FatalErrorIn("void thermalLinGeomSolid::setTemperature(...)")
+            << "Bounary condition on " << T().name()
                 <<  " is "
-                << T_.boundaryField()[patchID].type()
+                << T().boundaryField()[patchID].type()
                 << "for patch" << mesh().boundary()[patchID].name()
                 << ", instead of "
                 << mixedFvPatchScalarField::typeName
@@ -343,7 +319,7 @@ void thermalLinGeomSolid::setTemperature
     mixedFvPatchScalarField& patchT =
         refCast<mixedFvPatchScalarField>
         (
-            T_.boundaryField()[patchID]
+            T().boundaryField()[patchID]
         );
 
     patchT.refValue() = nbrPatchTemperature;
@@ -377,10 +353,10 @@ bool thermalLinGeomSolid::evolve()
         // Heat equation
         fvScalarMatrix TEqn
         (
-            rhoC_*fvm::ddt(T_)
-         == fvm::laplacian(k_, T_, "laplacian(k,T)")
+            rhoC_*fvm::ddt(T())
+         == fvm::laplacian(k_, T(), "laplacian(k,T)")
           + (sigma() && fvc::grad(U()))
-          - fvm::SuSp(-thermal_.S()/T_, T_)
+          - fvm::SuSp(-thermal_.S()/T(), T())
         );
 
         // Under-relaxation the linear system
@@ -390,10 +366,10 @@ bool thermalLinGeomSolid::evolve()
         solverPerfT = TEqn.solve();
 
         // Under-relax the field
-        T_.relax();
+        T().relax();
 
         // Update gradient of temperature
-        gradT_ = fvc::grad(T_);
+        gradT() = fvc::grad(T());
 
         // Store fields for under-relaxation and residual calculation
         D().storePrevIter();
@@ -446,7 +422,7 @@ bool thermalLinGeomSolid::evolve()
     }
     while
     (
-        !converged(iCorr, solverPerfD, solverPerfT, D(), T_)
+        !converged(iCorr, solverPerfD, solverPerfT, D(), T())
      && ++iCorr < nCorr()
     );
 
@@ -506,8 +482,8 @@ tmp<vectorField> thermalLinGeomSolid::tractionBoundarySnGrad
 
 void thermalLinGeomSolid::writeFields(const Time& runTime)
 {
-    Info<< "Max T = " << max(T_).value() << nl
-        << "Min T = " << min(T_).value() << endl;
+    Info<< "Max T = " << max(T()).value() << nl
+        << "Min T = " << min(T()).value() << endl;
 
     // Heat flux
     volVectorField heatFlux
@@ -520,7 +496,7 @@ void thermalLinGeomSolid::writeFields(const Time& runTime)
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-       -k_*gradT_
+       -k_*gradT()
     );
 
     Info<< "Max magnitude of heat flux = " << max(mag(heatFlux)).value()

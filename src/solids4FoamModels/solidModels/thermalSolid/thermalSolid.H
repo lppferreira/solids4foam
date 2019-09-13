@@ -72,12 +72,6 @@ class thermalSolid
         //- Thermal conductivity
         volScalarField k_;
 
-        //- Temperature
-        volScalarField T_;
-
-        //- Temperature gradient
-        volVectorField gradT_;
-
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;
 
@@ -144,18 +138,6 @@ public:
                 // This model solves for D
                 notImplemented("thermalSolid::solutionD()");
                 return const_cast<volVectorField&>(volVectorField::null());
-            }
-
-            //- Return const access to the cell temperature field
-            const volScalarField& T() const
-            {
-                return T_;
-            }
-
-            //- Return non-const access to the cell temperature field
-            volScalarField& T()
-            {
-                return T_;
             }
 
             //- Return Diffusion Number

@@ -83,9 +83,6 @@ class buoyantBoussinesqPimpleFluid
 {
     // Private data
 
-        //- Temperature
-        volScalarField T_;
-
         //- Transport model
         singlePhaseTransportModel laminarTransport_;
 

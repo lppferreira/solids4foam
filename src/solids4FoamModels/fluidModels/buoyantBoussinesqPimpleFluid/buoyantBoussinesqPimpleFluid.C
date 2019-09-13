@@ -92,16 +92,16 @@ void buoyantBoussinesqPimpleFluid::solveTEqn()
 
     fvScalarMatrix TEqn
     (
-        fvm::ddt(T_)
-      + fvm::div(phi(), T_)
-      - fvm::laplacian(kappaEff_, T_)
+        fvm::ddt(T())
+      + fvm::div(phi(), T())
+      - fvm::laplacian(kappaEff_, T())
     );
 
     TEqn.relax();
 
     TEqn.solve();
 
-    rhok_ = 1.0 - beta_*(T_ - TRef_);
+    rhok_ = 1.0 - beta_*(T() - TRef_);
 }
 
 
@@ -162,18 +162,6 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
 )
 :
     fluidModel(typeName, runTime, region),
-    T_
-    (
-        IOobject
-        (
-            "T",
-            runTime.timeName(),
-            mesh(),
-            IOobject::MUST_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh()
-    ),
     laminarTransport_(U(), phi()),
     beta_(laminarTransport_.lookup("beta")),
     TRef_(laminarTransport_.lookup("TRef")),
@@ -220,7 +208,7 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
             runTime.timeName(),
             mesh()
         ),
-        1.0 - beta_*(T_ - TRef_)
+        1.0 - beta_*(T() - TRef_)
     ),
     pRefCell_(0),
     pRefValue_(0),
@@ -228,6 +216,7 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
 {
     UisRequired();
     pisRequired();
+    TisRequired();
 
     setRefCell(p(), pimple().dict(), pRefCell_, pRefValue_);
     mesh().schemesDict().setFluxRequired(p().name());
@@ -305,7 +294,7 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchThermalFlux
     ttF() = fvc::interpolate(kappaEff_)().boundaryField()[patchID]
           * rho_.value() * C_.value()
           * mesh().boundary()[patchID].magSf()
-          * T_.boundaryField()[patchID].snGrad();
+          * T().boundaryField()[patchID].snGrad();
 
     return ttF;
 }
@@ -321,7 +310,7 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchTemperature
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tT() = T_.boundaryField()[patchID].patchInternalField();
+    tT() = T().boundaryField()[patchID].patchInternalField();
 
     return tT;
 }
@@ -354,14 +343,14 @@ void buoyantBoussinesqPimpleFluid::setTemperature
 {
     if
     (
-        T_.boundaryField()[patchID].type()
+        T().boundaryField()[patchID].type()
      != mixedFvPatchScalarField::typeName
     )
     {
         FatalErrorIn("void buoyantBoussinesqPimpleFluid::setTemperature(...)")
-            << "Bounary condition on " << T_.name()
+            << "Bounary condition on " << T().name()
                 <<  " is "
-                << T_.boundaryField()[patchID].type()
+                << T().boundaryField()[patchID].type()
                 << "for patch" << mesh().boundary()[patchID].name()
                 << ", instead of "
                 << mixedFvPatchScalarField::typeName
@@ -377,7 +366,7 @@ void buoyantBoussinesqPimpleFluid::setTemperature
     mixedFvPatchScalarField& patchT =
         refCast<mixedFvPatchScalarField>
         (
-            T_.boundaryField()[patchID]
+            T().boundaryField()[patchID]
         );
 
     patchT.refValue() = nbrPatchTemperature;

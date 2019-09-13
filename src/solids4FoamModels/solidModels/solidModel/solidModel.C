@@ -906,6 +906,7 @@ Foam::solidModel::solidModel
     mechanicalPtr_(NULL),
     Dheader_("D", runTime.timeName(), mesh(), IOobject::MUST_READ),
     DDheader_("DD", runTime.timeName(), mesh(), IOobject::MUST_READ),
+    Theader_("T", runTime.timeName(), mesh(), IOobject::MUST_READ),
     D_
     (
         IOobject
@@ -931,6 +932,19 @@ Foam::solidModel::solidModel
         ),
         mesh(),
         dimensionedVector("zero", dimLength, vector::zero)
+    ),
+    T_
+    (
+        IOobject
+        (
+            "T",
+            runTime.timeName(),
+            mesh(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
+        ),
+        mesh(),
+        dimensionedScalar("zero", dimTemperature, 0.0)
     ),
     U_
     (
@@ -997,6 +1011,19 @@ Foam::solidModel::solidModel
         ),
         mesh(),
         dimensionedTensor("0", dimless, tensor::zero)
+    ),
+    gradT_
+    (
+        IOobject
+        (
+            "grad(T)",
+            runTime.timeName(),
+            mesh(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        ),
+        mesh(),
+        dimensionedVector("0", dimTemperature/dimLength, vector::zero)
     ),
     sigma_
     (
@@ -1225,6 +1252,17 @@ void Foam::solidModel::DDisRequired()
 }
 
 
+void Foam::solidModel::TisRequired()
+{
+    if (!Theader_.headerOk())
+    {
+        FatalErrorIn(type() + "::TisRequired()")
+            << "This solidModel requires the 'T' field to be specified!"
+            << abort(FatalError);
+    }
+}
+
+
 void Foam::solidModel::makeGlobalPatch(const word& patchName) const
 {
     if (globalPatchPtr_.valid())
@@ -1294,11 +1332,7 @@ Foam::tmp<Foam::scalarField> Foam::solidModel::patchThermalFlux
 
     return tmp<scalarField>
     (
-        new scalarField
-        (
-            mesh().boundary()[patchID].size(),
-            scalar(0)
-        )
+        new scalarField(mesh().boundary()[patchID].size(), 0.0)
     );
 }
 
@@ -1312,11 +1346,7 @@ Foam::tmp<Foam::scalarField> Foam::solidModel::patchTemperature
 
     return tmp<scalarField>
     (
-        new scalarField
-        (
-            mesh().boundary()[patchID].size(),
-            scalar(0)
-        )
+        new scalarField(mesh().boundary()[patchID].size(), 0.0)
     );
 }
 
@@ -1330,11 +1360,7 @@ Foam::tmp<Foam::scalarField> Foam::solidModel::patchKDelta
 
     return tmp<scalarField>
     (
-        new scalarField
-        (
-            mesh().boundary()[patchID].size(),
-            scalar(0)
-        )
+        new scalarField(mesh().boundary()[patchID].size(), 0.0)
     );
 }
 

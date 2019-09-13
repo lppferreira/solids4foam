@@ -91,12 +91,18 @@ class solidModel
         //- Increment of displacement field header
         IOobject DDheader_;
 
+        //- Temperature field header
+        IOobject Theader_;
+
         //- Total displacement field
         volVectorField D_;
 
         //- Increment of displacement field
         //  DD = D - D.oldTime()
         volVectorField DD_;
+
+        //- Temperature field
+        volScalarField T_;
 
         //- Velocity field
         volVectorField U_;
@@ -116,6 +122,9 @@ class solidModel
 
         //- Gradient of the displacement increment
         volTensorField gradDD_;
+
+        //- Gradient of the Temperature
+        volVectorField gradT_;
 
         //- Stress field
         //  This is the engineering stress for linear geometry approaches, and
@@ -446,6 +455,18 @@ public:
                 return DD_;
             }
 
+            //- Return non-const reference to temperature
+            virtual volScalarField& T()
+            {
+                return T_;
+            }
+
+            //- Return const reference to temperature
+            virtual const volScalarField& T() const
+            {
+                return T_;
+            }
+
             //- Return non-const reference to U
             virtual volVectorField& U()
             {
@@ -507,6 +528,18 @@ public:
             virtual const volTensorField& gradDD() const
             {
                 return gradDD_;
+            }
+
+            //- Return non-const reference to gradT
+            virtual volVectorField& gradT()
+            {
+                return gradT_;
+            }
+
+            //- Return const reference to gradT
+            virtual const volVectorField& gradT() const
+            {
+                return gradT_;
             }
 
             //- Return non-const reference to sigma
@@ -601,6 +634,9 @@ public:
 
             //- This function will check that the DD field was read from disk
             virtual void DDisRequired();
+
+            //- This function will check that the T field was read from disk
+            virtual void TisRequired();
 
             //- Make the global poly patch
             void makeGlobalPatch(const word& patchName) const;

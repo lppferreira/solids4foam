@@ -98,11 +98,17 @@ class fluidModel
         //- Pressure field header
         IOobject pheader_;
 
+        //- Temperature field header
+        IOobject Theader_;
+
         //- Velocity field
         volVectorField U_;
 
         //- Pressure field
         volScalarField p_;
+
+        //- Temperature field
+        volScalarField T_;
 
         //- Velocity gradient
         volTensorField gradU_;
@@ -329,6 +335,18 @@ public:
                 return p_;
             }
 
+            //- Return const Temperature field
+            virtual const volScalarField& T() const
+            {
+                return T_;
+            }
+
+            //- Return Temperature field
+            virtual volScalarField& T()
+            {
+                return T_;
+            }
+
             //- Return const velocity gradient field
             virtual const volTensorField& gradU() const
             {
@@ -442,6 +460,9 @@ public:
 
             //- This function will check that the p field was read from disk
             virtual void pisRequired();
+
+            //- This function will check that the T field was read from disk
+            virtual void TisRequired();
 
             //- Make the global poly patch
             void makeGlobalPatch(const word& patchName) const;

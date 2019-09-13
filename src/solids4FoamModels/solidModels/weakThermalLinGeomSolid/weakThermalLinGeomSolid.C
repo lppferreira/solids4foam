@@ -170,31 +170,6 @@ weakThermalLinGeomSolid::weakThermalLinGeomSolid
         thermal_.C()*mechanical().rho()
     ),
     k_(thermal_.k()),
-   T_
-    (
-        IOobject
-        (
-            "T",
-            runTime.timeName(),
-            mesh(),
-            IOobject::MUST_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh()
-    ),
-    gradT_
-    (
-        IOobject
-        (
-            "grad(T)",
-            runTime.timeName(),
-            mesh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh(),
-        dimensionedVector("0", dimTemperature/dimLength, vector::zero)
-    ),
     absTTol_
     (
         solidModelDict().lookupOrDefault<scalar>
@@ -204,7 +179,10 @@ weakThermalLinGeomSolid::weakThermalLinGeomSolid
         )
     )
 {
-    T_.oldTime();
+    TisRequired();
+
+    // Store T old time
+    T().oldTime();
 }
 
 
@@ -225,14 +203,14 @@ bool weakThermalLinGeomSolid::evolve()
     do
     {
         // Store fields for under-relaxation and residual calculation
-        T_.storePrevIter();
+        T().storePrevIter();
 
         // Heat equation
         fvScalarMatrix TEqn
         (
-            rhoC_*fvm::ddt(T_)
-         == fvm::laplacian(k_, T_, "laplacian(k,T)")
-          - fvm::SuSp(-thermal_.S()/T_, T_)
+            rhoC_*fvm::ddt(T())
+         == fvm::laplacian(k_, T(), "laplacian(k,T)")
+          - fvm::SuSp(-thermal_.S()/T(), T())
         );
 
         // Under-relaxation the linear system
@@ -242,12 +220,12 @@ bool weakThermalLinGeomSolid::evolve()
         solverPerfT = TEqn.solve();
 
         // Under-relax the field
-        T_.relax();
+        T().relax();
 
         // Update gradient of temperature
-        gradT_ = fvc::grad(T_);
+        gradT() = fvc::grad(T());
     }
-    while (!converged(iCorr, solverPerfT, T_) && ++iCorr < nCorr());
+    while (!converged(iCorr, solverPerfT, T()) && ++iCorr < nCorr());
 
     // Now solve the momentum equation
     // Note: a thermal elastic mechanical law should be chosen if the effect of
@@ -262,8 +240,8 @@ bool weakThermalLinGeomSolid::evolve()
 
 void weakThermalLinGeomSolid::writeFields(const Time& runTime)
 {
-    Info<< "Max T = " << max(T_).value() << nl
-        << "Min T = " << min(T_).value() << endl;
+    Info<< "Max T = " << max(T()).value() << nl
+        << "Min T = " << min(T()).value() << endl;
 
     // Heat flux
     volVectorField heatFlux
@@ -276,7 +254,7 @@ void weakThermalLinGeomSolid::writeFields(const Time& runTime)
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-       -k_*gradT_
+       -k_*gradT()
     );
 
     Info<< "Max magnitude of heat flux = " << max(mag(heatFlux)).value()

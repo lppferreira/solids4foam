@@ -74,12 +74,6 @@ class weakThermalLinGeomSolid
         //- Thermal conductivity
         volScalarField k_;
 
-        //- Temperature
-        volScalarField T_;
-
-        //- Temperature gradient
-        volVectorField gradT_;
-
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;
 
@@ -135,18 +129,6 @@ public:
     // Member Functions
 
         // Access
-
-            //- Return const access to the cell temperature field
-            const volScalarField& T() const
-            {
-                return T_;
-            }
-
-            //- Return non-const access to the cell temperature field
-            volScalarField& T()
-            {
-                return T_;
-            }
 
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();
