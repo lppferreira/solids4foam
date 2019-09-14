@@ -293,31 +293,6 @@ unsThermalNonLinGeomTotalLagSolid::unsThermalNonLinGeomTotalLagSolid
         thermal_.C()*mechanical().rho()
     ),
     kappa_(thermal_.k()),
-    T_
-    (
-        IOobject
-        (
-            "T",
-            runTime.timeName(),
-            mesh(),
-            IOobject::MUST_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh()
-    ),
-    gradT_
-    (
-        IOobject
-        (
-            "grad(T)",
-            runTime.timeName(),
-            mesh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh(),
-        dimensionedVector("0", dimTemperature/dimLength, vector::zero)
-    ),
     absTTol_
     (
         solidModelDict().lookupOrDefault<scalar>
@@ -349,9 +324,10 @@ unsThermalNonLinGeomTotalLagSolid::unsThermalNonLinGeomTotalLagSolid
     )
 {
     DisRequired();
+    TisRequired();
 
     // Store T old time
-    T_.oldTime();
+    T().oldTime();
 }
 
 
@@ -388,8 +364,8 @@ bool unsThermalNonLinGeomTotalLagSolid::evolve()
         // Heat equation
         fvScalarMatrix TEqn
         (
-            rhoC_*fvm::ddt(T_)
-         == fvm::laplacian(kappa_, T_, "laplacian(k,T)")
+            rhoC_*fvm::ddt(T())
+         == fvm::laplacian(kappa_, T(), "laplacian(k,T)")
           + (sigma() && fvc::grad(U()))
         );
 
@@ -400,10 +376,10 @@ bool unsThermalNonLinGeomTotalLagSolid::evolve()
         solverPerfT = TEqn.solve();
 
         // Under-relax the field
-        T_.relax();
+        T().relax();
 
         // Update gradient of temperature
-        gradT_ = fvc::grad(T_);
+        gradT() = fvc::grad(T());
 
         // Store previous iteration to allow under-relaxation and residual
         // calculation
@@ -475,7 +451,7 @@ bool unsThermalNonLinGeomTotalLagSolid::evolve()
     }
     while
     (
-        !converged(iCorr, solverPerfD, solverPerfT, D(), T_)
+        !converged(iCorr, solverPerfD, solverPerfT, D(), T())
      && ++iCorr < nCorr()
     );
 
@@ -580,8 +556,8 @@ tmp<vectorField> unsThermalNonLinGeomTotalLagSolid::tractionBoundarySnGrad
 
 void unsThermalNonLinGeomTotalLagSolid::writeFields(const Time& runTime)
 {
-    Info<< "Max T = " << max(T_).value() << nl
-        << "Min T = " << min(T_).value() << endl;
+    Info<< "Max T = " << max(T()).value() << nl
+        << "Min T = " << min(T()).value() << endl;
 
     // Heat flux
     volVectorField heatFlux
@@ -594,7 +570,7 @@ void unsThermalNonLinGeomTotalLagSolid::writeFields(const Time& runTime)
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-       -kappa_*gradT_
+       -kappa_*gradT()
     );
 
     Info<< "Max magnitude of heat flux = " << max(mag(heatFlux)).value()

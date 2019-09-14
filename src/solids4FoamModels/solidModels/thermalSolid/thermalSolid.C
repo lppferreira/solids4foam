@@ -63,13 +63,16 @@ bool thermalSolid::converged
 
     // Calculate relative residuals
     const scalar absResidualT =
-        gMax(mag(T.internalField() - T.prevIter().internalField()));
+        gMax(mag(T.internalField() - T.oldTime().internalField()));
     const scalar residualT =
-        absResidualT
-       /max
+        gMax
         (
-            gMax(mag(T.internalField() - T.oldTime().internalField())),
-            SMALL
+            mag(T.internalField() - T.prevIter().internalField())
+           /max
+            (
+                gMax(mag(T.internalField() - T.oldTime().internalField())),
+                SMALL
+            )
         );
 
     // If one of the residuals has converged to an order of magnitude
@@ -77,34 +80,47 @@ bool thermalSolid::converged
     // force at leaast 1 outer iteration and the material law must be converged
     if (iCorr > 1)
     {
-        bool convergedT = false;
-
-        if
+        if (absResidualT < absTTol_)
+        {
+            Info<< "    T has converged to within the " << absTTol_
+                << " degrees" << endl;
+            converged = true;
+        }
+        else if
         (
-            (
-                solverPerfT.initialResidual() < solutionTol()
-             && residualT < solutionTol()
-            )
-         || solverPerfT.initialResidual() < alternativeTol()
-         || residualT < alternativeTol()
-         || absResidualT < absTTol_
+            solverPerfT.initialResidual() < solutionTol()
+         && residualT < solutionTol()
         )
         {
-            convergedT = true;
-        }
-
-        if (convergedT)
-        {
-            Info<< "    The residuals have converged" << endl;
+            Info<< "    Both residuals have converged" << endl;
             converged = true;
+        }
+        else if
+        (
+            residualT < alternativeTol()
+        )
+        {
+            Info<< "    The relative residual has converged" << endl;
+            converged = true;
+        }
+        else if
+        (
+            solverPerfT.initialResidual() < alternativeTol()
+        )
+        {
+            Info<< "    The solver residual has converged" << endl;
+            converged = true;
+        }
+        else
+        {
+            converged = false;
         }
     }
 
     // Print residual information
     if (iCorr == 0)
     {
-        Info<< "Relative temperature residual: "
-            << endl;
+        Info<< "    Corr, res, relRes, iters" << endl;
     }
     else if (iCorr % infoFrequency() == 0 || converged)
     {
@@ -122,7 +138,7 @@ bool thermalSolid::converged
     {
         maxIterReached()++;
         Warning
-            << "Max iterations reached within the enery loop" << endl;
+            << "Max iterations reached within temperature loop" << endl;
     }
 
     return converged;
