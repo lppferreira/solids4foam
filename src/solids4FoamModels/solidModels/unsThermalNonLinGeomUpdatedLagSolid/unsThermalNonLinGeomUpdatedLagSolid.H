@@ -180,7 +180,7 @@ protected:
 public:
 
     //- Runtime type information
-    TypeName("unsNonLinearGeometryUpdatedLagrangian");
+    TypeName("unsThermalNonLinearGeometryUpdatedLagrangian");
 
     // Constructors
 
