@@ -169,7 +169,7 @@ protected:
 public:
 
     //- Runtime type information
-    TypeName("unsNonLinearGeometryTotalLagrangian");
+    TypeName("unsThermalNonLinearGeometryTotalLagrangian");
 
     // Constructors
 
