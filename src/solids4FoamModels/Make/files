@@ -66,6 +66,7 @@ $(mechanicalLaws)/mechanicalLaw/newMechanicalLaw.C
 
 linGeomLaws = $(mechanicalLaws)/linearGeometryLaws
 $(linGeomLaws)/linearElastic/linearElastic.C
+$(linGeomLaws)/timeVaryingLinearElastic/timeVaryingLinearElastic.C
 $(linGeomLaws)/linearElasticMisesPlastic/linearElasticMisesPlastic.C
 $(linGeomLaws)/linearElasticMohrCoulombPlastic/linearElasticMohrCoulombPlastic.C
 $(linGeomLaws)/orthotropicLinearElastic/orthotropicLinearElastic.C
@@ -78,6 +79,7 @@ $(linGeomLaws)/viscousHookeanElastic/viscousHookeanElastic.C
 
 nonLinGeomLaws = $(mechanicalLaws)/nonLinearGeometryLaws
 $(nonLinGeomLaws)/neoHookeanElastic/neoHookeanElastic.C
+$(nonLinGeomLaws)/timeVaryingNeoHookeanElastic/timeVaryingNeoHookeanElastic.C
 $(nonLinGeomLaws)/neoHookeanElasticMisesPlastic/neoHookeanElasticMisesPlastic.C
 $(nonLinGeomLaws)/neoHookeanElasticMisesPlasticRubin/neoHookeanElasticMisesPlasticRubin.C
 $(nonLinGeomLaws)/StVenantKirchhoffElastic/StVenantKirchhoffElastic.C
