@@ -20,6 +20,7 @@ solidModels/thermalLinGeomSolid/thermalLinGeomSolid.C
 solidModels/unsLinGeomSolid/unsLinGeomSolid.C
 solidModels/unsNonLinGeomUpdatedLagSolid/unsNonLinGeomUpdatedLagSolid.C
 solidModels/unsNonLinGeomTotalLagSolid/unsNonLinGeomTotalLagSolid.C
+solidModels/unsThermalNonLinGeomTotalLagSolid/unsThermalNonLinGeomTotalLagSolid.C
 solidModels/weakThermalLinGeomSolid/weakThermalLinGeomSolid.C
 
 solidModels/finiteVolume/fvc/fvcCellLimitedGrad.C
