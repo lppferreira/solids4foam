@@ -198,7 +198,7 @@ thermalLinGeomSolid::thermalLinGeomSolid
     impK_(mechanical().impK()),
     impKf_(mechanical().impKf()),
     rImpK_(1.0/impK_),
-    DiNo_(0)
+    DiffusionNo_(0)
 {
     DisRequired();
     TisRequired();
