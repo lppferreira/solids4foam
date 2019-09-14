@@ -555,7 +555,7 @@ public:
             }
 
             //- Return Diffusion Number
-            virtual scalar& DiNo();
+            virtual scalar& DiffusionNo();
 
             //- Patch thermal flux
             virtual tmp<scalarField> patchThermalFlux

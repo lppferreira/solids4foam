@@ -76,7 +76,7 @@ class thermalSolid
         const scalar absTTol_;
 
 	//- Diffusion number
-	scalar DiNo_;
+	scalar DiffusionNo_;
 
     // Private Member Functions
 
@@ -141,7 +141,7 @@ public:
             }
 
             //- Return Diffusion Number
-            virtual scalar& DiNo();
+            virtual scalar& DiffusionNo();
 
             //- Patch thermal flux
             virtual tmp<scalarField> patchThermalFlux
