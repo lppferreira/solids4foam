@@ -32,6 +32,7 @@ License
 #include "addToRunTimeSelectionTable.H"
 #include "solidTractionFvPatchVectorField.H"
 #include "fvcGradf.H"
+#include "mixedFvPatchFields.H"
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

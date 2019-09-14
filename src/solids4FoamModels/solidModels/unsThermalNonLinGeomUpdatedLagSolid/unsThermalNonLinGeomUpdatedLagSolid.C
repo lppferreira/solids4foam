@@ -34,6 +34,8 @@ License
 #include "twoDPointCorrector.H"
 #include "solidTractionFvPatchVectorField.H"
 #include "fvcGradf.H"
+#include "mixedFvPatchFields.H"
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
