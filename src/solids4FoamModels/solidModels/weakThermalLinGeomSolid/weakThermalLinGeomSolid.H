@@ -29,6 +29,9 @@ Description
     Mathematical model where linear geometry is assumed i.e. small strains and
     small rotations are assumed, and the heat equation is solved.
 
+    The heat equation and momentum equation are solved in a weakly coupled
+    fashion.
+
     The stress is calculated by the run-time selectable mechanical law.
 
 Author
@@ -72,10 +75,14 @@ class weakThermalLinGeomSolid
         volScalarField rhoC_;
 
         //- Thermal conductivity
-        volScalarField k_;
+        volScalarField kappa_;
 
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;
+
+	//- Diffusion number
+	scalar DiffusionNo_;
+
 
     // Private Member Functions
 
@@ -129,6 +136,37 @@ public:
     // Member Functions
 
         // Access
+
+            //- Return Diffusion Number
+            virtual scalar& DiffusionNo();
+
+            //- Patch thermal flux
+            virtual tmp<scalarField> patchThermalFlux
+            (
+                const label patchID
+            ) const;
+
+            //- Patch temperature (K)
+            virtual tmp<scalarField> patchTemperature
+            (
+                const label patchID
+            ) const;
+
+            //- Patch KDelta
+            virtual tmp<scalarField> patchKDelta
+            (
+                const label patchID
+            ) const;
+
+        // Edit
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                const scalarField& faceZoneTemperature,
+                const scalarField& faceZoneKDelta
+            );
 
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();

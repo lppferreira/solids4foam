@@ -133,6 +133,9 @@ class unsThermalNonLinGeomTotalLagSolid
         //- Relative tolerance
         const scalar relativeTol_;
 
+	//- Diffusion number
+	scalar DiffusionNo_;
+
     // Private Member Functions
 
         //- Check if the momentum equation is converged
@@ -202,7 +205,36 @@ public:
                 return nonLinear_;
             }
 
+            //- Return Diffusion Number
+            virtual scalar& DiffusionNo();
+
+            //- Patch thermal flux
+            virtual tmp<scalarField> patchThermalFlux
+            (
+                const label patchID
+            ) const;
+
+            //- Patch temperature (K)
+            virtual tmp<scalarField> patchTemperature
+            (
+                const label patchID
+            ) const;
+
+            //- Patch KDelta
+            virtual tmp<scalarField> patchKDelta
+            (
+                const label patchID
+            ) const;
+
         // Edit
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                const scalarField& faceZoneTemperature,
+                const scalarField& faceZoneKDelta
+            );
 
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();

@@ -370,7 +370,8 @@ unsThermalNonLinGeomUpdatedLagSolid::unsThermalNonLinGeomUpdatedLagSolid
     stabilisePressure_
     (
         solidModelDict().lookupOrDefault<Switch>("stabilisePressure", false)
-    )
+    ),
+    DiffusionNo_(0)
 {
     DDisRequired();
     TisRequired();
@@ -381,6 +382,124 @@ unsThermalNonLinGeomUpdatedLagSolid::unsThermalNonLinGeomUpdatedLagSolid
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+scalar& unsThermalNonLinGeomUpdatedLagSolid::DiffusionNo()
+{
+    //- calculate solid Diffusion number
+    DiffusionNo_ = 0.0;
+    scalar meanDiffusionNo = 0.0;
+
+    //- Can have fluid domains with 0 cells so do not test.
+    if (mesh().nInternalFaces())
+    {
+           surfaceScalarField kRhoCbyDelta =
+               mesh().surfaceInterpolation::deltaCoeffs()
+             * fvc::interpolate(kappa_)
+             / fvc::interpolate(rhoC_);
+
+           DiffusionNo_ = max(kRhoCbyDelta.internalField())*runTime().deltaT().value();
+
+           meanDiffusionNo = (average(kRhoCbyDelta)).value()*runTime().deltaT().value();
+    }
+
+    Info<< "Diffusion Number mean: " << meanDiffusionNo
+        << " max: " << DiffusionNo_ << endl;
+
+    return DiffusionNo_;
+}
+
+
+tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchThermalFlux
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> ttF
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+    ttF() = fvc::interpolate(kappa_)().boundaryField()[patchID]
+          * mesh().boundary()[patchID].magSf()
+          * T().boundaryField()[patchID].snGrad();
+
+    return ttF;
+}
+
+
+tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchTemperature
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> tT
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+    tT() = T().boundaryField()[patchID].patchInternalField();
+
+    return tT;
+}
+
+
+tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchKDelta
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> tKD
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+    tKD() = fvc::interpolate(kappa_)().boundaryField()[patchID]
+          * mesh().boundary()[patchID].deltaCoeffs();
+
+    return tKD;
+}
+
+
+void unsThermalNonLinGeomUpdatedLagSolid::setTemperature
+(
+    const label patchID,
+    const scalarField& faceZoneTemperature,
+    const scalarField& faceZoneKDelta
+)
+{
+    if
+    (
+        T().boundaryField()[patchID].type()
+     != mixedFvPatchScalarField::typeName
+    )
+    {
+        FatalErrorIn("void thermalLinGeomSolid::setTemperature(...)")
+            << "Bounary condition on " << T().name()
+                <<  " is "
+                << T().boundaryField()[patchID].type()
+                << "for patch" << mesh().boundary()[patchID].name()
+                << ", instead of "
+                << mixedFvPatchScalarField::typeName
+                << abort(FatalError);
+    }
+
+    scalarField nbrPatchTemperature =
+	globalPatch().globalFaceToPatch(faceZoneTemperature);
+
+    scalarField nbrPatchKDelta =
+	globalPatch().globalFaceToPatch(faceZoneKDelta);
+
+    mixedFvPatchScalarField& patchT =
+        refCast<mixedFvPatchScalarField>
+        (
+            T().boundaryField()[patchID]
+        );
+
+    patchT.refValue() = nbrPatchTemperature;
+    patchT.refGrad() = 0.0;
+    patchT.valueFraction() = nbrPatchKDelta / (nbrPatchKDelta + patchKDelta(patchID));
+    patchT.evaluate();
+}
 
 
 bool unsThermalNonLinGeomUpdatedLagSolid::evolve()

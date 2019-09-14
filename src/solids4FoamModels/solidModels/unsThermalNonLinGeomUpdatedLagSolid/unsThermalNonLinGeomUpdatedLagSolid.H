@@ -140,6 +140,9 @@ class unsThermalNonLinGeomUpdatedLagSolid
         //  Apply smoothing to the relative Jacobian calculation
         const Switch stabilisePressure_;
 
+	//- Diffusion number
+	scalar DiffusionNo_;
+
 
     // Private Member Functions
 
@@ -210,7 +213,36 @@ public:
                 return true;
             }
 
+            //- Return Diffusion Number
+            virtual scalar& DiffusionNo();
+
+            //- Patch thermal flux
+            virtual tmp<scalarField> patchThermalFlux
+            (
+                const label patchID
+            ) const;
+
+            //- Patch temperature (K)
+            virtual tmp<scalarField> patchTemperature
+            (
+                const label patchID
+            ) const;
+
+            //- Patch KDelta
+            virtual tmp<scalarField> patchKDelta
+            (
+                const label patchID
+            ) const;
+
     // Edit
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                const scalarField& faceZoneTemperature,
+                const scalarField& faceZoneKDelta
+            );
 
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();
