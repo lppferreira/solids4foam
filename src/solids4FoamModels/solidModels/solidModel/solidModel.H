@@ -455,6 +455,12 @@ public:
                 return DD_;
             }
 
+            //- Return temperature field header
+            virtual IOobject& Theader()
+            {
+                return Theader_;
+            }
+
             //- Return non-const reference to temperature
             virtual volScalarField& T()
             {

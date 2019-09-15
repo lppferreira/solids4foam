@@ -75,6 +75,18 @@ bool Foam::fluidSolidInterface::updateCoupled()
             // Enable coupling
             coupled_ = true;
 
+            // Enable thermal coupling but before doing so,
+            // we need to make sure temperature field is present
+            if
+            (
+                !conjugate_
+             && fluid().Theader().headerOk()
+             && solid().Theader().headerOk()
+            )
+            {
+                conjugate_ = true;
+            }
+
             return true;
         }
     }

@@ -335,13 +335,19 @@ public:
                 return p_;
             }
 
-            //- Return const Temperature field
+            //- Return temperature field header
+            virtual IOobject& Theader()
+            {
+                return Theader_;
+            }
+
+            //- Return const temperature field
             virtual const volScalarField& T() const
             {
                 return T_;
             }
 
-            //- Return Temperature field
+            //- Return temperature field
             virtual volScalarField& T()
             {
                 return T_;
