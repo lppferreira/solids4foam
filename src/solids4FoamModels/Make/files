@@ -79,6 +79,7 @@ $(linGeomLaws)/viscousHookeanElastic/viscousHookeanElastic.C
 
 nonLinGeomLaws = $(mechanicalLaws)/nonLinearGeometryLaws
 $(nonLinGeomLaws)/neoHookeanElastic/neoHookeanElastic.C
+$(nonLinGeomLaws)/thermoNeoHookeanElastic/thermoNeoHookeanElastic.C
 $(nonLinGeomLaws)/timeVaryingNeoHookeanElastic/timeVaryingNeoHookeanElastic.C
 $(nonLinGeomLaws)/neoHookeanElasticMisesPlastic/neoHookeanElasticMisesPlastic.C
 $(nonLinGeomLaws)/neoHookeanElasticMisesPlasticRubin/neoHookeanElasticMisesPlasticRubin.C

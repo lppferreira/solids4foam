@@ -22,10 +22,10 @@ License
     along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    neoHookeanElastic
+    thermoNeoHookeanElastic
 
 Description
-    Neo-Hookean elasticity, similar to model proposed in Simo & Hughes (1998)
+    Neo-Hookean thermo-elasticity, similar to model proposed in Simo & Hughes (1998)
     in Eqn 9.2.6:
 
         tau = J*p*I + mu*dev(J^(-2.0/3.0)*(F & F.T()))
@@ -37,22 +37,24 @@ Description
     mu       shear modulus
     F        deformation gradient
 
+    If thermal stresses are active then 3.0*K*alpha*deltaT*I is added.
+
     Reference
     Simo & Hughes, Computational Inelasticity, 1998, Springer.
 
 
 SourceFiles
-    neoHookeanElastic.C
+    thermoNeoHookeanElastic.C
 
 Author
     Philip Cardiff, UCD. All rights reserved.
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef neoHookeanElastic_H
-#define neoHookeanElastic_H
+#ifndef thermoNeoHookeanElastic_H
+#define thermoNeoHookeanElastic_H
 
-#include "mechanicalLaw.H"
+#include "neoHookeanElastic.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -60,60 +62,71 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                         Class linearElastic Declaration
+                     Class neoHookeanElastic Declaration
 \*---------------------------------------------------------------------------*/
 
-class neoHookeanElastic
+class thermoNeoHookeanElastic
 :
-    public mechanicalLaw
+    public neoHookeanElastic
 {
     // Private data
 
-        // Initial density
-        const dimensionedScalar rho_;
+        //- Coefficient of linear expansion
+        const dimensionedScalar alpha_;
 
-        // Young's modulus
-        const dimensionedScalar E_;
+        //- Stress-free reference temperature
+        const dimensionedScalar T0_;
 
-        // Poisson's ratio
-        const dimensionedScalar nu_;
+        //- If the temperature field T is not found in the objectRegistry then
+        //  it is read from disk. This means that if the solidModel does not
+        //  solve a temperature equation, then the user must specify a constant
+        //  temperature field T
+        mutable autoPtr<volScalarField> TPtr_;
 
-        // Shear modulus
-        const dimensionedScalar mu_;
+        //- Flag to indicate the T field has be read from disk at least once
+        bool TFieldWasReadFromDisk_;
 
-        // Bulk modulus
-        const dimensionedScalar K_;
+        //- Relative address of the temperature case
+        const fileName TcaseDir_;
 
-        // Total deformation gradient volField
-        volTensorField* FPtr_;
+        //- Time object for the temperature case
+        mutable autoPtr<Time> TrunTimePtr_;
 
-        // Total deformation gradient surfaceField
-        surfaceTensorField* FfPtr_;
+        //- fvMesh object for the temperature case
+        mutable autoPtr<fvMesh> TmeshPtr_;
+
+        //- Store the current time index so we know the start of a new time-step
+        label curTimeIndex_;
+
 
     // Private Member Functions
 
-        //- Make the F field
-        void makeF();
+        //- Make the TrunTime object
+        void makeTrunTime();
 
-        //- Return a reference to the F field
-        volTensorField& F();
+        //- Return a reference to TrunTime
+        Time& TrunTime();
 
-        //- Make the Ff field
-        void makeFf();
+        //- Make the Tmesh object
+        void makeTmesh();
 
-        //- Return a reference to the Ff field
-        surfaceTensorField& Ff();
+        //- Return a reference to Tmesh
+        fvMesh& Tmesh();
+
+        //- Read the temperature field from disk
+        //  Return true if the T field has ever been read from disk
+        bool readTField();
 
         //- Disallow default bitwise copy construct
-        neoHookeanElastic(const neoHookeanElastic&);
+        thermoNeoHookeanElastic(const thermoNeoHookeanElastic&);
 
         //- Disallow default bitwise assignment
-        void operator=(const neoHookeanElastic&);
+        void operator=(const thermoNeoHookeanElastic&);
 
 public:
 
     //- Runtime type information
-    TypeName("neoHookeanElastic");
+    TypeName("thermoNeoHookeanElastic");
 
     // Static data members
 
@@ -121,7 +134,7 @@ public:
     // Constructors
 
         //- Construct from dictionary
-        neoHookeanElastic
+        thermoNeoHookeanElastic
         (
             const word& name,
             const fvMesh& mesh,
@@ -132,29 +145,10 @@ public:
 
     // Destructor
 
-        virtual ~neoHookeanElastic();
+        virtual ~thermoNeoHookeanElastic();
 
 
     // Member Functions
-
-        //- Return density
-        virtual tmp<volScalarField> rho() const;
-
-        //- Return the implicit stiffness
-        //  This is the diffusivity for the Laplacian term
-        virtual tmp<volScalarField> impK() const;
-
-        //- Shear modulus 
-        virtual const dimensionedScalar& mu() const;
-
-        //- Bulk modulus
-        virtual const dimensionedScalar& K() const;
-
-        //- Young's modulus
-        virtual const dimensionedScalar& E() const;
-
-        //- Poisson's ratio
-        virtual const dimensionedScalar& nu() const;
 
         //- Calculate the stress
         virtual void correct(volSymmTensorField& sigma);

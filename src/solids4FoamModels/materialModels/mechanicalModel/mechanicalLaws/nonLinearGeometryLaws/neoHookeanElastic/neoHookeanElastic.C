@@ -193,6 +193,30 @@ Foam::tmp<Foam::volScalarField> Foam::neoHookeanElastic::impK() const
 }
 
 
+const Foam::dimensionedScalar& Foam::neoHookeanElastic::mu() const
+{
+    return mu_;
+}
+
+
+const Foam::dimensionedScalar& Foam::neoHookeanElastic::K() const
+{
+    return K_;
+}
+
+
+const Foam::dimensionedScalar& Foam::neoHookeanElastic::E() const
+{
+    return E_;
+}
+
+
+const Foam::dimensionedScalar& Foam::neoHookeanElastic::nu() const
+{
+    return nu_;
+}
+
+
 void Foam::neoHookeanElastic::correct(volSymmTensorField& sigma)
 {
     // Check if the mathematical model is in total or updated Lagrangian form
