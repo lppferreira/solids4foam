@@ -114,7 +114,6 @@ void buoyantBoussinesqPimpleFluid::solvePEqn
     surfaceScalarField rUAf("(1|A(U))", fvc::interpolate(rUA));
 
     U() = rUA*UEqn().H();
-    UEqn.clear();
 
     phi() = fvc::interpolate(U()) & mesh().Sf();
     adjustPhi(phi(), U(), p());
@@ -428,6 +427,8 @@ bool buoyantBoussinesqPimpleFluid::evolve()
         {
             solvePEqn(UEqn);
         }
+
+        UEqn.clear();
 
         // Make the fluxes relative to the mesh motion
         fvc::makeRelative(phi(), U());
