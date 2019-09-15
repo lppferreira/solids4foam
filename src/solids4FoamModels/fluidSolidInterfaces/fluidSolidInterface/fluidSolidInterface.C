@@ -2135,7 +2135,20 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
         thermalResidualNorm /= maxThermalResidualNorm_ + SMALL;
 
         Info<< "Relative thermal flux residual = " 
-            <<  thermalResidualNorm << "\n" << endl;
+            << thermalResidualNorm << "\n"
+            << "Interface thermal flux (fluid side) = "
+            << gSum
+               (
+                   fluid().patchThermalFlux(fluidPatchIndex())
+                 * fluidMesh().boundary()[fluidPatchIndex()].magSf()
+               )
+            << "\nInterface thermal flux (solid side) = "
+            << gSum
+               (
+                   solid().patchThermalFlux(solidPatchIndex())
+                 * solidMesh().boundary()[solidPatchIndex()].magSf()
+               )
+            << "\n" << endl;
 
         return thermalResidualNorm;
     }
