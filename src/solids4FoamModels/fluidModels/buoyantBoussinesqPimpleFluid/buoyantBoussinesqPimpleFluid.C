@@ -424,7 +424,10 @@ bool buoyantBoussinesqPimpleFluid::evolve()
         solveTEqn();
 
         // Pressure equation
-        solvePEqn(UEqn);
+        while (pimple().correct())
+        {
+            solvePEqn(UEqn);
+        }
 
         // Make the fluxes relative to the mesh motion
         fvc::makeRelative(phi(), U());
