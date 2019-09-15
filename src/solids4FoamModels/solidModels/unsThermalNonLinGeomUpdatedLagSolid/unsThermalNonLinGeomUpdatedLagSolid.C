@@ -528,6 +528,7 @@ bool unsThermalNonLinGeomUpdatedLagSolid::evolve()
             rhoC_*fvm::ddt(T())
          == fvm::laplacian(kappa_, T(), "laplacian(k,T)")
           + (sigma() && fvc::grad(U()))
+          - fvm::SuSp(-thermal_.S()/T(), T())
         );
 
         // Under-relaxation the linear system
