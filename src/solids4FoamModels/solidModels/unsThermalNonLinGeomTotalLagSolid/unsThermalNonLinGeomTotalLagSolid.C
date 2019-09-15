@@ -372,7 +372,6 @@ tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::patchThermalFlux
     );
 
     ttF() = fvc::interpolate(kappa_)().boundaryField()[patchID]
-          * mesh().boundary()[patchID].magSf()
           * T().boundaryField()[patchID].snGrad();
 
     return ttF;
@@ -425,7 +424,7 @@ void unsThermalNonLinGeomTotalLagSolid::setTemperature
      != mixedFvPatchScalarField::typeName
     )
     {
-        FatalErrorIn("void thermalLinGeomSolid::setTemperature(...)")
+        FatalErrorIn("void unsThermalNonLinGeomTotalLagSolid::setTemperature(...)")
             << "Bounary condition on " << T().name()
                 <<  " is "
                 << T().boundaryField()[patchID].type()

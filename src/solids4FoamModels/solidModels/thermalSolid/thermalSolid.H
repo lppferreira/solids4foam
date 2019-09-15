@@ -70,7 +70,7 @@ class thermalSolid
         volScalarField rhoC_;
 
         //- Thermal conductivity
-        volScalarField k_;
+        volScalarField kappa_;
 
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;

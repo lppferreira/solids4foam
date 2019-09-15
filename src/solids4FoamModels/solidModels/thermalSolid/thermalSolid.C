@@ -167,7 +167,7 @@ thermalSolid::thermalSolid
         ),
         thermal_.C()*mechanical().rho()
     ),
-    k_(thermal_.k()),
+    kappa_(thermal_.k()),
     absTTol_
     (
         solidModelDict().lookupOrDefault<scalar>
@@ -198,7 +198,7 @@ scalar& thermalSolid::DiffusionNo()
     {
            surfaceScalarField kRhoCbyDelta =
                mesh().surfaceInterpolation::deltaCoeffs()
-             * fvc::interpolate(k_)
+             * fvc::interpolate(kappa_)
              / fvc::interpolate(rhoC_);
 
            DiffusionNo_ = max(kRhoCbyDelta.internalField())*runTime().deltaT().value();
@@ -223,8 +223,7 @@ tmp<scalarField> thermalSolid::patchThermalFlux
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() = fvc::interpolate(k_)().boundaryField()[patchID]
-          * mesh().boundary()[patchID].magSf()
+    ttF() = fvc::interpolate(kappa_)().boundaryField()[patchID]
           * T().boundaryField()[patchID].snGrad();
 
     return ttF;
@@ -257,7 +256,7 @@ tmp<scalarField> thermalSolid::patchKDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tKD() = fvc::interpolate(k_)().boundaryField()[patchID]
+    tKD() = fvc::interpolate(kappa_)().boundaryField()[patchID]
           * mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;
@@ -327,7 +326,7 @@ bool thermalSolid::evolve()
         fvScalarMatrix TEqn
         (
             rhoC_*fvm::ddt(T())
-          - fvm::laplacian(k_, T(), "laplacian(k,T)")
+          - fvm::laplacian(kappa_, T(), "laplacian(k,T)")
           + fvm::SuSp(-thermal_.S()/T(), T())
         );
 
@@ -394,7 +393,7 @@ void thermalSolid::writeFields(const Time& runTime)
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-       -k_*gradT()
+       -kappa_*gradT()
     );
 
     Info<< "Max magnitude of heat flux = " << max(mag(heatFlux)).value()

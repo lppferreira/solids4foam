@@ -2134,7 +2134,7 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
 
         thermalResidualNorm /= maxThermalResidualNorm_ + SMALL;
 
-        Info<< "Relative flux residual = " 
+        Info<< "Relative thermal flux residual = " 
             <<  thermalResidualNorm << "\n" << endl;
 
         return thermalResidualNorm;

@@ -247,7 +247,6 @@ tmp<scalarField> thermalLinGeomSolid::patchThermalFlux
     );
 
     ttF() = fvc::interpolate(kappa_)().boundaryField()[patchID]
-          * mesh().boundary()[patchID].magSf()
           * T().boundaryField()[patchID].snGrad();
 
     return ttF;

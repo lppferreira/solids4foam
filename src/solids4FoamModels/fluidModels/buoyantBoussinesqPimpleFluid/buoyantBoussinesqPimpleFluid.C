@@ -292,7 +292,6 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchThermalFlux
 
     ttF() = fvc::interpolate(kappaEff_)().boundaryField()[patchID]
           * rho_.value() * C_.value()
-          * mesh().boundary()[patchID].magSf()
           * T().boundaryField()[patchID].snGrad();
 
     return ttF;
