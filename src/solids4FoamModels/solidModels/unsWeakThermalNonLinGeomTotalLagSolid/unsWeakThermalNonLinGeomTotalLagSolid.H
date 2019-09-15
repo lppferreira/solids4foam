@@ -29,10 +29,10 @@ Description
     Mathematical model for finite strains and rotations, where a total
     Lagrangian and total displacement approach is employed.
 
-    The heat equation and momentum equation are solved in a strongly coupled
-    fashion i.e. just like in solidDisplacementFoam.
-
     The stress is calculated by the run-time selectable mechanical law.
+
+    The heat equation and momentum equation are solved in a weakly coupled
+    fashion.
 
     "uns" in the class name refers to the "unstructured" and indicates that
     the face tangential gradient are calculated using a face-Gauss approach.
@@ -42,14 +42,14 @@ Author
     Philip Cardiff, UCD.  All rights reserved.
 
 SourceFiles
-    unsThermalNonLinGeomTotalLagSolid.C
+    unsWeakThermalNonLinGeomTotalLagSolid.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef unsThermalNonLinGeomTotalLagSolid_H
-#define unsThermalNonLinGeomTotalLagSolid_H
+#ifndef unsWeakThermalNonLinGeomTotalLagSolid_H
+#define unsWeakThermalNonLinGeomTotalLagSolid_H
 
-#include "solidModel.H"
+#include "unsNonLinGeomTotalLagSolid.H"
 #include "thermalModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -63,38 +63,14 @@ namespace solidModels
 {
 
 /*---------------------------------------------------------------------------*\
-              Class unsThermalNonLinGeomTotalLagSolid Declaration
+           Class unsWeakThermalNonLinGeomTotalLagSolid Declaration
 \*---------------------------------------------------------------------------*/
 
-class unsThermalNonLinGeomTotalLagSolid
+class unsWeakThermalNonLinGeomTotalLagSolid
 :
-    public solidModel
+    public unsNonLinGeomTotalLagSolid
 {
     // Private data
-
-        //- Cauchy (true) stress surface field
-        surfaceSymmTensorField sigmaf_;
-
-        //- Surface displacement gradient
-        surfaceTensorField gradDf_;
-
-        //- Total deformation gradient
-        volTensorField F_;
-
-        //- Total deformation gradient surface field
-        surfaceTensorField Ff_;
-
-        //- Inverse of the total deformation gradient
-        volTensorField Finv_;
-
-        //- Inverse of the total deformation gradient surface field
-        surfaceTensorField Finvf_;
-
-        //- Jacobian of total deformation gradient
-        volScalarField J_;
-
-        //- Jacobian of total deformation gradient surface field
-        surfaceScalarField Jf_;
 
         //- Thermal model
         thermalModel thermal_;
@@ -108,51 +84,25 @@ class unsThermalNonLinGeomTotalLagSolid
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;
 
-        //- Implicit stiffness; coefficient of the Laplacian term
-        //  The value of this term only affects convergence and not the answer
-        //  In the case of Hookean elasticity, (2*mu + lambda) is the optimum
-        const volScalarField impK_;
-
-        //- Implicit stiffness surface field
-        const surfaceScalarField impKf_;
-
-        //- Reciprocal of impK
-        //  We divide by impK every time tractionBoundarySnGrad is called so we
-        //  will store the reciprocal for effficiency
-        const volScalarField rImpK_;
-
-        //- Switch to enable/disable nonlinear geometry
-        const Switch nonLinear_;
-
-        //- Debug switch for the print-out of residuals
-        const Switch debug_;
-
-        //- Viscosity/damping coefficient
-        const dimensionedScalar K_;
-
-        //- Relative tolerance
-        const scalar relativeTol_;
-
 	//- Diffusion number
 	scalar DiffusionNo_;
 
+
     // Private Member Functions
 
-        //- Check if the momentum equation is converged
+        //- Check convergence
         bool converged
         (
             const int iCorr,
-            const lduSolverPerformance& solverPerfD,
             const lduSolverPerformance& solverPerfT,
-            const volVectorField& D,
             const volScalarField& T
         );
 
         //- Disallow default bitwise copy construct
-        unsThermalNonLinGeomTotalLagSolid(const unsThermalNonLinGeomTotalLagSolid&);
+        unsWeakThermalNonLinGeomTotalLagSolid(const unsWeakThermalNonLinGeomTotalLagSolid&);
 
         //- Disallow default bitwise assignment
-        void operator=(const unsThermalNonLinGeomTotalLagSolid&);
+        void operator=(const unsWeakThermalNonLinGeomTotalLagSolid&);
 
 
 protected:
@@ -169,12 +119,12 @@ protected:
 public:
 
     //- Runtime type information
-    TypeName("unsThermalNonLinearGeometryTotalLagrangian");
+    TypeName("unsWeakThermalNonLinearGeometryTotalLagrangian");
 
     // Constructors
 
         //- Construct from components
-        unsThermalNonLinGeomTotalLagSolid
+        unsWeakThermalNonLinGeomTotalLagSolid
         (
             Time& runTime,
             const word& region = dynamicFvMesh::defaultRegion
@@ -183,27 +133,13 @@ public:
 
     // Destructor
 
-        virtual ~unsThermalNonLinGeomTotalLagSolid()
+        virtual ~unsWeakThermalNonLinGeomTotalLagSolid()
         {}
 
 
     // Member Functions
 
         // Access
-
-            //- Each solidModel must indicate whether D or DD is the primary
-            //  solution variable
-            virtual volVectorField& solutionD()
-            {
-                // This model solves for D
-                return D();
-            }
-
-            //- Return nonLinear geometry switch
-            const Switch& nonLinear() const
-            {
-                return nonLinear_;
-            }
 
             //- Return Diffusion Number
             virtual scalar& DiffusionNo();
@@ -238,14 +174,6 @@ public:
 
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();
-
-            //- Traction boundary surface normal gradient
-            virtual tmp<vectorField> tractionBoundarySnGrad
-            (
-                const vectorField& traction,
-                const scalarField& pressure,
-                const fvPatch& patch
-            ) const;
 
             //- Write fields
             virtual void writeFields(const Time& runTime);

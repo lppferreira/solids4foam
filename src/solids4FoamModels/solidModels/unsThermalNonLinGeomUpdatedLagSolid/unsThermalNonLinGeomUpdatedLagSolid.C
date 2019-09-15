@@ -505,7 +505,7 @@ void unsThermalNonLinGeomUpdatedLagSolid::setTemperature
 
 bool unsThermalNonLinGeomUpdatedLagSolid::evolve()
 {
-    Info<< "Evolving solid solver" << endl;
+    Info<< "Evolving thermal solid solver" << endl;
 
     int iCorr = 0;
     lduSolverPerformance solverPerfDD;

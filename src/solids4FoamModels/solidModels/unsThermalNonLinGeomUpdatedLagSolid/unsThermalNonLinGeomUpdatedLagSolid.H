@@ -63,7 +63,7 @@ namespace solidModels
 {
 
 /*---------------------------------------------------------------------------*\
-                        Class unsThermalNonLinGeomUpdatedLagSolid Declaration
+             Class unsThermalNonLinGeomUpdatedLagSolid Declaration
 \*---------------------------------------------------------------------------*/
 
 class unsThermalNonLinGeomUpdatedLagSolid
