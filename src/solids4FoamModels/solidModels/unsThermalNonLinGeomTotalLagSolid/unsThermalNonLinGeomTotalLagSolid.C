@@ -535,6 +535,9 @@ bool unsThermalNonLinGeomTotalLagSolid::evolve()
         // Under-relax the linear system
         DEqn.relax();
 
+        // Enforce any cell displacements
+        solidModel::setCellDisps(DEqn);
+
         // Solve the system
         solverPerfD = DEqn.solve();
 

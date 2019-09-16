@@ -73,6 +73,8 @@ interpolationSchemes
     interpolate((threeK*rho)) linear;
     interpolate(grad(D)) linear;
     interpolate(grad(DD)) linear;
+    interpolate(rhoC) linear;
+    interpolate(k) linear;
 }
 
 

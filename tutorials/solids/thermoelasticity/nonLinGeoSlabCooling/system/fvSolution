@@ -10,25 +10,34 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      thermalProperties;
+    location    "system";
+    object      fvSolution;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-thermal
+solvers
 {
-    type            constant;
-    C               C [0 2 -2 -1 0 0 0] 486;
-    k               k [1 1 -3 -1 0 0 0] 20;
+    "D|T"
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-10;
+        relTol          0.1;
+        minIter         0;
+        maxIter         50;
+    }
+}
 
-    sources
-    (
-        /*solid
-        {
-            type            constant;
-            S               S [1 -1 -3 0  0] 0;
-            zones           ( cell-zone-name ); // cell-zone name must be defined in blockMeshDict
-        }*/
-    );
+relaxationFactors
+{
+    equations
+    {
+        T    0.9;
+    }
+    fields
+    {
+        //T    0.9;
+    }
 }
 
 

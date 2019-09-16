@@ -10,26 +10,25 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      thermalProperties;
+    location    "constant";
+    object      rheologyProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-thermal
-{
-    type            constant;
-    C               C [0 2 -2 -1 0 0 0] 486;
-    k               k [1 1 -3 -1 0 0 0] 20;
+planeStress     no;
 
-    sources
-    (
-        /*solid
-        {
-            type            constant;
-            S               S [1 -1 -3 0  0] 0;
-            zones           ( cell-zone-name ); // cell-zone name must be defined in blockMeshDict
-        }*/
-    );
-}
+mechanical
+(
+    material0
+    {
+        type            thermoNeoHookeanElastic;
+        rho             rho [1 -3 0 0 0 0 0] 7854;
+        E               E [1 -1 -2 0 0 0 0] 69e+9;
+        nu              nu [0 0 0 0 0 0 0] 0.33;
+        alpha           alpha [0 0 0 -1 0 0 0] 2.3e-05;
+        T0              T0 [0 0 0 1 0 0 0] 800;
+    }
+);
 
 
 // ************************************************************************* //

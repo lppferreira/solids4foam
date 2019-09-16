@@ -59,6 +59,7 @@ interpolationSchemes
     interpolate(grad(T)) linear;
     interpolate(rhoC) linear;
     interpolate(k) linear;
+    interpolate(T) linear;
 }
 
 // ************************************************************************* //
