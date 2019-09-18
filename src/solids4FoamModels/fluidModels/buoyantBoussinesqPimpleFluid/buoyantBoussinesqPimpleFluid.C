@@ -345,7 +345,15 @@ void buoyantBoussinesqPimpleFluid::setTemperature
      != mixedFvPatchScalarField::typeName
     )
     {
-        FatalErrorIn("void buoyantBoussinesqPimpleFluid::setTemperature(...)")
+        FatalErrorIn
+        (
+            "void buoyantBoussinesqPimpleFluid::setTemperature\n"
+            "(\n"
+            "    const label,\n"
+            "    const scalarField&,\n"
+            "    const scalarField&\n"
+            ")"
+        )
             << "Bounary condition on " << T().name()
                 <<  " is "
                 << T().boundaryField()[patchID].type()

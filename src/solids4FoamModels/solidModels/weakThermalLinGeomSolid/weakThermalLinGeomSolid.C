@@ -279,7 +279,15 @@ void weakThermalLinGeomSolid::setTemperature
      != mixedFvPatchScalarField::typeName
     )
     {
-        FatalErrorIn("void weakThermalLinGeomSolid::setTemperature(...)")
+        FatalErrorIn
+        (
+            "void weakThermalLinGeomSolid::setTemperature\n"
+            "(\n"
+            "    const label,\n"
+            "    const scalarField&,\n"
+            "    const scalarField&\n"
+            ")"
+        )
             << "Bounary condition on " << T().name()
                 <<  " is "
                 << T().boundaryField()[patchID].type()

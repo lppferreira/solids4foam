@@ -276,7 +276,15 @@ void thermalSolid::setTemperature
      != mixedFvPatchScalarField::typeName
     )
     {
-        FatalErrorIn("void thermalSolid::setTemperature(...)")
+        FatalErrorIn
+        (
+            "void thermalSolid::setTemperature\n"
+            "(\n"
+            "    const label,\n"
+            "    const scalarField&,\n"
+            "    const scalarField&\n"
+            ")"
+        )
             << "Bounary condition on " << T().name()
                 <<  " is "
                 << T().boundaryField()[patchID].type()

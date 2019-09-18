@@ -310,7 +310,15 @@ void unsWeakThermalNonLinGeomTotalLagSolid::setTemperature
      != mixedFvPatchScalarField::typeName
     )
     {
-        FatalErrorIn("void unsWeakThermalNonLinGeomTotalLagSolid::setTemperature(...)")
+        FatalErrorIn
+        (
+            "void unsWeakThermalNonLinGeomTotalLagSolid::setTemperature\n"
+            "(\n"
+            "    const label,\n"
+            "    const scalarField&,\n"
+            "    const scalarField&\n"
+            ")"
+        )
             << "Bounary condition on " << T().name()
                 <<  " is "
                 << T().boundaryField()[patchID].type()
