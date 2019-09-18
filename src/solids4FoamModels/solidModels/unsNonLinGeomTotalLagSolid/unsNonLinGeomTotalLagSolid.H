@@ -179,6 +179,18 @@ public:
                 return nonLinear_;
             }
 
+            //- Return inverse of the total deformation gradient
+            virtual const volTensorField& Finv() const
+            {
+                return Finv_;
+            }
+
+            //- Return Jacobian of the total deformation gradient
+            virtual const volScalarField& J() const
+            {
+                return J_;
+            }
+
         // Edit
 
             //- Evolve the solid solver and solve the mathematical model

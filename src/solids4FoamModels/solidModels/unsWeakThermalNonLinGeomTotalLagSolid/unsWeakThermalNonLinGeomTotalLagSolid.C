@@ -193,6 +193,8 @@ unsWeakThermalNonLinGeomTotalLagSolid::unsWeakThermalNonLinGeomTotalLagSolid
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+// Needs correction: Sep 18 2019
+// The total Lagrangian implementation does not move the mesh
 scalar& unsWeakThermalNonLinGeomTotalLagSolid::DiffusionNo()
 {
     //- calculate solid Diffusion number
@@ -229,8 +231,22 @@ tmp<scalarField> unsWeakThermalNonLinGeomTotalLagSolid::patchThermalFlux
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() = fvc::interpolate(kappa_)().boundaryField()[patchID]
-          * T().boundaryField()[patchID].snGrad();
+    // Patch unit normals (initial configuration)
+    const vectorField n = mesh().boundary()[patchID].nf();
+
+    // Patch total deformation gradient inverse
+    const tensorField& FinvBf = Finv().boundaryField()[patchID];
+
+    // Patch total Jacobian
+    const scalarField& JBf = J().boundaryField()[patchID];
+
+    // Patch unit normals (deformed configuration)
+    const vectorField nCurrent = JBf*FinvBf.T() & n;
+
+    // corrected snGrad (deformed configuration)
+    const scalarField snGradT = gradT().boundaryField()[patchID] & nCurrent;
+
+    ttF() = fvc::interpolate(kappa_)().boundaryField()[patchID]*snGradT;
 
     return ttF;
 }
@@ -262,8 +278,20 @@ tmp<scalarField> unsWeakThermalNonLinGeomTotalLagSolid::patchKDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
+    // Patch unit normals (initial configuration)
+    const vectorField delta = mesh().boundary()[patchID].delta();
+
+    // Patch total deformation gradient inverse
+    const tensorField& FinvBf = Finv().boundaryField()[patchID];
+
+    // Patch total Jacobian
+    const scalarField& JBf = J().boundaryField()[patchID];
+
+    // Patch unit normals (deformed configuration)
+    const vectorField deltaCurrent = JBf*FinvBf.T() & delta;
+
     tKD() = fvc::interpolate(kappa_)().boundaryField()[patchID]
-          * mesh().boundary()[patchID].deltaCoeffs();
+          * (1.0/mag(deltaCurrent));
 
     return tKD;
 }
@@ -332,6 +360,8 @@ bool unsWeakThermalNonLinGeomTotalLagSolid::evolve()
         (
             rhoC_*fvm::ddt(T())
          == fvm::laplacian(kappa_, T(), "laplacian(k,T)")
+          - fvc::laplacian(kappa_, T(), "laplacian(k,T)")
+          + fvc::div(J()*kappa_*gradT() & Finv().T(), "div(k*grad(T))")
           - fvm::SuSp(-thermal_.S()/T(), T())
         );
 
