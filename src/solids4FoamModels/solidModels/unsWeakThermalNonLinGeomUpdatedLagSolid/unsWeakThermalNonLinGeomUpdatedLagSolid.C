@@ -369,7 +369,7 @@ bool unsWeakThermalNonLinGeomUpdatedLagSolid::evolve()
         gradT() = fvc::grad(T());
 
         // Update rho*C
-        rhoC_ = rho()*thermal_C();
+        rhoC_ = rho()*thermal_.C();
     }
     while (!converged(iCorr, solverPerfT, T()) && ++iCorr < nCorr());
 

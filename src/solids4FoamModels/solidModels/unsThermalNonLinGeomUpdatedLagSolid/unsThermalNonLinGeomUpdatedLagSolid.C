@@ -559,7 +559,7 @@ bool unsThermalNonLinGeomUpdatedLagSolid::evolve()
         gradT() = fvc::grad(T());
 
         // Update rho*C
-        rhoC_ = rho()*thermal_C();
+        rhoC_ = rho()*thermal_.C();
 
         // Store fields for under-relaxation and residual calculation
         DD().storePrevIter();
