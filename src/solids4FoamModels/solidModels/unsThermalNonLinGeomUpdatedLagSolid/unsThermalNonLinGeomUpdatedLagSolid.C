@@ -385,6 +385,8 @@ unsThermalNonLinGeomUpdatedLagSolid::unsThermalNonLinGeomUpdatedLagSolid
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+// Correction is not needed: Sep 18 2019
+// The Updated Lagrangian implementation does move the mesh
 scalar& unsThermalNonLinGeomUpdatedLagSolid::DiffusionNo()
 {
     //- calculate solid Diffusion number
@@ -411,6 +413,8 @@ scalar& unsThermalNonLinGeomUpdatedLagSolid::DiffusionNo()
 }
 
 
+// Correction is not needed: Sep 18 2019
+// The Updated Lagrangian implementation does move the mesh
 tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchThermalFlux
 (
     const label patchID
@@ -444,6 +448,8 @@ tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchTemperature
 }
 
 
+// Correction is not needed: Sep 18 2019
+// The Updated Lagrangian implementation does move the mesh
 tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchKDelta
 (
     const label patchID
@@ -521,11 +527,13 @@ bool unsThermalNonLinGeomUpdatedLagSolid::evolve()
         // Store fields for under-relaxation and residual calculation
         T().storePrevIter();
 
-        // Heat equation
+        // Heat equation in updated Lagrangian form
         fvScalarMatrix TEqn
         (
             rhoC_*fvm::ddt(T())
          == fvm::laplacian(kappa_, T(), "laplacian(k,T)")
+          - fvc::laplacian(kappa_, T(), "laplacian(k,T)")
+          + fvc::div(relJ_*kappa_*gradT() & relFinv_.T(), "div(k*grad(T))")
           + (sigma() && fvc::grad(U()))
           - fvm::SuSp(-thermal_.S()/T(), T())
         );
@@ -541,6 +549,9 @@ bool unsThermalNonLinGeomUpdatedLagSolid::evolve()
 
         // Update gradient of temperature
         gradT() = fvc::grad(T());
+
+        // Update rho*C
+        rhoC_ = rho()*thermal_C();
 
         // Store fields for under-relaxation and residual calculation
         DD().storePrevIter();

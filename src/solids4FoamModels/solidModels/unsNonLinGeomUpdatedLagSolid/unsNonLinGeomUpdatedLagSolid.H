@@ -184,6 +184,12 @@ public:
                 return true;
             }
 
+            //- Return Density (updated configuration)
+            virtual const volScalarField& rho() const
+            {
+                return rho_;
+            }
+
     // Edit
 
             //- Evolve the solid solver and solve the mathematical model

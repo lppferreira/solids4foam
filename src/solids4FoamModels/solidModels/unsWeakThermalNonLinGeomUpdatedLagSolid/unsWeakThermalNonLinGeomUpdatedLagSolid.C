@@ -198,6 +198,8 @@ unsWeakThermalNonLinGeomUpdatedLagSolid::unsWeakThermalNonLinGeomUpdatedLagSolid
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+// Correction is not needed: Sep 18 2019
+// The Updated Lagrangian implementation does move the mesh
 scalar& unsWeakThermalNonLinGeomUpdatedLagSolid::DiffusionNo()
 {
     //- calculate solid Diffusion number
@@ -224,6 +226,8 @@ scalar& unsWeakThermalNonLinGeomUpdatedLagSolid::DiffusionNo()
 }
 
 
+// Correction is not needed: Sep 18 2019
+// The Updated Lagrangian implementation does move the mesh
 tmp<scalarField> unsWeakThermalNonLinGeomUpdatedLagSolid::patchThermalFlux
 (
     const label patchID
@@ -257,6 +261,8 @@ tmp<scalarField> unsWeakThermalNonLinGeomUpdatedLagSolid::patchTemperature
 }
 
 
+// Correction is not needed: Sep 18 2019
+// The Updated Lagrangian implementation does move the mesh
 tmp<scalarField> unsWeakThermalNonLinGeomUpdatedLagSolid::patchKDelta
 (
     const label patchID
@@ -332,7 +338,9 @@ bool unsWeakThermalNonLinGeomUpdatedLagSolid::evolve()
         // Store fields for under-relaxation and residual calculation
         T().storePrevIter();
 
-        // Heat equation
+        // Heat equation: the heat-momentum coupling is explicit.
+        // Note: Updated Lagrangian formulation move the mesh at the
+        // end of the time step and therefore no need to change.
         fvScalarMatrix TEqn
         (
             rhoC_*fvm::ddt(T())
@@ -351,6 +359,9 @@ bool unsWeakThermalNonLinGeomUpdatedLagSolid::evolve()
 
         // Update gradient of temperature
         gradT() = fvc::grad(T());
+
+        // Update rho*C
+        rhoC_ = rho()*thermal_C();
     }
     while (!converged(iCorr, solverPerfT, T()) && ++iCorr < nCorr());
 
