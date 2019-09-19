@@ -16,17 +16,17 @@ FoamFile
 
 d2dt2Schemes
 {
-    default            backward;
+    default            Euler;
 }
 
 ddtSchemes
 {
-    default            backward;
+    default            Euler;
 }
 
 gradSchemes
 {
-    default            extendedLeastSquares 0;
+    default            Gauss linear;
 }
 
 divSchemes
