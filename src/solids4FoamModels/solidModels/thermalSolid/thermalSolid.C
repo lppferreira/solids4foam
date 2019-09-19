@@ -223,7 +223,7 @@ tmp<scalarField> thermalSolid::patchThermalFlux
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() = fvc::interpolate(kappa_)().boundaryField()[patchID]
+    ttF() = kappa_.boundaryField()[patchID]
           * T().boundaryField()[patchID].snGrad();
 
     return ttF;
@@ -256,7 +256,7 @@ tmp<scalarField> thermalSolid::patchKDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tKD() = fvc::interpolate(kappa_)().boundaryField()[patchID]
+    tKD() = kappa_.boundaryField()[patchID]
           * mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;

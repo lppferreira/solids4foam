@@ -388,7 +388,7 @@ tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::patchThermalFlux
     // corrected snGrad (deformed configuration)
     const scalarField snGradT = gradT().boundaryField()[patchID] & nCurrent;
 
-    ttF() = fvc::interpolate(kappa_)().boundaryField()[patchID]*snGradT;
+    ttF() = kappa_.boundaryField()[patchID]*snGradT;
 
     return ttF;
 }
@@ -432,8 +432,7 @@ tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::patchKDelta
     // Patch unit normals (deformed configuration)
     const vectorField deltaCurrent = JBf*FinvBf.T() & delta;
 
-    tKD() = fvc::interpolate(kappa_)().boundaryField()[patchID]
-          * (1.0/mag(deltaCurrent));
+    tKD() = kappa_.boundaryField()[patchID]*(1.0 / mag(deltaCurrent));
 
     return tKD;
 }
