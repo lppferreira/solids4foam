@@ -212,8 +212,8 @@ public:
             virtual void setTemperature
             (
                 const label patchID,
-                const scalarField& faceZoneTemperature,
-                const scalarField& faceZoneKDelta
+                const scalarField& nbrFaceZoneTemperature,
+                const scalarField& nbrFaceZoneKDelta
             );
 
         // Edit

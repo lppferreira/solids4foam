@@ -2016,7 +2016,7 @@ void Foam::fluidSolidInterface::updateSolidPatchTemperatureBC()
 
         const scalarField fluidZoneKDelta = fluid().faceZoneKDelta();
 
-        scalarField solidZoneTemperature =
+        scalarField nbrSolidZoneTemperature =
             scalarField(solid().globalPatch().globalPatch().size(), 0.0);
 
         transferFacesZoneToZone
@@ -2026,10 +2026,10 @@ void Foam::fluidSolidInterface::updateSolidPatchTemperatureBC()
             fluid().globalPatch().globalPatch(), // from zone
             solid().globalPatch().globalPatch(), // to zone
             fluidZoneTemperature,                // from field
-            solidZoneTemperature                 // to field
+            nbrSolidZoneTemperature              // to field
         );
 
-        scalarField solidZoneKDelta =
+        scalarField nbrSolidZoneKDelta =
             scalarField(solid().globalPatch().globalPatch().size(), 0.0);
 
         transferFacesZoneToZone
@@ -2039,14 +2039,14 @@ void Foam::fluidSolidInterface::updateSolidPatchTemperatureBC()
             fluid().globalPatch().globalPatch(), // from zone
             solid().globalPatch().globalPatch(), // to zone
             fluidZoneKDelta,                     // from field
-            solidZoneKDelta                      // to field
+            nbrSolidZoneKDelta                   // to field
         );
 
         solid().setTemperature
         (
             solidPatchIndex(),
-            solidZoneTemperature,
-            solidZoneKDelta
+            nbrSolidZoneTemperature,
+            nbrSolidZoneKDelta
         );
     }
 }
@@ -2061,7 +2061,7 @@ void Foam::fluidSolidInterface::updateFluidPatchTemperatureBC()
 
         const scalarField solidZoneKDelta = solid().faceZoneKDelta();
 
-        scalarField fluidZoneTemperature =
+        scalarField nbrFluidZoneTemperature =
             scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
 
         transferFacesZoneToZone
@@ -2071,10 +2071,10 @@ void Foam::fluidSolidInterface::updateFluidPatchTemperatureBC()
             solid().globalPatch().globalPatch(), // from zone
             fluid().globalPatch().globalPatch(), // to zone
             solidZoneTemperature,                // from field
-            fluidZoneTemperature                 // to field
+            nbrFluidZoneTemperature              // to field
         );
 
-        scalarField fluidZoneKDelta =
+        scalarField nbrFluidZoneKDelta =
             scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
 
         transferFacesZoneToZone
@@ -2084,17 +2084,18 @@ void Foam::fluidSolidInterface::updateFluidPatchTemperatureBC()
             solid().globalPatch().globalPatch(), // from zone
             fluid().globalPatch().globalPatch(), // to zone
             solidZoneKDelta,                     // from field
-            fluidZoneKDelta                      // to field
+            nbrFluidZoneKDelta                   // to field
         );
 
         fluid().setTemperature
         (
             fluidPatchIndex(),
-            fluidZoneTemperature,
-            fluidZoneKDelta
+            nbrFluidZoneTemperature,
+            nbrFluidZoneKDelta
         );
     }
 }
+
 
 Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
 {
@@ -2165,5 +2166,6 @@ void Foam::fluidSolidInterface::writeFields(const Time& runTime)
     //fluid().writeFields(runTime);
     solid().writeFields(runTime);
 }
+
 
 // ************************************************************************* //

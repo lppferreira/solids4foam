@@ -470,8 +470,8 @@ tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchKDelta
 void unsThermalNonLinGeomUpdatedLagSolid::setTemperature
 (
     const label patchID,
-    const scalarField& faceZoneTemperature,
-    const scalarField& faceZoneKDelta
+    const scalarField& nbrFaceZoneTemperature,
+    const scalarField& nbrFaceZoneKDelta
 )
 {
     if
@@ -499,10 +499,10 @@ void unsThermalNonLinGeomUpdatedLagSolid::setTemperature
     }
 
     scalarField nbrPatchTemperature =
-	globalPatch().globalFaceToPatch(faceZoneTemperature);
+	globalPatch().globalFaceToPatch(nbrFaceZoneTemperature);
 
     scalarField nbrPatchKDelta =
-	globalPatch().globalFaceToPatch(faceZoneKDelta);
+	globalPatch().globalFaceToPatch(nbrFaceZoneKDelta);
 
     mixedFvPatchScalarField& patchT =
         refCast<mixedFvPatchScalarField>
@@ -513,7 +513,7 @@ void unsThermalNonLinGeomUpdatedLagSolid::setTemperature
     patchT.refValue() = nbrPatchTemperature;
     patchT.refGrad() = 0.0;
     patchT.valueFraction() = nbrPatchKDelta / (nbrPatchKDelta + patchKDelta(patchID));
-    patchT.evaluate();
+    patchT.updateCoeffs();
 }
 
 
