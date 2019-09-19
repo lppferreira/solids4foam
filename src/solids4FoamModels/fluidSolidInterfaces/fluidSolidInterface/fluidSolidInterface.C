@@ -2125,7 +2125,7 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
           - nbrFluidZoneThermalFlux
         );
 
-        scalar thermalResidualNorm = Foam::sqrt(gSum(magSqr(thermalFluxRes)));
+        scalar thermalResidualNorm = Foam::sqrt(gSum(sqr(thermalFluxRes)));
 
         if (thermalResidualNorm > maxThermalResidualNorm_)
         {
