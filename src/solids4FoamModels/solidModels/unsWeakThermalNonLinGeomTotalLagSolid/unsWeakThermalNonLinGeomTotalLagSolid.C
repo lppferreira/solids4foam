@@ -183,7 +183,7 @@ tmp<vectorField> unsWeakThermalNonLinGeomTotalLagSolid::currentFaceNormal
         mechanical().volToPoint().interpolate
         (
             mesh().boundaryMesh()[patchID],
-            DD()
+            D()
         )
       + mesh().boundaryMesh()[patchID].localPoints();
 
@@ -211,8 +211,8 @@ tmp<scalarField> unsWeakThermalNonLinGeomTotalLagSolid::currentDeltaCoeffs
     // Patch delta vector (deformed configuration)
     const vectorField deltaCurrent =
     (
-        DD().boundaryField()[patchID]
-      - DD().boundaryField()[patchID].patchInternalField()
+        D().boundaryField()[patchID]
+      - D().boundaryField()[patchID].patchInternalField()
     ) + delta;
 
     // Patch unit normals (deformed configuration)
