@@ -560,6 +560,17 @@ public:
                 return sigma_;
             }
 
+            //- Patch face area vector
+            //- Note: will be overridden in Total Lagrangian models
+            //- to account for the deformation.
+            virtual tmp<vectorField> patchCurrentSf
+            (
+                const label patchID
+            ) const
+            {
+                return mesh().boundary()[patchID].Sf();
+            }
+
             //- Return Diffusion Number
             virtual scalar& DiffusionNo();
 

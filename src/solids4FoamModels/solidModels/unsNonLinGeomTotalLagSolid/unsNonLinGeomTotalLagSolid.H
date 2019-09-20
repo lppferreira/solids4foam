@@ -185,10 +185,22 @@ public:
                 return Finv_;
             }
 
+            //- Return inverse of the total deformation gradient surface field
+            virtual const surfaceTensorField& Finvf() const
+            {
+                return Finvf_;
+            }
+
             //- Return Jacobian of the total deformation gradient
             virtual const volScalarField& J() const
             {
                 return J_;
+            }
+
+            //- Return Jacobian of the total deformation gradient surface field
+            virtual const surfaceScalarField& Jf() const
+            {
+                return Jf_;
             }
 
         // Edit

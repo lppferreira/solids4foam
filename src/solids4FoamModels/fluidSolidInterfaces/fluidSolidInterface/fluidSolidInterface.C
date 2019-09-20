@@ -2147,7 +2147,7 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
             << gSum
                (
                    solid().patchThermalFlux(solidPatchIndex())
-                 * solidMesh().boundary()[solidPatchIndex()].magSf()
+                 * mag(solid().patchCurrentSf(solidPatchIndex()))
                )
             << "\n" << endl;
 

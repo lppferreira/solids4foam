@@ -151,6 +151,86 @@ bool unsWeakThermalNonLinGeomTotalLagSolid::converged
 }
 
 
+tmp<vectorField> unsWeakThermalNonLinGeomTotalLagSolid::currentFaceNormal
+(
+    const label patchID
+) const
+{
+    // Testing: let us instead calculate the deformed normals by interpolating
+    // displacements to the points and calculating the normals on the deformed
+    // patch; as this is how we will actually move the mesh, it will be more
+    // consistent.
+    // This, however, begs the question: is the cell-centred deformation
+    // gradient field 'F' consistent with our point displacement field?"
+    // i.e. we can calculate the deformed cell volumes two ways (at least):
+    //     1. V = J*Vold
+    //     2. Move the mesh with pointD and then directly calculate V
+    // The answers from 1. and 2. are only approximately equal: this causes a
+    // slight inconsistency. The equalavent can be said for the deformed face
+    // areas.
+    // In Maneeratana, the mesh is never moved, instead method 1. is used for
+    // the deformed volumes and areas.
+
+    standAlonePatch deformedPatch =
+        standAlonePatch
+        (
+            mesh().boundaryMesh()[patchID].localFaces(),
+            mesh().boundaryMesh()[patchID].localPoints()
+        );
+
+    // Calculate the deformed points
+    const pointField deformedPoints =
+        mechanical().volToPoint().interpolate
+        (
+            mesh().boundaryMesh()[patchID],
+            DD()
+        )
+      + mesh().boundaryMesh()[patchID].localPoints();
+
+    // Move the standAlonePatch points
+    const_cast<pointField&>(deformedPatch.points()) = deformedPoints;
+
+    // Patch unit normals (deformed configuration)
+    return deformedPatch.faceNormals();
+}
+
+
+tmp<scalarField> unsWeakThermalNonLinGeomTotalLagSolid::currentDeltaCoeffs
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> tcurrentDelta
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+    // Patch delta vector (initial configuration)
+    const vectorField delta = mesh().boundary()[patchID].delta();
+
+    // Patch delta vector (deformed configuration)
+    const vectorField deltaCurrent =
+    (
+        DD().boundaryField()[patchID]
+      - DD().boundaryField()[patchID].patchInternalField()
+    ) + delta;
+
+    // Patch unit normals (deformed configuration)
+    const vectorField& nCurrent = currentFaceNormal(patchID);
+
+    forAll(tcurrentDelta(), faceI)
+    {
+        tcurrentDelta()[faceI] = max
+            (
+                nCurrent[faceI] & deltaCurrent[faceI],
+                0.05*mag(deltaCurrent[faceI])
+            );
+    }
+
+    return scalar(1.0)/tcurrentDelta;
+}
+
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 unsWeakThermalNonLinGeomTotalLagSolid::unsWeakThermalNonLinGeomTotalLagSolid
@@ -231,20 +311,12 @@ tmp<scalarField> unsWeakThermalNonLinGeomTotalLagSolid::patchThermalFlux
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    // Patch unit normals (initial configuration)
-    const vectorField n = mesh().boundary()[patchID].nf();
-
-    // Patch total deformation gradient inverse
-    const tensorField& FinvBf = Finv().boundaryField()[patchID];
-
-    // Patch total Jacobian
-    const scalarField& JBf = J().boundaryField()[patchID];
-
-    // Patch unit normals (deformed configuration)
-    const vectorField nCurrent = JBf*FinvBf.T() & n;
-
     // corrected snGrad (deformed configuration)
-    const scalarField snGradT = gradT().boundaryField()[patchID] & nCurrent;
+    const scalarField snGradT =
+    (
+        T().boundaryField()[patchID]
+      - T().boundaryField()[patchID].patchInternalField()
+    ) * currentDeltaCoeffs(patchID);
 
     ttF() = kappa_.boundaryField()[patchID]*snGradT;
 
@@ -278,19 +350,7 @@ tmp<scalarField> unsWeakThermalNonLinGeomTotalLagSolid::patchKDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    // Patch unit normals (initial configuration)
-    const vectorField delta = mesh().boundary()[patchID].delta();
-
-    // Patch total deformation gradient inverse
-    const tensorField& FinvBf = Finv().boundaryField()[patchID];
-
-    // Patch total Jacobian
-    const scalarField& JBf = J().boundaryField()[patchID];
-
-    // Patch unit normals (deformed configuration)
-    const vectorField deltaCurrent = JBf*FinvBf.T() & delta;
-
-    tKD() = kappa_.boundaryField()[patchID]*(1.0 / mag(deltaCurrent));
+    tKD() = kappa_.boundaryField()[patchID]*currentDeltaCoeffs(patchID);
 
     return tKD;
 }

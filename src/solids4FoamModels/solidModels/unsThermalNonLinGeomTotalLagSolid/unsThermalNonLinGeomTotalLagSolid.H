@@ -148,6 +148,18 @@ class unsThermalNonLinGeomTotalLagSolid
             const volScalarField& T
         );
 
+        //- Patch face normal in deformed configuration
+        tmp<vectorField> currentFaceNormal
+        (
+            const label patchID
+        ) const;
+
+        //- Patch deltaCoeffs in deformed configuration
+        tmp<scalarField> currentDeltaCoeffs
+        (
+            const label patchID
+        ) const;
+
         //- Disallow default bitwise copy construct
         unsThermalNonLinGeomTotalLagSolid(const unsThermalNonLinGeomTotalLagSolid&);
 
@@ -203,6 +215,20 @@ public:
             const Switch& nonLinear() const
             {
                 return nonLinear_;
+            }
+
+            //- Patch deformed face area vector
+            virtual tmp<vectorField> patchCurrentSf
+            (
+                const label patchID
+            ) const
+            {
+                return
+                (
+                    Jf_.boundaryField()[patchID]
+                  * Finvf_.boundaryField()[patchID].T()
+                  & mesh().boundary()[patchID].Sf()
+                );
             }
 
             //- Return Diffusion Number
