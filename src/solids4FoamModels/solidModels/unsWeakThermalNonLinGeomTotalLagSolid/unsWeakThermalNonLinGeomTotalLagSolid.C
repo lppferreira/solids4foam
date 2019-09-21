@@ -151,32 +151,18 @@ bool unsWeakThermalNonLinGeomTotalLagSolid::converged
 }
 
 
-tmp<vectorField> unsWeakThermalNonLinGeomTotalLagSolid::currentFaceNormal
+const standAlonePatch& unsWeakThermalNonLinGeomTotalLagSolid::currentBoundaryPatch
 (
     const label patchID
 ) const
 {
-    // Testing: let us instead calculate the deformed normals by interpolating
-    // displacements to the points and calculating the normals on the deformed
-    // patch; as this is how we will actually move the mesh, it will be more
-    // consistent.
-    // This, however, begs the question: is the cell-centred deformation
-    // gradient field 'F' consistent with our point displacement field?"
-    // i.e. we can calculate the deformed cell volumes two ways (at least):
-    //     1. V = J*Vold
-    //     2. Move the mesh with pointD and then directly calculate V
-    // The answers from 1. and 2. are only approximately equal: this causes a
-    // slight inconsistency. The equalavent can be said for the deformed face
-    // areas.
-    // In Maneeratana, the mesh is never moved, instead method 1. is used for
-    // the deformed volumes and areas.
-
-    standAlonePatch deformedPatch =
-        standAlonePatch
+    deformedPatchPtr_ =
+        new standAlonePatch
         (
             mesh().boundaryMesh()[patchID].localFaces(),
             mesh().boundaryMesh()[patchID].localPoints()
         );
+    standAlonePatch& deformedPatch = *deformedPatchPtr_;
 
     // Calculate the deformed points
     const pointField deformedPoints =
@@ -190,8 +176,8 @@ tmp<vectorField> unsWeakThermalNonLinGeomTotalLagSolid::currentFaceNormal
     // Move the standAlonePatch points
     const_cast<pointField&>(deformedPatch.points()) = deformedPoints;
 
-    // Patch unit normals (deformed configuration)
-    return deformedPatch.faceNormals();
+    // Return the boundary patch in its deformed configuration
+    return *deformedPatchPtr_;
 }
 
 
@@ -215,8 +201,30 @@ tmp<scalarField> unsWeakThermalNonLinGeomTotalLagSolid::currentDeltaCoeffs
       - D().boundaryField()[patchID].patchInternalField()
     ) + delta;
 
+    // Note: we have to options to calculate deformed unit normal
+    // 1. Use the cell-centred deformation gradient field 'F'.
+    // 2. Calculate the deformed normals by interpolating displacements
+    //    to the points and calculating the normals on the deformed patch.
+    // For now we use method 1. as the result of the method 2. is not consistent,
+    // perhaps due the governing equation formulation
+
+    // Patch unit normals (initial configuration)
+    const vectorField n = mesh().boundary()[patchID].nf();
+
+    // Patch total deformation gradient inverse
+    const tensorField& FinvBf = Finvf().boundaryField()[patchID];
+
+    // Patch total Jacobian
+    const scalarField& JBf = Jf().boundaryField()[patchID];
+
     // Patch unit normals (deformed configuration)
-    const vectorField& nCurrent = currentFaceNormal(patchID);
+    const vectorField nCurrent = JBf*FinvBf.T() & n;
+
+    // Patch unit normals (deformed configuration)
+    //const vectorField& nCurrent
+    //(
+    //    currentBoundaryPatch(patchID).faceNormals()
+    //);
 
     forAll(tcurrentDelta(), faceI)
     {
@@ -227,7 +235,7 @@ tmp<scalarField> unsWeakThermalNonLinGeomTotalLagSolid::currentDeltaCoeffs
             );
     }
 
-    return scalar(1.0)/tcurrentDelta;
+    return scalar(1.0) / tcurrentDelta;
 }
 
 
@@ -240,6 +248,7 @@ unsWeakThermalNonLinGeomTotalLagSolid::unsWeakThermalNonLinGeomTotalLagSolid
 )
 :
     unsNonLinGeomTotalLagSolid(runTime, region),
+    deformedPatchPtr_(NULL),
     thermal_(mesh()),
     rhoC_
     (
@@ -268,6 +277,14 @@ unsWeakThermalNonLinGeomTotalLagSolid::unsWeakThermalNonLinGeomTotalLagSolid
 
     // Store T old time
     T().oldTime();
+}
+
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+unsWeakThermalNonLinGeomTotalLagSolid::~unsWeakThermalNonLinGeomTotalLagSolid()
+{
+    deleteDemandDrivenData(deformedPatchPtr_);
 }
 
 

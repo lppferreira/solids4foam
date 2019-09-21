@@ -72,6 +72,9 @@ class unsThermalNonLinGeomTotalLagSolid
 {
     // Private data
 
+        //- Interface patch in its deformed configuration
+        mutable standAlonePatch* deformedPatchPtr_;
+
         //- Cauchy (true) stress surface field
         surfaceSymmTensorField sigmaf_;
 
@@ -136,6 +139,7 @@ class unsThermalNonLinGeomTotalLagSolid
 	//- Diffusion number
 	scalar DiffusionNo_;
 
+
     // Private Member Functions
 
         //- Check if the momentum equation is converged
@@ -148,8 +152,8 @@ class unsThermalNonLinGeomTotalLagSolid
             const volScalarField& T
         );
 
-        //- Patch face normal in deformed configuration
-        tmp<vectorField> currentFaceNormal
+        //- Patch in deformed configuration
+        const standAlonePatch& currentBoundaryPatch
         (
             const label patchID
         ) const;
@@ -195,8 +199,7 @@ public:
 
     // Destructor
 
-        virtual ~unsThermalNonLinGeomTotalLagSolid()
-        {}
+        virtual ~unsThermalNonLinGeomTotalLagSolid();
 
 
     // Member Functions
@@ -218,6 +221,12 @@ public:
             }
 
             //- Patch deformed face area vector
+            // Note: we have to options to calculate deformed patch face area vector
+            // 1. Use the cell-centred deformation gradient field 'F'.
+            // 2. Calculate the deformed face area vector by interpolating displacements
+            //    to the points and calculating the face area vector on the deformed patch.
+            // For now we use method 1. as the result of the method 2. is not consistent,
+            // perhaps due the governing equation formulation
             virtual tmp<vectorField> patchCurrentSf
             (
                 const label patchID
@@ -229,6 +238,9 @@ public:
                   * Finvf_.boundaryField()[patchID].T()
                   & mesh().boundary()[patchID].Sf()
                 );
+
+                // Note: Does not produce consistent result
+                // return currentBoundaryPatch(patchID).areas();
             }
 
             //- Return Diffusion Number
