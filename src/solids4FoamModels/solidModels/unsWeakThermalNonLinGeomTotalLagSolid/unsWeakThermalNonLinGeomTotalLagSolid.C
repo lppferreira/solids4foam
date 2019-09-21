@@ -201,7 +201,7 @@ tmp<scalarField> unsWeakThermalNonLinGeomTotalLagSolid::currentDeltaCoeffs
       - D().boundaryField()[patchID].patchInternalField()
     ) + delta;
 
-    // Note: we have to options to calculate deformed unit normal
+    // Note: we have two options to calculate deformed unit normal
     // 1. Use the cell-centred deformation gradient field 'F'.
     // 2. Calculate the deformed normals by interpolating displacements
     //    to the points and calculating the normals on the deformed patch.
@@ -221,10 +221,10 @@ tmp<scalarField> unsWeakThermalNonLinGeomTotalLagSolid::currentDeltaCoeffs
     const vectorField nCurrent = JBf*FinvBf.T() & n;
 
     // Patch unit normals (deformed configuration)
-    //const vectorField& nCurrent
-    //(
-    //    currentBoundaryPatch(patchID).faceNormals()
-    //);
+    // const vectorField& nCurrent
+    // (
+    //     currentBoundaryPatch(patchID).faceNormals()
+    // );
 
     forAll(tcurrentDelta(), faceI)
     {
@@ -446,6 +446,11 @@ bool unsWeakThermalNonLinGeomTotalLagSolid::evolve()
          == fvm::laplacian(kappa_, T(), "laplacian(k,T)")
           - fvc::laplacian(kappa_, T(), "laplacian(k,T)")
           + fvc::div(J()*kappa_*gradT() & Finv().T(), "div(k*grad(T))")
+          // + fvc::div
+          //   (
+          //       (Jf()*Finvf() & mesh().Sf())
+          //     & fvc::interpolate(kappa_*gradT())
+          //   )
           - fvm::SuSp(-thermal_.S()/T(), T())
         );
 
@@ -460,6 +465,9 @@ bool unsWeakThermalNonLinGeomTotalLagSolid::evolve()
 
         // Update gradient of temperature
         gradT() = fvc::grad(T());
+
+        // Update rho*C
+        rhoC_ = rho()*thermal_.C();
     }
     while (!converged(iCorr, solverPerfT, T()) && ++iCorr < nCorr());
 

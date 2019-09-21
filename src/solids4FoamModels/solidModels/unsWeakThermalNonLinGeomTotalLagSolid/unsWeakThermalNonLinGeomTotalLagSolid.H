@@ -156,7 +156,7 @@ public:
         // Access
 
             //- Patch deformed face area vector
-            // Note: we have to options to calculate deformed patch face area vector
+            // Note: we have two options to calculate deformed patch face area vector
             // 1. Use the cell-centred deformation gradient field 'F'.
             // 2. Calculate the deformed face area vector by interpolating displacements
             //    to the points and calculating the face area vector on the deformed patch.
