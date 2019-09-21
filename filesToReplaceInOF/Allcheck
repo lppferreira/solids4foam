@@ -76,6 +76,30 @@ if [ $? -ne 0 ]; then result=1; fi
 #    "$FOAM_SRC/finiteVolume/fvMatrices/fvBlockMatrix" \
 #    "$FOAM_SRC/finiteVolume"
 
+checkAndReport \
+    "PrimitivePatchClear.C" \
+    "$FOAM_SRC/foam/meshes/primitiveMesh/PrimitivePatchTemplate" \
+    "$FOAM_SRC/foam"
+if [ $? -ne 0 ]; then result=1; fi
+
+checkAndReport \
+    "PrimitivePatchMeshData.C" \
+    "$FOAM_SRC/foam/meshes/primitiveMesh/PrimitivePatchTemplate" \
+    "$FOAM_SRC/foam"
+if [ $? -ne 0 ]; then result=1; fi
+
+checkAndReport \
+    "PrimitivePatchTemplate.H" \
+    "$FOAM_SRC/foam/meshes/primitiveMesh/PrimitivePatchTemplate" \
+    "$FOAM_SRC/foam"
+if [ $? -ne 0 ]; then result=1; fi
+
+checkAndReport \
+    "PrimitivePatchTemplate.C" \
+    "$FOAM_SRC/foam/meshes/primitiveMesh/PrimitivePatchTemplate" \
+    "$FOAM_SRC/foam"
+if [ $? -ne 0 ]; then result=1; fi
+
 if [ "$result" -ne 0 ]
 then
     echo
