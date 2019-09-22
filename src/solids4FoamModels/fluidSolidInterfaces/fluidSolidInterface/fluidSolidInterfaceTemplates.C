@@ -79,6 +79,9 @@ void Foam::fluidSolidInterface::transferFacesZoneToZone
 
     if (transferMethod_ == directMap)
     {
+        Info<< "Interpolating from " << fromRegion << " to " << toRegion
+            << " using direct mapping" << endl;
+
         if (fromRegion == fluidMesh().name() && toRegion == solidMesh().name())
         {
             const labelList& fluidToSolidMap = fluidToSolidFaceMap();
