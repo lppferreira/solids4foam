@@ -2137,6 +2137,8 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
 
         Info<< "Relative thermal flux residual = " 
             << thermalResidualNorm << "\n"
+            << "Absolute thermal flux residual = "
+            << gMax(mag(thermalFluxRes)) << "\n"
             << "Interface thermal flux (fluid side) = "
             << gSum
                (
