@@ -26,16 +26,16 @@ thermoCouplingCoeffs
     fluidPatch           floor;
     fluidZone            floorZone;
 
-    // Tolerance for the thermal loop within each time-step
-    thermalTolerance     1e-5;
+    // Tolerance for the energy loop within each time-step
+    energyTolerance      1e-5;
 
-    // Maximum number of outer FSI loop correctors within each time-step
+    // Maximum number of outer energy-FSI loop correctors within each time-step
     nOuterCorr           5;
 
     // Enable/disable coupling from the start
     coupled              no;
 
-    // Enable/disable thermal coupling
+    // Enable/disable energy coupling
     conjugate            yes;
 
     // Method for transferring information between the interfaces
