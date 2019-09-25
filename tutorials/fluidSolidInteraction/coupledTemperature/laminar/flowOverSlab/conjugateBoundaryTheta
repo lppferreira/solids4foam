@@ -1,0 +1,23 @@
+set terminal postscript enhanced color solid
+
+set title "Dimension-less Conjugate Boundary Temperature: Re = 500, Pr = 0.01, {/Symbol l} = 0.25"
+
+set output "conjugateBoundaryTheta.ps"
+set xlabel "{/Helvetica-Italic x}" font ",18"
+set ylabel "{/Symbol-Oblique q}_{b}" enhanced font ",18"
+set grid
+
+set xrange [-0.5:0.5]
+set yrange [0:1]
+
+set xtics  -0.5,0.1,0.5
+
+set key at 0.5,0.7
+
+plot "analytical-k5.csv" using 1:2 axis x1y1 title "k=5 (analytical)" with points pointtype 4 lc rgb "black", \
+"cfd-k5.csv" using 1:2 axis x1y1 title "k=5 (CFD)" with lines lw 2 lc rgb "black", \
+"analytical-k20.csv" using 1:2 axis x1y1 title "k=20 (analytical)" with points pointtype 5 lc rgb "black", \
+"cfd-k20.csv" using 1:2 axis x1y1 title "k=20 (CFD)" with lines lw 2 lc rgb "black"
+
+#set output
+#set terminal x11
