@@ -37,6 +37,9 @@ Description
 Author
     Philip Cardiff, UCD.  All rights reserved.
 
+Modified by
+    Danial Khazaei, NIT. All rights reserved.
+
 SourceFiles
     thermalLinGeomSolid.C
 
