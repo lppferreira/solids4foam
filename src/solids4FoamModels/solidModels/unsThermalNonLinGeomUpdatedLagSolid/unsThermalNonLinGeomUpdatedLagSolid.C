@@ -541,12 +541,12 @@ bool unsThermalNonLinGeomUpdatedLagSolid::evolve()
             rhoC_*fvm::ddt(T())
          == fvm::laplacian(kappa_, T(), "laplacian(k,T)")
           - fvc::laplacian(kappa_, T(), "laplacian(k,T)")
-          + fvc::div(relJ_*kappa_*gradT() & relFinv_.T(), "div(k*grad(T))")
-          // + fvc::div
-          //   (
-          //       (relJf_*relFinvf_ & mesh().Sf())
-          //     & fvc::interpolate(kappa_*gradT())
-          //   )
+          // + fvc::div(relJ_*kappa_*gradT() & relFinv_.T(), "div(k*grad(T))")
+          + fvc::div
+            (
+                (relJf_*relFinvf_.T() & mesh().Sf())
+              & fvc::interpolate(kappa_*gradT())
+            )
           + (sigma() && fvc::grad(U()))
           - fvm::SuSp(-thermal_.S()/T(), T())
         );
