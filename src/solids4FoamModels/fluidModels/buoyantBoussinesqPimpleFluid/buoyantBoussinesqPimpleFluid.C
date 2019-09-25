@@ -280,7 +280,7 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchPressureForce
 }
 
 
-tmp<scalarField> buoyantBoussinesqPimpleFluid::patchThermalFlux
+tmp<scalarField> buoyantBoussinesqPimpleFluid::patchHeatFlux
 (
     const label patchID
 ) const

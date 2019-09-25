@@ -75,7 +75,7 @@ bool AitkenCouplingInterface::evolve()
     updateInterpolatorAndGlobalPatches();
 
     scalar residualNorm = 0;
-    scalar thermalResidualNorm = 0;
+    scalar heatResidualNorm = 0;
 
     if (predictSolid_)
     {
@@ -115,8 +115,8 @@ bool AitkenCouplingInterface::evolve()
         // Calculate the FSI residual
         residualNorm = updateResidual();
 
-        // Calculate thermal residual
-        thermalResidualNorm = updateThermalResidual();
+        // Calculate heat flux residual
+        heatResidualNorm = updateHeatFluxResidual();
 
         // Optional: write residuals to file
         if (writeResidualsToFile() && Pstream::master())
@@ -129,7 +129,7 @@ bool AitkenCouplingInterface::evolve()
     }
     while
     (
-        (residualNorm > outerCorrTolerance() || thermalResidualNorm > thermalTolerance())
+        (residualNorm > outerCorrTolerance() || heatResidualNorm > energyTolerance())
      && (outerCorr() < nOuterCorr())
     );
 

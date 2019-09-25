@@ -407,12 +407,6 @@ public:
                 return fsiMeshUpdateChanged_;
             }
 
-            //- Patch thermal flux
-            virtual tmp<scalarField> patchThermalFlux
-            (
-                const label patchID
-            ) const;
-
             //- Patch viscous force (N/m2)
             virtual tmp<vectorField> patchViscousForce
             (
@@ -424,6 +418,12 @@ public:
             (
                 const label patchID
             ) const = 0;
+
+            //- Patch heat flux
+            virtual tmp<scalarField> patchHeatFlux
+            (
+                const label patchID
+            ) const;
 
             //- Patch temperature (K)
             virtual tmp<scalarField> patchTemperature
@@ -443,8 +443,8 @@ public:
             //- Patch pressure force (N/m2)
             virtual tmp<scalarField> faceZonePressureForce() const;
 
-            //- Face zone thermal flux
-            virtual tmp<scalarField> faceZoneThermalFlux() const;
+            //- FaceZone heat flux
+            virtual tmp<scalarField> faceZoneHeatFlux() const;
 
             //- faceZone temperature (K)
             virtual tmp<scalarField> faceZoneTemperature() const;

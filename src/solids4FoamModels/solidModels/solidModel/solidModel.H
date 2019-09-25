@@ -574,8 +574,8 @@ public:
             //- Return Diffusion Number
             virtual scalar& DiffusionNo();
 
-            //- Patch thermal flux
-            virtual tmp<scalarField> patchThermalFlux
+            //- Patch heat flux
+            virtual tmp<scalarField> patchHeatFlux
             (
                 const label patchID
             ) const;
@@ -614,8 +614,8 @@ public:
             //- Face zone current normal
             virtual tmp<vectorField> faceZoneNormal() const;
 
-            //- faceZone thermal flux
-            virtual tmp<scalarField> faceZoneThermalFlux() const;
+            //- faceZone heat flux
+            virtual tmp<scalarField> faceZoneHeatFlux() const;
 
             //- faceZone temperature (K)
             virtual tmp<scalarField> faceZoneTemperature() const;

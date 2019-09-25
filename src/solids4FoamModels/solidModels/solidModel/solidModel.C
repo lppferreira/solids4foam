@@ -1323,12 +1323,12 @@ Foam::scalar& Foam::solidModel::DiffusionNo()
 }
 
 
-Foam::tmp<Foam::scalarField> Foam::solidModel::patchThermalFlux
+Foam::tmp<Foam::scalarField> Foam::solidModel::patchHeatFlux
 (
     const label patchID
 ) const
 {
-    notImplemented("solidModel::patchThermalFlux(const label) const");
+    notImplemented("solidModel::patchHeatFlux(const label) const");
 
     return tmp<scalarField>
     (
@@ -1499,10 +1499,10 @@ Foam::tmp<Foam::vectorField> Foam::solidModel::faceZoneNormal() const
 }
 
 
-Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneThermalFlux() const
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneHeatFlux() const
 {
     const scalarField patchTF =
-        patchThermalFlux(globalPatch().patch().index());
+        patchHeatFlux(globalPatch().patch().index());
 
     return globalPatch().patchFaceToGlobal(patchTF);
 }

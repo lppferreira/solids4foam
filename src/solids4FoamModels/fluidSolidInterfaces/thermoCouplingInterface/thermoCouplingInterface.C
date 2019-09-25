@@ -78,7 +78,7 @@ bool thermoCouplingInterface::evolve()
 
     updateInterpolatorAndGlobalPatches();
 
-    scalar thermalResidualNorm = 0;
+    scalar heatResidualNorm = 0;
 
     do
     {
@@ -99,10 +99,10 @@ bool thermoCouplingInterface::evolve()
         // Solve solid
         solid().evolve();
 
-        // Calculate thermal residual
-        thermalResidualNorm = updateThermalResidual();
+        // Calculate heat flux residual
+        heatResidualNorm = updateHeatFluxResidual();
     }
-    while (thermalResidualNorm > thermalTolerance() && outerCorr() < nOuterCorr());
+    while (heatResidualNorm > energyTolerance() && outerCorr() < nOuterCorr());
 
     return 0;
 }

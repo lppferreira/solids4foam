@@ -190,8 +190,8 @@ public:
                 const label patchID
             ) const;
 
-            //- Patch thermal flux
-            virtual tmp<scalarField> patchThermalFlux
+            //- Patch heat flux
+            virtual tmp<scalarField> patchHeatFlux
             (
                 const label patchID
             ) const;

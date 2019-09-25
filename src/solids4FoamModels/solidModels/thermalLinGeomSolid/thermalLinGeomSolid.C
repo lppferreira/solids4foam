@@ -236,7 +236,7 @@ scalar& thermalLinGeomSolid::DiffusionNo()
 }
 
 
-tmp<scalarField> thermalLinGeomSolid::patchThermalFlux
+tmp<scalarField> thermalLinGeomSolid::patchHeatFlux
 (
     const label patchID
 ) const

@@ -216,8 +216,8 @@ public:
             //- Return Diffusion Number
             virtual scalar& DiffusionNo();
 
-            //- Patch thermal flux
-            virtual tmp<scalarField> patchThermalFlux
+            //- Patch heat flux
+            virtual tmp<scalarField> patchHeatFlux
             (
                 const label patchID
             ) const;

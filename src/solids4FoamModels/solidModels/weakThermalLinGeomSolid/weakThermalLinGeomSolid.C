@@ -216,7 +216,7 @@ scalar& weakThermalLinGeomSolid::DiffusionNo()
 }
 
 
-tmp<scalarField> weakThermalLinGeomSolid::patchThermalFlux
+tmp<scalarField> weakThermalLinGeomSolid::patchHeatFlux
 (
     const label patchID
 ) const

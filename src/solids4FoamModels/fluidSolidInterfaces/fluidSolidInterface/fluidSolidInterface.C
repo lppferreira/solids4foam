@@ -1055,6 +1055,10 @@ Foam::fluidSolidInterface::fluidSolidInterface
     (
         fsiProperties_.lookupOrDefault<scalar>("outerCorrTolerance", 1e-06)
     ),
+    energyTolerance_
+    (
+        fsiProperties_.lookupOrDefault<scalar>("energyTolerance", 1e-05)
+    ),
     nOuterCorr_
     (
         fsiProperties_.lookupOrDefault<int>("nOuterCorr", 30)
@@ -1066,10 +1070,6 @@ Foam::fluidSolidInterface::fluidSolidInterface
     conjugate_
     (
         fsiProperties_.lookupOrDefault<Switch>("conjugate", false)
-    ),
-    thermalTolerance_
-    (
-        fsiProperties_.lookupOrDefault<scalar>("thermalTolerance", 1e-05)
     ),
     couplingStartTime_
     (
@@ -1091,7 +1091,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     residualPrev_(),
     maxResidualNorm_(0),
     maxIntDisplNorm_(0),
-    maxThermalResidualNorm_(0),
+    maxHeatResidualNorm_(0),
     outerCorr_(0),
     writeResidualsToFile_
     (
@@ -1400,7 +1400,7 @@ void Foam::fluidSolidInterface::initializeFields()
 
     maxResidualNorm_ = 0;
 
-    maxThermalResidualNorm_ = 0;
+    maxHeatResidualNorm_ = 0;
 
     outerCorr_ = 0;
 
@@ -2097,17 +2097,17 @@ void Foam::fluidSolidInterface::updateFluidPatchTemperatureBC()
 }
 
 
-Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
+Foam::scalar Foam::fluidSolidInterface::updateHeatFluxResidual()
 {
     if (conjugate())
     {
-        const scalarField fluidZoneThermalFlux =
-            fluid().faceZoneThermalFlux();
+        const scalarField fluidZoneHeatFlux =
+            fluid().faceZoneHeatFlux();
 
-        const scalarField solidZoneThermalFlux =
-            solid().faceZoneThermalFlux();
+        const scalarField solidZoneHeatFlux =
+            solid().faceZoneHeatFlux();
 
-        scalarField nbrFluidZoneThermalFlux =
+        scalarField nbrFluidZoneHeatFlux =
             scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
 
         transferFacesZoneToZone
@@ -2116,44 +2116,44 @@ Foam::scalar Foam::fluidSolidInterface::updateThermalResidual()
             "fluid",                             // to region name
             solid().globalPatch().globalPatch(), // from zone
             fluid().globalPatch().globalPatch(), // to zone
-            (-solidZoneThermalFlux)(),           // from field
-            nbrFluidZoneThermalFlux              // to field
+            (-solidZoneHeatFlux)(),              // from field
+            nbrFluidZoneHeatFlux                 // to field
         );
 
-        const scalarField thermalFluxRes
+        const scalarField heatFluxRes
         (
-            fluidZoneThermalFlux
-          - nbrFluidZoneThermalFlux
+            fluidZoneHeatFlux
+          - nbrFluidZoneHeatFlux
         );
 
-        scalar thermalResidualNorm = Foam::sqrt(gSum(sqr(thermalFluxRes)));
+        scalar heatResidualNorm = Foam::sqrt(gSum(sqr(heatFluxRes)));
 
-        if (thermalResidualNorm > maxThermalResidualNorm_)
+        if (heatResidualNorm > maxHeatResidualNorm_)
         {
-            maxThermalResidualNorm_ = thermalResidualNorm;
+            maxHeatResidualNorm_ = heatResidualNorm;
         }
 
-        thermalResidualNorm /= maxThermalResidualNorm_ + SMALL;
+        heatResidualNorm /= maxHeatResidualNorm_ + SMALL;
 
-        Info<< "Relative thermal flux residual = " 
-            << thermalResidualNorm << "\n"
-            << "Absolute thermal flux residual = "
-            << gMax(mag(thermalFluxRes)) << "\n"
-            << "Interface thermal flux (fluid side) = "
+        Info<< "Relative heat flux residual = " 
+            << heatResidualNorm << "\n"
+            << "Absolute heat flux residual = "
+            << gMax(mag(heatFluxRes)) << "\n"
+            << "Interface heat flux (fluid side) = "
             << gSum
                (
-                   fluid().patchThermalFlux(fluidPatchIndex())
+                   fluid().patchHeatFlux(fluidPatchIndex())
                  * fluidMesh().boundary()[fluidPatchIndex()].magSf()
                )
-            << "\nInterface thermal flux (solid side) = "
+            << "\nInterface heat flux (solid side) = "
             << gSum
                (
-                   solid().patchThermalFlux(solidPatchIndex())
+                   solid().patchHeatFlux(solidPatchIndex())
                  * mag(solid().patchCurrentSf(solidPatchIndex()))
                )
             << "\n" << endl;
 
-        return thermalResidualNorm;
+        return heatResidualNorm;
     }
     else
     {

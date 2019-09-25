@@ -617,12 +617,12 @@ Foam::scalar& Foam::fluidModel::FourierNo()
 }
 
 
-Foam::tmp<Foam::scalarField> Foam::fluidModel::patchThermalFlux
+Foam::tmp<Foam::scalarField> Foam::fluidModel::patchHeatFlux
 (
     const label patchID
 ) const
 {
-    notImplemented("fluidModel::patchThermalFlux(const label) const");
+    notImplemented("fluidModel::patchHeatFlux(const label) const");
 
     return tmp<scalarField>
     (
@@ -676,10 +676,10 @@ Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZonePressureForce() const
 }
 
 
-Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneThermalFlux() const
+Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneHeatFlux() const
 {
     const scalarField patchTF =
-        patchThermalFlux(globalPatch().patch().index());
+        patchHeatFlux(globalPatch().patch().index());
 
     return globalPatch().patchFaceToGlobal(patchTF);
 }

@@ -125,6 +125,9 @@ class fluidSolidInterface
         //- Outer correction loop stoping tolerance
         const scalar outerCorrTolerance_;
 
+        //- Outer correction loop stoping tolerance: heat flux
+        const scalar energyTolerance_;
+
         //- Maximal number of outer correctors
         const label nOuterCorr_;
 
@@ -133,9 +136,6 @@ class fluidSolidInterface
 
         //- thermal coupling on/off
         Switch conjugate_;
-
-        //- Outer correction loop stoping tolerance
-        scalar thermalTolerance_;
 
         //- Optional: enable coupling after specified time
         const scalar couplingStartTime_;
@@ -179,8 +179,8 @@ class fluidSolidInterface
         //- Maximal interface displacement norm
         scalar maxIntDisplNorm_;
 
-	//- Maximal thermal residual norm
-	scalar maxThermalResidualNorm_;
+	//- Maximal heat flux residual norm
+	scalar maxHeatResidualNorm_;
 
         //- Outer corrector
         label outerCorr_;
@@ -459,6 +459,12 @@ public:
                 return outerCorrTolerance_;
             }
 
+            //- Return outer corrector loop tolerance: heat flux
+            scalar energyTolerance() const
+            {
+                return energyTolerance_;
+            }
+
             //- Return max numter of outer correctors
             label nOuterCorr() const
             {
@@ -496,12 +502,6 @@ public:
             Switch& conjugate()
             {
                 return conjugate_;
-            }
-
-            //- Return outer thermal corrector loop tolerance
-            scalar thermalTolerance() const
-            {
-                return thermalTolerance_;
             }
 
             //- Return predictor switch
@@ -644,14 +644,14 @@ public:
                 vectorField& fluidZonePointsDispl
             );
 
-            //- Update interface temperature and flux (Solid Side)
+            //- Update interface temperature and heat flux (Solid Side)
             virtual void updateSolidPatchTemperatureBC();
 
-            //- Update interface temperature and flux (Fluid Side)
+            //- Update interface temperature and heat flux (Fluid Side)
             virtual void updateFluidPatchTemperatureBC();
 
-            //- Update interface thermal residual
-            virtual scalar updateThermalResidual();
+            //- Update interface heat flux residual
+            virtual scalar updateHeatFluxResidual();
 
             //- Write fields
             virtual void writeFields(const Time& runTime);

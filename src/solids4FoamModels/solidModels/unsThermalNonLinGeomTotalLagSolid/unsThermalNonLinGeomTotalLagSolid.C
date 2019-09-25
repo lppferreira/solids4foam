@@ -460,7 +460,7 @@ scalar& unsThermalNonLinGeomTotalLagSolid::DiffusionNo()
 }
 
 
-tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::patchThermalFlux
+tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::patchHeatFlux
 (
     const label patchID
 ) const

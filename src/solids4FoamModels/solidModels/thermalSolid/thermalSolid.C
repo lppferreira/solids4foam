@@ -213,7 +213,7 @@ scalar& thermalSolid::DiffusionNo()
 }
 
 
-tmp<scalarField> thermalSolid::patchThermalFlux
+tmp<scalarField> thermalSolid::patchHeatFlux
 (
     const label patchID
 ) const

@@ -415,7 +415,7 @@ scalar& unsThermalNonLinGeomUpdatedLagSolid::DiffusionNo()
 
 // Correction is not needed: Sep 18 2019
 // The Updated Lagrangian implementation does move the mesh
-tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchThermalFlux
+tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchHeatFlux
 (
     const label patchID
 ) const
