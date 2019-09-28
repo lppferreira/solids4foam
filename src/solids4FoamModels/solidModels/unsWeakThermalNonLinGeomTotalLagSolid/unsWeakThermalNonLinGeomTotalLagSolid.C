@@ -445,7 +445,6 @@ bool unsWeakThermalNonLinGeomTotalLagSolid::evolve()
             rhoC_*fvm::ddt(T())
          == fvm::laplacian(kappa_, T(), "laplacian(k,T)")
           - fvc::laplacian(kappa_, T(), "laplacian(k,T)")
-          // + fvc::div(J()*kappa_*gradT() & Finv().T(), "div(k*grad(T))")
           + fvc::div
             (
                 (Jf()*Finvf().T() & mesh().Sf())
