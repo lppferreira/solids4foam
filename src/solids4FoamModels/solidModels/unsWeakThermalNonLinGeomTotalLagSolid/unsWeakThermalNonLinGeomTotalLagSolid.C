@@ -486,22 +486,49 @@ void unsWeakThermalNonLinGeomTotalLagSolid::writeFields(const Time& runTime)
     Info<< "Max T = " << max(T()).value() << nl
         << "Min T = " << min(T()).value() << endl;
 
-    // Heat flux
-    volVectorField heatFlux
+    volScalarField wallHeatFlux
     (
         IOobject
         (
-            "heatFlux",
+            "wallHeatFlux",
             runTime.timeName(),
             mesh(),
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-       -kappa_*gradT()
+        mesh(),
+        dimensionedScalar("zero", dimMass/pow3(dimTime), 0.0)
     );
 
-    Info<< "Max magnitude of heat flux = " << max(mag(heatFlux)).value()
-        << endl;
+    volScalarField::GeometricBoundaryField& wallHeatFluxBf =
+        wallHeatFlux.boundaryField();
+
+    const volScalarField::GeometricBoundaryField& TBf =
+        T().boundaryField();
+
+    Info<< "\nWall heat fluxes [W]" << endl;
+    forAll(wallHeatFluxBf, patchI)
+    {
+        if (mesh().boundary()[patchI].isWall())
+        {
+            const scalarField snGradT =
+                currentDeltaCoeffs(patchI)
+              * (TBf[patchI] - TBf[patchI].patchInternalField());
+
+            wallHeatFluxBf[patchI] =
+                kappa_.boundaryField()[patchI]*snGradT;
+
+            Info<< mesh().boundary()[patchI].name()
+                << " = "
+                << gSum
+                   (
+                       wallHeatFluxBf[patchI]
+                     * mag(patchCurrentSf(patchI))
+                   )
+                << endl;
+        }
+    }
+    Info<< endl;
 
     unsNonLinGeomTotalLagSolid::writeFields(runTime);
 }

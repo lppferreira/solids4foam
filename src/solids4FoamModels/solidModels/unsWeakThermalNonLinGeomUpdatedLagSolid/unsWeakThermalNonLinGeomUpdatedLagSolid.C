@@ -389,22 +389,43 @@ void unsWeakThermalNonLinGeomUpdatedLagSolid::writeFields(const Time& runTime)
     Info<< "Max T = " << max(T()).value() << nl
         << "Min T = " << min(T()).value() << endl;
 
-    // Heat flux
-    volVectorField heatFlux
+    volScalarField wallHeatFlux
     (
         IOobject
         (
-            "heatFlux",
+            "wallHeatFlux",
             runTime.timeName(),
             mesh(),
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
-       -kappa_*gradT()
+        mesh(),
+        dimensionedScalar("zero", dimMass/pow3(dimTime), 0.0)
     );
 
-    Info<< "Max magnitude of heat flux = " << max(mag(heatFlux)).value()
-        << endl;
+    volScalarField::GeometricBoundaryField& wallHeatFluxBf =
+        wallHeatFlux.boundaryField();
+
+    Info<< "\nWall heat fluxes [W]" << endl;
+    forAll(wallHeatFluxBf, patchI)
+    {
+        if (mesh().boundary()[patchI].isWall())
+        {
+            wallHeatFluxBf[patchI] =
+                kappa_.boundaryField()[patchI]
+              * T().boundaryField()[patchI].snGrad();
+
+            Info<< mesh().boundary()[patchI].name()
+                << " = "
+                << gSum
+                   (
+                       wallHeatFluxBf[patchI]
+                     * mag(patchCurrentSf(patchI))
+                   )
+                << endl;
+        }
+    }
+    Info<< endl;
 
     unsNonLinGeomUpdatedLagSolid::writeFields(runTime);
 }
