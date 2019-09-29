@@ -1351,12 +1351,12 @@ Foam::tmp<Foam::scalarField> Foam::solidModel::patchTemperature
 }
 
 
-Foam::tmp<Foam::scalarField> Foam::solidModel::patchKDelta
+Foam::tmp<Foam::scalarField> Foam::solidModel::patchKappaDelta
 (
     const label patchID
 ) const
 {
-    notImplemented("solidModel::patchKDelta(const label) const");
+    notImplemented("solidModel::patchKappaDelta(const label) const");
 
     return tmp<scalarField>
     (
@@ -1517,11 +1517,11 @@ Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneTemperature() const
 }
 
 
-Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneKDelta() const
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneKappaDelta() const
 {
 
     const scalarField patchKD =
-        patchKDelta(globalPatch().patch().index());
+        patchKappaDelta(globalPatch().patch().index());
 
     return globalPatch().patchFaceToGlobal(patchKD);
 }

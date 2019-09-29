@@ -431,8 +431,8 @@ public:
                 const label patchID
             ) const;
 
-            //- Patch K*Delta
-            virtual tmp<scalarField> patchKDelta
+            //- Patch kappa*delta
+            virtual tmp<scalarField> patchKappaDelta
             (
                 const label patchID
             ) const;
@@ -449,15 +449,15 @@ public:
             //- faceZone temperature (K)
             virtual tmp<scalarField> faceZoneTemperature() const;
 
-            //- faceZone K*Delta
-            virtual tmp<scalarField> faceZoneKDelta() const;
+            //- faceZone kappa*delta
+            virtual tmp<scalarField> faceZoneKappaDelta() const;
 
             //- Set temperature and flux at specified patch
             virtual void setTemperature
             (
                 const label patchID,
                 const scalarField& nbrFaceZoneTemperature,
-                const scalarField& nbrFaceZoneKDelta
+                const scalarField& nbrFaceZoneKappaDelta
             )
             {}
 

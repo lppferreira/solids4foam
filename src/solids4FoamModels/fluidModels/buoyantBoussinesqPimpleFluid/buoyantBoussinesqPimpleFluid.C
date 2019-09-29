@@ -314,7 +314,7 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchTemperature
 }
 
 
-tmp<scalarField> buoyantBoussinesqPimpleFluid::patchKDelta
+tmp<scalarField> buoyantBoussinesqPimpleFluid::patchKappaDelta
 (
     const label patchID
 ) const
@@ -336,7 +336,7 @@ void buoyantBoussinesqPimpleFluid::setTemperature
 (
     const label patchID,
     const scalarField& nbrFaceZoneTemperature,
-    const scalarField& nbrFaceZoneKDelta
+    const scalarField& nbrFaceZoneKappaDelta
 )
 {
     if
@@ -366,8 +366,8 @@ void buoyantBoussinesqPimpleFluid::setTemperature
     scalarField nbrPatchTemperature =
 	globalPatch().globalFaceToPatch(nbrFaceZoneTemperature);
 
-    scalarField nbrPatchKDelta =
-	globalPatch().globalFaceToPatch(nbrFaceZoneKDelta);
+    scalarField nbrPatchKappaDelta =
+	globalPatch().globalFaceToPatch(nbrFaceZoneKappaDelta);
 
     mixedFvPatchScalarField& patchT =
         refCast<mixedFvPatchScalarField>
@@ -376,8 +376,13 @@ void buoyantBoussinesqPimpleFluid::setTemperature
         );
 
     patchT.refValue() = nbrPatchTemperature;
+
     patchT.refGrad() = 0.0;
-    patchT.valueFraction() = nbrPatchKDelta / (nbrPatchKDelta + patchKDelta(patchID));
+
+    patchT.valueFraction() =
+        nbrPatchKappaDelta
+      / (nbrPatchKappaDelta + patchKappaDelta(patchID));
+
     patchT.updateCoeffs();
 }
 

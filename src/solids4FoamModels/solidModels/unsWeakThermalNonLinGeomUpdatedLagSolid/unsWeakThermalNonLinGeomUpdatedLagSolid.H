@@ -159,8 +159,8 @@ public:
                 const label patchID
             ) const;
 
-            //- Patch KDelta
-            virtual tmp<scalarField> patchKDelta
+            //- Patch kappa*delta
+            virtual tmp<scalarField> patchKappaDelta
             (
                 const label patchID
             ) const;
@@ -172,7 +172,7 @@ public:
             (
                 const label patchID,
                 const scalarField& nbrFaceZoneTemperature,
-                const scalarField& nbrFaceZoneKDelta
+                const scalarField& nbrFaceZoneKappaDelta
             );
 
             //- Evolve the solid solver and solve the mathematical model

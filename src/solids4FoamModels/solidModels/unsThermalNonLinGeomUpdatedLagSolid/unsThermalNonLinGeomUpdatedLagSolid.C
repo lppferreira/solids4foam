@@ -450,7 +450,7 @@ tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchTemperature
 
 // Correction is not needed: Sep 18 2019
 // The Updated Lagrangian implementation does move the mesh
-tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchKDelta
+tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchKappaDelta
 (
     const label patchID
 ) const
@@ -471,7 +471,7 @@ void unsThermalNonLinGeomUpdatedLagSolid::setTemperature
 (
     const label patchID,
     const scalarField& nbrFaceZoneTemperature,
-    const scalarField& nbrFaceZoneKDelta
+    const scalarField& nbrFaceZoneKappaDelta
 )
 {
     if
@@ -501,8 +501,8 @@ void unsThermalNonLinGeomUpdatedLagSolid::setTemperature
     scalarField nbrPatchTemperature =
 	globalPatch().globalFaceToPatch(nbrFaceZoneTemperature);
 
-    scalarField nbrPatchKDelta =
-	globalPatch().globalFaceToPatch(nbrFaceZoneKDelta);
+    scalarField nbrPatchKappaDelta =
+	globalPatch().globalFaceToPatch(nbrFaceZoneKappaDelta);
 
     mixedFvPatchScalarField& patchT =
         refCast<mixedFvPatchScalarField>
@@ -511,8 +511,13 @@ void unsThermalNonLinGeomUpdatedLagSolid::setTemperature
         );
 
     patchT.refValue() = nbrPatchTemperature;
+
     patchT.refGrad() = 0.0;
-    patchT.valueFraction() = nbrPatchKDelta / (nbrPatchKDelta + patchKDelta(patchID));
+
+    patchT.valueFraction() =
+        nbrPatchKappaDelta
+      / (nbrPatchKappaDelta + patchKappaDelta(patchID));
+
     patchT.updateCoeffs();
 }
 
