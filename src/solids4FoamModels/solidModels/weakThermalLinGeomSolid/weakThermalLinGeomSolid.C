@@ -289,12 +289,12 @@ void weakThermalLinGeomSolid::setTemperature
             ")"
         )
             << "Bounary condition on " << T().name()
-                <<  " is "
-                << T().boundaryField()[patchID].type()
-                << " for patch " << mesh().boundary()[patchID].name()
-                << ", instead of "
-                << mixedFvPatchScalarField::typeName
-                << abort(FatalError);
+            <<  " is "
+            << T().boundaryField()[patchID].type()
+            << " for patch " << mesh().boundary()[patchID].name()
+            << ", instead of "
+            << mixedFvPatchScalarField::typeName
+            << abort(FatalError);
     }
 
     scalarField nbrPatchTemperature =

@@ -139,8 +139,8 @@ class unsThermalNonLinGeomTotalLagSolid
         //- Relative tolerance
         const scalar relativeTol_;
 
-	//- Diffusion number
-	scalar DiffusionNo_;
+        //- Diffusion number
+        scalar DiffusionNo_;
 
 
     // Private Member Functions

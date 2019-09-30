@@ -96,8 +96,9 @@ class thermalLinGeomSolid
         //  will store the reciprocal for effficiency
         const volScalarField rImpK_;
 
-	//- Diffusion number
-	scalar DiffusionNo_;
+        //- Diffusion number
+        scalar DiffusionNo_;
+
 
     // Private Member Functions
 

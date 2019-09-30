@@ -143,8 +143,8 @@ class unsThermalNonLinGeomUpdatedLagSolid
         //  Apply smoothing to the relative Jacobian calculation
         const Switch stabilisePressure_;
 
-	//- Diffusion number
-	scalar DiffusionNo_;
+        //- Diffusion number
+        scalar DiffusionNo_;
 
 
     // Private Member Functions

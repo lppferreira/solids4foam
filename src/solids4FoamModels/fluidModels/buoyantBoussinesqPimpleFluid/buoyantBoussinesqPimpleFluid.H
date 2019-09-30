@@ -128,8 +128,8 @@ class buoyantBoussinesqPimpleFluid
         //- Reference pressure value
         scalar pRefValue_;
 
-	//- Fourier number
-	scalar FourierNo_;
+        //- Fourier number
+        scalar FourierNo_;
 
 
     // Private Member Functions

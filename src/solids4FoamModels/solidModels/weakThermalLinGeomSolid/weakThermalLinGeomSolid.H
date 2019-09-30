@@ -83,8 +83,8 @@ class weakThermalLinGeomSolid
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;
 
-	//- Diffusion number
-	scalar DiffusionNo_;
+        //- Diffusion number
+        scalar DiffusionNo_;
 
 
     // Private Member Functions
