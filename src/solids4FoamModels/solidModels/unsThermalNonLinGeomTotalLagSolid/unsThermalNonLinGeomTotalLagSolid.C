@@ -29,7 +29,7 @@ License
 #include "fvc.H"
 #include "fvMatrices.H"
 #include "addToRunTimeSelectionTable.H"
-#include "mixedFvPatchFields.H"
+#include "mixedTemperatureFvPatchScalarField.H"
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -171,7 +171,7 @@ bool unsThermalNonLinGeomTotalLagSolid::converged
 }
 
 
-const standAlonePatch& unsThermalNonLinGeomTotalLagSolid::currentBoundaryPatch
+const standAlonePatch& unsThermalNonLinGeomTotalLagSolid::boundaryPatchCurrent
 (
     const label patchID
 ) const
@@ -201,12 +201,12 @@ const standAlonePatch& unsThermalNonLinGeomTotalLagSolid::currentBoundaryPatch
 }
 
 
-tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::currentDeltaCoeffs
+tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::deltaCoeffsCurrent
 (
     const label patchID
 ) const
 {
-    tmp<scalarField> tcurrentDelta
+    tmp<scalarField> tdeltaCoeffsCurrent
     (
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
@@ -243,19 +243,20 @@ tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::currentDeltaCoeffs
     // Patch unit normals (deformed configuration)
     // const vectorField& nCurrent
     // (
-    //     currentBoundaryPatch(patchID).faceNormals()
+    //     boundaryPatchCurrent(patchID).faceNormals()
     // );
 
-    forAll(tcurrentDelta(), faceI)
+    forAll(tdeltaCoeffsCurrent(), faceI)
     {
-        tcurrentDelta()[faceI] = max
+        tdeltaCoeffsCurrent()[faceI] =
+            scalar(1) / max
             (
                 nCurrent[faceI] & deltaCurrent[faceI],
                 0.05*mag(deltaCurrent[faceI])
             );
     }
 
-    return scalar(1.0) / tcurrentDelta;
+    return tdeltaCoeffsCurrent;
 }
 
 
@@ -470,14 +471,7 @@ tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::patchHeatFlux
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    // corrected snGrad (deformed configuration)
-    const scalarField snGradT =
-    (
-        T().boundaryField()[patchID]
-      - T().boundaryField()[patchID].patchInternalField()
-    ) * currentDeltaCoeffs(patchID);
-
-    ttF() = kappa_.boundaryField()[patchID]*snGradT;
+    ttF() = kappa_.boundaryField()[patchID]*T().boundaryField()[patchID].snGrad();
 
     return ttF;
 }
@@ -509,7 +503,7 @@ tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::patchKappaDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tKD() = kappa_.boundaryField()[patchID]*currentDeltaCoeffs(patchID);
+    tKD() = kappa_.boundaryField()[patchID]*deltaCoeffsCurrent(patchID);
 
     return tKD;
 }
@@ -525,7 +519,7 @@ void unsThermalNonLinGeomTotalLagSolid::setTemperature
     if
     (
         T().boundaryField()[patchID].type()
-     != mixedFvPatchScalarField::typeName
+     != mixedTemperatureFvPatchScalarField::typeName
     )
     {
         FatalErrorIn
@@ -542,7 +536,7 @@ void unsThermalNonLinGeomTotalLagSolid::setTemperature
             << T().boundaryField()[patchID].type()
             << " for patch " << mesh().boundary()[patchID].name()
             << ", instead of "
-            << mixedFvPatchScalarField::typeName
+            << mixedTemperatureFvPatchScalarField::typeName
             << abort(FatalError);
     }
 
@@ -552,8 +546,8 @@ void unsThermalNonLinGeomTotalLagSolid::setTemperature
     scalarField nbrPatchKappaDelta =
 	globalPatch().globalFaceToPatch(nbrFaceZoneKappaDelta);
 
-    mixedFvPatchScalarField& patchT =
-        refCast<mixedFvPatchScalarField>
+    mixedTemperatureFvPatchScalarField& patchT =
+        refCast<mixedTemperatureFvPatchScalarField>
         (
             T().boundaryField()[patchID]
         );
@@ -833,12 +827,9 @@ void unsThermalNonLinGeomTotalLagSolid::writeFields(const Time& runTime)
     {
         if (mesh().boundary()[patchI].isWall())
         {
-            const scalarField snGradT =
-                currentDeltaCoeffs(patchI)
-              * (TBf[patchI] - TBf[patchI].patchInternalField());
-
             wallHeatFluxBf[patchI] =
-                kappa_.boundaryField()[patchI]*snGradT;
+                kappa_.boundaryField()[patchI]
+              * T().boundaryField()[patchI].snGrad();
 
             Info<< mesh().boundary()[patchI].name()
                 << " = "

@@ -190,6 +190,30 @@ public:
                 return rho_;
             }
 
+            //- Return inverse of the relative deformation gradient
+            virtual const volTensorField& relFinv() const
+            {
+                return relFinv_;
+            }
+
+            //- Return inverse of the relative deformation gradient surface field
+            virtual const surfaceTensorField& relFinvf() const
+            {
+                return relFinvf_;
+            }
+
+            //- Return Jacobian of the relative deformation gradient
+            virtual const volScalarField& relJ() const
+            {
+                return relJ_;
+            }
+
+            //- Return Jacobian of the relative deformation gradient surface field
+            virtual const surfaceScalarField& relJf() const
+            {
+                return relJf_;
+            }
+
     // Edit
 
             //- Evolve the solid solver and solve the mathematical model
