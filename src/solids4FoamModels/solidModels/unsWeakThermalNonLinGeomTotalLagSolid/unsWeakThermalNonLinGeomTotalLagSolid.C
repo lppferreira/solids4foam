@@ -502,9 +502,6 @@ void unsWeakThermalNonLinGeomTotalLagSolid::writeFields(const Time& runTime)
     volScalarField::GeometricBoundaryField& wallHeatFluxBf =
         wallHeatFlux.boundaryField();
 
-    const volScalarField::GeometricBoundaryField& TBf =
-        T().boundaryField();
-
     Info<< "\nWall heat fluxes [W]" << endl;
     forAll(wallHeatFluxBf, patchI)
     {
