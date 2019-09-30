@@ -334,7 +334,9 @@ tmp<scalarField> unsWeakThermalNonLinGeomUpdatedLagSolid::patchHeatFlux
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() = kappa_.boundaryField()[patchID]*T().boundaryField()[patchID].snGrad();
+    ttF() =
+        kappa_.boundaryField()[patchID]
+      * T().boundaryField()[patchID].snGrad();
 
     return ttF;
 }
@@ -366,7 +368,8 @@ tmp<scalarField> unsWeakThermalNonLinGeomUpdatedLagSolid::patchKappaDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tKD() = kappa_.boundaryField()[patchID]*deltaCoeffsCurrent(patchID);
+    tKD() =
+        kappa_.boundaryField()[patchID]*deltaCoeffsCurrent(patchID);
 
     return tKD;
 }

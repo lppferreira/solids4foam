@@ -290,9 +290,10 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchHeatFlux
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() = kappaEff_.boundaryField()[patchID]
-          * rho_.value() * C_.value()
-          * T().boundaryField()[patchID].snGrad();
+    ttF() =
+        kappaEff_.boundaryField()[patchID]
+      * rho_.value()*C_.value()
+      * T().boundaryField()[patchID].snGrad();
 
     return ttF;
 }
@@ -324,9 +325,10 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchKappaDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tKD() = kappaEff_.boundaryField()[patchID]
-          * rho_.value() * C_.value()
-          * mesh().boundary()[patchID].deltaCoeffs();
+    tKD() =
+        kappaEff_.boundaryField()[patchID]
+      * rho_.value()*C_.value()
+      * mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;
 }

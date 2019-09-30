@@ -246,7 +246,9 @@ tmp<scalarField> thermalLinGeomSolid::patchHeatFlux
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() = kappa_.boundaryField()[patchID]*T().boundaryField()[patchID].snGrad();
+    ttF() =
+        kappa_.boundaryField()[patchID]
+      * T().boundaryField()[patchID].snGrad();
 
     return ttF;
 }
@@ -278,7 +280,9 @@ tmp<scalarField> thermalLinGeomSolid::patchKappaDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tKD() = kappa_.boundaryField()[patchID]*mesh().boundary()[patchID].deltaCoeffs();
+    tKD() =
+        kappa_.boundaryField()[patchID]
+      * mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;
 }
