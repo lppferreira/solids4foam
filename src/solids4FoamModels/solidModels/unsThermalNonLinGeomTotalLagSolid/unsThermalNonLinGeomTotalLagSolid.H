@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Class
-    nonLinGeomTotalLagSolid
+    unsThermalNonLinGeomTotalLagSolid
 
 Description
     Mathematical model for finite strains and rotations, where a total
@@ -156,13 +156,13 @@ class unsThermalNonLinGeomTotalLagSolid
         );
 
         //- Patch in deformed configuration
-        const standAlonePatch& currentBoundaryPatch
+        const standAlonePatch& boundaryPatchCurrent
         (
             const label patchID
         ) const;
 
         //- Patch deltaCoeffs in deformed configuration
-        tmp<scalarField> currentDeltaCoeffs
+        tmp<scalarField> deltaCoeffsCurrent
         (
             const label patchID
         ) const;
@@ -243,7 +243,7 @@ public:
                 );
 
                 // Note: Does not produce consistent result
-                // return currentBoundaryPatch(patchID).areas();
+                // return boundaryPatchCurrent(patchID).areas();
             }
 
             //- Return Diffusion Number

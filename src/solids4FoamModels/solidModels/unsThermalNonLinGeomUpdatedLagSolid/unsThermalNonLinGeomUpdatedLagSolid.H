@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Class
-    nonLinGeomUpdatedLagSolid
+    unsThermalNonLinGeomUpdatedLagSolid
 
 Description
     Mathematical model for finite strains and rotations, where an updated
@@ -74,6 +74,9 @@ class unsThermalNonLinGeomUpdatedLagSolid
     public solidModel
 {
     // Private data
+
+        //- Interface patch in its deformed configuration
+        mutable standAlonePatch* deformedPatchPtr_;
 
         //- Cauchy (true) stress surface field
         surfaceSymmTensorField sigmaf_;
@@ -159,6 +162,18 @@ class unsThermalNonLinGeomUpdatedLagSolid
             const volScalarField& T
         );
 
+        //- Patch in deformed configuration
+        const standAlonePatch& boundaryPatchCurrent
+        (
+            const label patchID
+        ) const;
+
+        //- Patch deltaCoeffs in deformed configuration
+        tmp<scalarField> deltaCoeffsCurrent
+        (
+            const label patchID
+        ) const;
+
         //- Disallow default bitwise copy construct
         unsThermalNonLinGeomUpdatedLagSolid(const unsThermalNonLinGeomUpdatedLagSolid&);
 
@@ -194,8 +209,7 @@ public:
 
     // Destructor
 
-        virtual ~unsThermalNonLinGeomUpdatedLagSolid()
-        {}
+        virtual ~unsThermalNonLinGeomUpdatedLagSolid();
 
 
     // Member Functions
@@ -214,6 +228,29 @@ public:
             virtual bool incremental() const
             {
                 return true;
+            }
+
+            //- Patch deformed face area vector
+            // Note: we have two options to calculate deformed patch face area vector
+            // 1. Use the cell-centred relative deformation gradient field 'relF'.
+            // 2. Calculate the deformed face area vector by interpolating displacements
+            //    to the points and calculating the face area vector on the deformed patch.
+            // For now we use method 1. as the result of the method 2. is not consistent,
+            // perhaps due the governing equation formulation
+            virtual tmp<vectorField> patchCurrentSf
+            (
+                const label patchID
+            ) const
+            {
+                return
+                (
+                    relJf_.boundaryField()[patchID]
+                  * relFinvf_.boundaryField()[patchID].T()
+                  & mesh().boundary()[patchID].Sf()
+                );
+
+                // Note: Does not produce consistent result
+                // return boundaryPatchCurrent(patchID).areas();
             }
 
             //- Return Diffusion Number

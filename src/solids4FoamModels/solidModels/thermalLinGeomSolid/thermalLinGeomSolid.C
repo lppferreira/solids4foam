@@ -29,7 +29,7 @@ License
 #include "fvc.H"
 #include "fvMatrices.H"
 #include "addToRunTimeSelectionTable.H"
-#include "mixedFvPatchFields.H"
+#include "mixedTemperatureFvPatchScalarField.H"
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -246,8 +246,7 @@ tmp<scalarField> thermalLinGeomSolid::patchHeatFlux
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() = kappa_.boundaryField()[patchID]
-          * T().boundaryField()[patchID].snGrad();
+    ttF() = kappa_.boundaryField()[patchID]*T().boundaryField()[patchID].snGrad();
 
     return ttF;
 }
@@ -279,8 +278,7 @@ tmp<scalarField> thermalLinGeomSolid::patchKappaDelta
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    tKD() = kappa_.boundaryField()[patchID]
-          * mesh().boundary()[patchID].deltaCoeffs();
+    tKD() = kappa_.boundaryField()[patchID]*mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;
 }
@@ -296,7 +294,7 @@ void thermalLinGeomSolid::setTemperature
     if
     (
         T().boundaryField()[patchID].type()
-     != mixedFvPatchScalarField::typeName
+     != mixedTemperatureFvPatchScalarField::typeName
     )
     {
         FatalErrorIn
@@ -313,7 +311,7 @@ void thermalLinGeomSolid::setTemperature
             << T().boundaryField()[patchID].type()
             << " for patch " << mesh().boundary()[patchID].name()
             << ", instead of "
-            << mixedFvPatchScalarField::typeName
+            << mixedTemperatureFvPatchScalarField::typeName
             << abort(FatalError);
     }
 
@@ -323,8 +321,8 @@ void thermalLinGeomSolid::setTemperature
     scalarField nbrPatchKappaDelta =
 	globalPatch().globalFaceToPatch(nbrFaceZoneKappaDelta);
 
-    mixedFvPatchScalarField& patchT =
-        refCast<mixedFvPatchScalarField>
+    mixedTemperatureFvPatchScalarField& patchT =
+        refCast<mixedTemperatureFvPatchScalarField>
         (
             T().boundaryField()[patchID]
         );
