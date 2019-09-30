@@ -22,10 +22,11 @@ boundaryField
 {
     interface
     {
-        type            mixed;
+        type            mixedTemperature;
         refValue        uniform 300;
         refGradient     uniform 0;
         valueFraction   uniform 1;
+        value           uniform 300;
     }
     ground
     {
