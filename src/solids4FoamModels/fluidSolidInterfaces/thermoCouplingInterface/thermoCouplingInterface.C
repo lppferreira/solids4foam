@@ -88,13 +88,13 @@ bool thermoCouplingInterface::evolve()
             << ", iteration: " << outerCorr() << endl;
 
         // Transfer temperature and flux from the solid to the fluid
-        updateFluidPatchTemperatureBC();
+        updateFluidTemperature();
 
         // Solve fluid
         fluid().evolve();
 
         // Transfer temperature and flux from the fluid to the solid
-        updateSolidPatchTemperatureBC();
+        updateSolidTemperature();
 
         // Solve solid
         solid().evolve();

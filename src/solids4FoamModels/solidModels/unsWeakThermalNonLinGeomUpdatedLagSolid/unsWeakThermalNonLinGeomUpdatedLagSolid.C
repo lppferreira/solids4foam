@@ -34,8 +34,6 @@ License
 #include "twoDPointCorrector.H"
 #include "solidTractionFvPatchVectorField.H"
 #include "fvcGradf.H"
-#include "mixedTemperatureFvPatchScalarField.H"
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -329,16 +327,16 @@ tmp<scalarField> unsWeakThermalNonLinGeomUpdatedLagSolid::patchHeatFlux
     const label patchID
 ) const
 {
-    tmp<scalarField> ttF
+    tmp<scalarField> thF
     (
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() =
+    thF() =
         kappa_.boundaryField()[patchID]
       * T().boundaryField()[patchID].snGrad();
 
-    return ttF;
+    return thF;
 }
 
 
@@ -372,61 +370,6 @@ tmp<scalarField> unsWeakThermalNonLinGeomUpdatedLagSolid::patchKappaDelta
         kappa_.boundaryField()[patchID]*deltaCoeffsCurrent(patchID);
 
     return tKD;
-}
-
-
-void unsWeakThermalNonLinGeomUpdatedLagSolid::setTemperature
-(
-    const label patchID,
-    const scalarField& nbrFaceZoneTemperature,
-    const scalarField& nbrFaceZoneKappaDelta
-)
-{
-    if
-    (
-        T().boundaryField()[patchID].type()
-     != mixedTemperatureFvPatchScalarField::typeName
-    )
-    {
-        FatalErrorIn
-        (
-            "void unsWeakThermalNonLinGeomUpdatedLagSolid::setTemperature\n"
-            "(\n"
-            "    const label,\n"
-            "    const scalarField&,\n"
-            "    const scalarField&\n"
-            ")"
-        )
-            << "Bounary condition on " << T().name()
-            <<  " is "
-            << T().boundaryField()[patchID].type()
-            << " for patch " << mesh().boundary()[patchID].name()
-            << ", instead of "
-            << mixedTemperatureFvPatchScalarField::typeName
-            << abort(FatalError);
-    }
-
-    scalarField nbrPatchTemperature =
-	globalPatch().globalFaceToPatch(nbrFaceZoneTemperature);
-
-    scalarField nbrPatchKappaDelta =
-	globalPatch().globalFaceToPatch(nbrFaceZoneKappaDelta);
-
-    mixedTemperatureFvPatchScalarField& patchT =
-        refCast<mixedTemperatureFvPatchScalarField>
-        (
-            T().boundaryField()[patchID]
-        );
-
-    patchT.refValue() = nbrPatchTemperature;
-
-    patchT.refGrad() = 0.0;
-
-    patchT.valueFraction() =
-        nbrPatchKappaDelta
-      / (nbrPatchKappaDelta + patchKappaDelta(patchID));
-
-    patchT.updateCoeffs();
 }
 
 

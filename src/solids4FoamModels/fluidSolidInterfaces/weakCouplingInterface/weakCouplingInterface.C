@@ -262,7 +262,7 @@ bool weakCouplingInterface::evolve()
 
     updateInterpolatorAndGlobalPatches();
 
-    updateSolidPatchTemperatureBC();
+    updateSolidTemperature();
 
     solid().evolve();
 
@@ -270,7 +270,7 @@ bool weakCouplingInterface::evolve()
 
     moveFluidMesh();
 
-    updateFluidPatchTemperatureBC();
+    updateFluidTemperature();
 
     fluid().evolve();
 

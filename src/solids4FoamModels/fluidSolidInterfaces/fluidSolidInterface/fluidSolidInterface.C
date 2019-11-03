@@ -1330,7 +1330,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     residualsPrev_(),
     maxResidualsNorm_(),
     maxIntsDisplsNorm_(),
-    maxHeatResidualNorm_(0),
+    maxHeatResidualsNorm_(),
     outerCorr_(0),
     writeResidualsToFile_
     (
@@ -1461,6 +1461,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     residualsPrev_.setSize(nGlobalPatches());
     maxResidualsNorm_.setSize(nGlobalPatches());
     maxIntsDisplsNorm_.setSize(nGlobalPatches());
+    maxHeatResidualsNorm_.setSize(nGlobalPatches());
 
     forAll(residuals_, i)
     {
@@ -1651,8 +1652,6 @@ void Foam::fluidSolidInterface::initializeFields()
 {
     outerCorr_ = 0;
 
-    maxHeatResidualNorm_ = 0;
-
     forAll(fluid().globalPatches(), i)
     {
         fluidZonesPointsDispls_[i] =
@@ -1700,6 +1699,8 @@ void Foam::fluidSolidInterface::initializeFields()
             );
 
         maxResidualsNorm_[i] = scalar(0);
+
+        maxHeatResidualsNorm_[i] = scalar(0);
 
         interfacesPointsDispls_[i] =
             vectorField
@@ -2424,6 +2425,279 @@ void Foam::fluidSolidInterface::updateElasticWallPressureAcceleration()
 }
 
 
+void Foam::fluidSolidInterface::updateSolidTemperature()
+{
+    if (conjugate())
+    {
+        const List<tmp<vectorField> > faceZonesTemperature
+        (
+            fluid().faceZonesTemperature()
+        );
+
+        const List<tmp<scalarField> > faceZonesKappaDelta
+        (
+            fluid().faceZonesKappaDelta()
+        );
+
+        List<scalarField> fluidZonesTemperature
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        List<scalarField> fluidZonesKappaDelta
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        List<scalarField> nbrSolidZonesTemperature
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        List<scalarField> nbrSolidZonesKappaDelta
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        forAll(solid().globalPatches(), i)
+        {
+            fluidZonesTemperature[i] = faceZonesTemperature[i]();
+
+            fluidZonesKappaDelta[i] = faceZonesKappaDelta[i]();
+
+            nbrSolidZonesTemperature[i] =
+                scalarField
+                (
+                    solid().globalPatches()[i].globalPatch().size(),
+                    scalar(0)
+                );
+
+            nbrSolidZonesKappaDelta[i] =
+                scalarField
+                (
+                    solid().globalPatches()[i].globalPatch().size(),
+                    scalar(0)
+                );
+        }
+
+        transferFacesZoneToZone
+        (
+            "fluid",                 // from region name
+            "solid",                 // to region name
+            fluid().globalPatches(), // from zones
+            solid().globalPatches(), // to zones
+            fluidZonesTemperature,   // from fields
+            nbrSolidZonesTemperature // to fields
+        );
+
+        transferFacesZoneToZone
+        (
+            "fluid",                 // from region name
+            "solid",                 // to region name
+            fluid().globalPatches(), // from zones
+            solid().globalPatches(), // to zones
+            fluidZonesKappaDelta,    // from fields
+            nbrSolidZonesKappaDelta  // to fields
+        );
+
+        solid().setTemperature
+        (
+            solidPatchIndices(),
+            nbrSolidZonesTemperature,
+            nbrSolidZonesKappaDelta
+        );
+    }
+}
+
+
+void Foam::fluidSolidInterface::updateFluidTemperature()
+{
+    if (conjugate())
+    {
+        const List<tmp<vectorField> > faceZonesTemperature
+        (
+            solid().faceZonesTemperature()
+        );
+
+        const List<tmp<scalarField> > faceZonesKappaDelta
+        (
+            solid().faceZonesKappaDelta()
+        );
+
+        List<scalarField> solidZonesTemperature
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        List<scalarField> solidZonesKappaDelta
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        List<scalarField> nbrFluidZonesTemperature
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        List<scalarField> nbrFluidZonesKappaDelta
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        forAll(fluid().globalPatches(), i)
+        {
+            solidZonesTemperature[i] = faceZonesTemperature[i]();
+
+            solidZonesKappaDelta[i] = faceZonesKappaDelta[i]();
+
+            nbrFluidZonesTemperature[i] =
+                scalarField
+                (
+                    fluid().globalPatches()[i].globalPatch().size(),
+                    scalar(0)
+                );
+
+            nbrFluidZonesKappaDelta[i] =
+                scalarField
+                (
+                    fluid().globalPatches()[i].globalPatch().size(),
+                    scalar(0)
+                );
+        }
+
+        transferFacesZoneToZone
+        (
+            "solid",                 // from region name
+            "fluid",                 // to region name
+            solid().globalPatches(), // from zones
+            fluid().globalPatches(), // to zones
+            solidZonesTemperature,   // from fields
+            nbrFluidZonesTemperature // to fields
+        );
+
+        transferFacesZoneToZone
+        (
+            "solid",                 // from region name
+            "fluid",                 // to region name
+            solid().globalPatches(), // from zones
+            fluid().globalPatches(), // to zones
+            solidZonesKappaDelta,    // from fields
+            nbrFluidZonesKappaDelta  // to fields
+        );
+
+        fluid().setTemperature
+        (
+            fluidPatchIndices(),
+            nbrFluidZonesTemperature,
+            nbrFluidZonesKappaDelta
+        );
+    }
+}
+
+
+Foam::scalar Foam::fluidSolidInterface::updateHeatFluxResidual()
+{
+    if (conjugate())
+    {
+        List<scalar> heatResiduals(nGlobalPatches(), scalar(0));
+
+        const List<tmp<vectorField> > fluidFaceZonesHeatFlux
+        (
+            fluid().faceZonesHeatFlux()
+        );
+
+        const List<tmp<scalarField> > solidFaceZonesHeatFlux
+        (
+            solid().faceZonesHeatFlux()
+        );
+
+        List<scalarField> fluidZonesHeatFlux
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        List<scalarField> solidZonesHeatFlux
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        List<scalarField> nbrFluidZonesHeatFlux
+        (
+            nGlobalPatches(), scalarField()
+        );
+
+        forAll(fluid().globalPatches(), i)
+        {
+            fluidZonesHeatFlux[i] = fluidFaceZonesHeatFlux[i]();
+
+            solidZonesHeatFlux[i] = solidFaceZonesHeatFlux[i]();
+
+            nbrFluidZonesHeatFlux[i] =
+                scalarField
+                (
+                    fluid().globalPatches()[i].globalPatch().size(),
+                    scalar(0)
+                );
+        }
+
+        transferFacesZoneToZone
+        (
+            "solid",                 // from region name
+            "fluid",                 // to region name
+            solid().globalPatches(), // from zones
+            fluid().globalPatches(), // to zones
+            solidZonesHeatFlux,      // from fields
+            nbrFluidZonesHeatFlux    // to fields
+        );
+
+        forAll(fluid().globalPatches(), i)
+        {
+            const scalarField heatFluxResidual
+            (
+                fluidZonesHeatFlux[i]
+              + nbrFluidZonesHeatFlux[i]
+            );
+
+            scalar heatResidualNorm =
+                Foam::sqrt(gSum(sqr(heatFluxResidual)));
+
+            if (heatResidualNorm > maxHeatResidualsNorm_[i])
+            {
+                maxHeatResidualsNorm_[i] = heatResidualNorm;
+            }
+
+            heatResidualNorm /= maxHeatResidualsNorm_[i] + SMALL;
+
+            Info<< "Relative heat flux residual = " 
+                << heatResidualNorm << "\n"
+                << "Absolute heat flux residual = "
+                << gMax(mag(heatFluxResidual)) << "\n"
+                << "Interface heat flux (fluid side) = "
+                << gSum
+                   (
+                       fluid().patchHeatFlux(fluidPatchIndices()[i])
+                     * fluidMesh().boundary()[fluidPatchIndices()[i]].magSf()
+                   )
+                << "\nInterface heat flux (solid side) = "
+                << gSum
+                   (
+                       solid().patchHeatFlux(solidPatchIndices()[i])
+                     * mag(solid().patchCurrentSf(solidPatchIndices()[i]))
+                   )
+                << "\n" << endl;
+
+            heatResiduals[i] = heatResidualNorm;
+        }
+
+        return max(heatResiduals);
+    }
+    else
+    {
+        return scalar(0);
+    }
+}
+
+
 void Foam::fluidSolidInterface::syncFluidZonePointsDispl
 (
     List<vectorField>& fluidZonesPointsDispls
@@ -2459,161 +2733,6 @@ void Foam::fluidSolidInterface::syncFluidZonePointsDispl
                 }
             }
         }
-    }
-}
-
-
-void Foam::fluidSolidInterface::updateSolidPatchTemperatureBC()
-{
-    if (conjugate())
-    {
-        const scalarField fluidZoneTemperature =
-            fluid().faceZoneTemperature();
-
-        const scalarField fluidZoneKappaDelta = fluid().faceZoneKappaDelta();
-
-        scalarField nbrSolidZoneTemperature =
-            scalarField(solid().globalPatch().globalPatch().size(), 0.0);
-
-        transferFacesZoneToZone
-        (
-            "fluid",                             // from region name
-            "solid",                             // to region name
-            fluid().globalPatch().globalPatch(), // from zone
-            solid().globalPatch().globalPatch(), // to zone
-            fluidZoneTemperature,                // from field
-            nbrSolidZoneTemperature              // to field
-        );
-
-        scalarField nbrSolidZoneKappaDelta =
-            scalarField(solid().globalPatch().globalPatch().size(), 0.0);
-
-        transferFacesZoneToZone
-        (
-            "fluid",                             // from region name
-            "solid",                             // to region name
-            fluid().globalPatch().globalPatch(), // from zone
-            solid().globalPatch().globalPatch(), // to zone
-            fluidZoneKappaDelta,                 // from field
-            nbrSolidZoneKappaDelta               // to field
-        );
-
-        solid().setTemperature
-        (
-            solidPatchIndex(),
-            nbrSolidZoneTemperature,
-            nbrSolidZoneKappaDelta
-        );
-    }
-}
-
-
-void Foam::fluidSolidInterface::updateFluidPatchTemperatureBC()
-{
-    if (conjugate())
-    {
-        const scalarField solidZoneTemperature =
-            solid().faceZoneTemperature();
-
-        const scalarField solidZoneKappaDelta = solid().faceZoneKappaDelta();
-
-        scalarField nbrFluidZoneTemperature =
-            scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
-
-        transferFacesZoneToZone
-        (
-            "solid",                             // from region name
-            "fluid",                             // to region name
-            solid().globalPatch().globalPatch(), // from zone
-            fluid().globalPatch().globalPatch(), // to zone
-            solidZoneTemperature,                // from field
-            nbrFluidZoneTemperature              // to field
-        );
-
-        scalarField nbrFluidZoneKappaDelta =
-            scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
-
-        transferFacesZoneToZone
-        (
-            "solid",                             // from region name
-            "fluid",                             // to region name
-            solid().globalPatch().globalPatch(), // from zone
-            fluid().globalPatch().globalPatch(), // to zone
-            solidZoneKappaDelta,                 // from field
-            nbrFluidZoneKappaDelta               // to field
-        );
-
-        fluid().setTemperature
-        (
-            fluidPatchIndex(),
-            nbrFluidZoneTemperature,
-            nbrFluidZoneKappaDelta
-        );
-    }
-}
-
-
-Foam::scalar Foam::fluidSolidInterface::updateHeatFluxResidual()
-{
-    if (conjugate())
-    {
-        const scalarField fluidZoneHeatFlux =
-            fluid().faceZoneHeatFlux();
-
-        const scalarField solidZoneHeatFlux =
-            solid().faceZoneHeatFlux();
-
-        scalarField nbrFluidZoneHeatFlux =
-            scalarField(fluid().globalPatch().globalPatch().size(), 0.0);
-
-        transferFacesZoneToZone
-        (
-            "solid",                             // from region name
-            "fluid",                             // to region name
-            solid().globalPatch().globalPatch(), // from zone
-            fluid().globalPatch().globalPatch(), // to zone
-            (-solidZoneHeatFlux)(),              // from field
-            nbrFluidZoneHeatFlux                 // to field
-        );
-
-        const scalarField heatFluxRes
-        (
-            fluidZoneHeatFlux
-          - nbrFluidZoneHeatFlux
-        );
-
-        scalar heatResidualNorm = Foam::sqrt(gSum(sqr(heatFluxRes)));
-
-        if (heatResidualNorm > maxHeatResidualNorm_)
-        {
-            maxHeatResidualNorm_ = heatResidualNorm;
-        }
-
-        heatResidualNorm /= maxHeatResidualNorm_ + SMALL;
-
-        Info<< "Relative heat flux residual = " 
-            << heatResidualNorm << "\n"
-            << "Absolute heat flux residual = "
-            << gMax(mag(heatFluxRes)) << "\n"
-            << "Interface heat flux (fluid side) = "
-            << gSum
-               (
-                   fluid().patchHeatFlux(fluidPatchIndex())
-                 * fluidMesh().boundary()[fluidPatchIndex()].magSf()
-               )
-            << "\nInterface heat flux (solid side) = "
-            << gSum
-               (
-                   solid().patchHeatFlux(solidPatchIndex())
-                 * mag(solid().patchCurrentSf(solidPatchIndex()))
-               )
-            << "\n" << endl;
-
-        return heatResidualNorm;
-    }
-    else
-    {
-        return 0.0;
     }
 }
 

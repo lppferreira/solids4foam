@@ -163,14 +163,6 @@ public:
 
         // Edit
 
-            //- Set temperature and flux at specified patch
-            virtual void setTemperature
-            (
-                const label patchID,
-                const scalarField& nbrFaceZoneTemperature,
-                const scalarField& nbrFaceZoneKappaDelta
-            );
-
             //- Evolve the solid solver and solve the mathematical model
             virtual bool evolve();
 

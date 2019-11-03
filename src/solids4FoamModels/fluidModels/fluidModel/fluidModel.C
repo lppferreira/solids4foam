@@ -34,6 +34,7 @@ License
 #include "EulerDdtScheme.H"
 #include "CrankNicolsonDdtScheme.H"
 #include "backwardDdtScheme.H"
+#include "mixedFvPatchFields.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -699,40 +700,63 @@ Foam::fluidModel::faceZonesPressureForce() const
 }
 
 
-Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZonePressureForce() const
+Foam::List<Foam::tmp<Foam::scalarField> >
+Foam::fluidModel::faceZonesHeatFlux() const
 {
-    const scalarField patchPF =
-        patchPressureForce(globalPatch().patch().index());
+    List<tmp<scalarField> > tglobalHF
+    (
+        globalPatches().size()
+    );
 
-    return globalPatch().patchFaceToGlobal(patchPF);
+    forAll(globalPatches(), i)
+    {
+        const scalarField patchHF =
+            patchHeatFlux(globalPatches()[i].patch().index());
+
+        tglobalHF[i] = globalPatches()[i].patchFaceToGlobal(patchHF);
+    }
+
+    return tglobalHF;
 }
 
 
-Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneHeatFlux() const
+Foam::List<Foam::tmp<Foam::scalarField> >
+Foam::fluidModel::faceZonesTemperature() const
 {
-    const scalarField patchTF =
-        patchHeatFlux(globalPatch().patch().index());
+    List<tmp<scalarField> > tglobalT
+    (
+        globalPatches().size()
+    );
 
-    return globalPatch().patchFaceToGlobal(patchTF);
+    forAll(globalPatches(), i)
+    {
+        const scalarField patchT =
+            patchTemperature(globalPatches()[i].patch().index());
+
+        tglobalT[i] = globalPatches()[i].patchFaceToGlobal(patchT);
+    }
+
+    return tglobalT;
 }
 
 
-Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneTemperature() const
+Foam::List<Foam::tmp<Foam::scalarField> >
+Foam::fluidModel::faceZonesKappaDelta() const
 {
-    const scalarField patchT =
-        patchTemperature(globalPatch().patch().index());
+    List<tmp<scalarField> > tglobalKD
+    (
+        globalPatches().size()
+    );
 
-    return globalPatch().patchFaceToGlobal(patchT);
-}
+    forAll(globalPatches(), i)
+    {
+        const scalarField patchKD =
+            patchKappaDelta(globalPatches()[i].patch().index());
 
+        tglobalKD[i] = globalPatches()[i].patchFaceToGlobal(patchKD);
+    }
 
-Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneKappaDelta() const
-{
-
-    const scalarField patchKD =
-        patchKappaDelta(globalPatch().patch().index());
-
-    return globalPatch().patchFaceToGlobal(patchKD);
+    return tglobalKD;
 }
 
 
@@ -844,6 +868,64 @@ void Foam::fluidModel::setDeltaT(Time& runTime)
         );
 
         Info<< "deltaT = " <<  runTime.deltaT().value() << endl;
+    }
+}
+
+
+void Foam::fluidModel::setTemperature
+(
+    const labelList& patchIDs,
+    const List<scalarField>& nbrFaceZonesTemperature,
+    const List<scalarField>& nbrFaceZonesKappaDelta
+)
+{
+    forAll(globalPatches(), i)
+    {
+        if
+        (
+            T().boundaryField()[patchIDs[i]].type()
+         != mixedFvPatchScalarField::typeName
+        )
+        {
+            FatalErrorIn
+            (
+                "void fluidModel::setTemperature\n"
+                "(\n"
+                "    const labelList&,\n"
+                "    const List<scalarField>&,\n"
+                "    const List<scalarField>&\n"
+                ")"
+            )
+                << "Bounary condition on " << T().name()
+                <<  " is "
+                << T().boundaryField()[patchIDs[i]].type()
+                << " for patch " << mesh().boundary()[patchIDs[i]].name()
+                << ", instead of "
+                << mixedFvPatchScalarField::typeName
+                << abort(FatalError);
+        }
+
+        scalarField nbrPatchTemperature =
+	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesTemperature);
+
+        scalarField nbrPatchKappaDelta =
+	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesKappaDelta);
+
+        mixedFvPatchScalarField& patchT =
+            refCast<mixedFvPatchScalarField>
+            (
+                T().boundaryField()[patchIDs[i]]
+            );
+
+        patchT.refValue() = nbrPatchTemperature;
+
+        patchT.refGrad() = 0.0;
+
+        patchT.valueFraction() =
+            nbrPatchKappaDelta
+          / (nbrPatchKappaDelta + patchKappaDelta(patchIDs[i]));
+
+        patchT.updateCoeffs();
     }
 }
 

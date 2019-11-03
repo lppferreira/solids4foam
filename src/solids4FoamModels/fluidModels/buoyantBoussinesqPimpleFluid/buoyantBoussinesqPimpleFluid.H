@@ -211,14 +211,6 @@ public:
                 const label patchID
             ) const;
 
-            //- Set temperature and flux at specified patch
-            virtual void setTemperature
-            (
-                const label patchID,
-                const scalarField& nbrFaceZoneTemperature,
-                const scalarField& nbrFaceZoneKappaDelta
-            );
-
         // Edit
 
             //- Evolve the fluid model

@@ -561,6 +561,10 @@ public:
                 return sigma_;
             }
 
+            //- Each solidModel must indicate whether D or DD is the primary
+            //  solution variable
+            virtual volVectorField& solutionD() = 0;
+
             //- Patch face area vector
             //- Note: will be overridden in Total Lagrangian models
             //- to account for the deformation.
@@ -593,10 +597,6 @@ public:
                 const label patchID
             ) const;
 
-            //- Each solidModel must indicate whether D or DD is the primary
-            //  solution variable
-            virtual volVectorField& solutionD() = 0;
-
             //- Face zones point displacement increment
             virtual List<tmp<vectorField> > faceZonesPointDisplacementIncrement() const;
 
@@ -617,6 +617,15 @@ public:
 
             //- Face zones current normal
             virtual List<tmp<vectorField> > faceZonesNormal() const;
+
+            //- Face zones heat flux
+            virtual List<tmp<scalarField> > faceZonesHeatFlux() const;
+
+            //- Face zones temperature (K)
+            virtual List<tmp<scalarField> > faceZonesTemperature() const;
+
+            //- Face zones kappa*delta
+            virtual List<tmp<scalarField> > faceZonesKappaDelta() const;
 
             //- Return enforceLinear switch
             const Switch& enforceLinear() const
@@ -706,14 +715,13 @@ public:
                 const PtrList<scalarIOField>& faceZonesPressure
             );
 
-            //- Set temperature and flux at specified patch
+            //- Set temperature and flux on global patches
             virtual void setTemperature
             (
-                const label patchID,
-                const scalarField& nbrFaceZoneTemperature,
-                const scalarField& nbrFaceZoneKappaDelta
-            )
-            {}
+                const labelList& patchIDs,
+                const List<scalarField>& nbrFaceZonesTemperature,
+                const List<scalarField>& nbrFaceZonesKappaDelta
+            );
 
             //- Check if solid model is diverging using the Jacobian field
             virtual Switch& checkEnforceLinear(const volScalarField& J);

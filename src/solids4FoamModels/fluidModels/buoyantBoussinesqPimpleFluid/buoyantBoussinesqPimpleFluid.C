@@ -32,7 +32,6 @@ License
 #include "addToRunTimeSelectionTable.H"
 #include "findRefCell.H"
 #include "adjustPhi.H"
-#include "mixedFvPatchFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -331,61 +330,6 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchKappaDelta
       * mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;
-}
-
-
-void buoyantBoussinesqPimpleFluid::setTemperature
-(
-    const label patchID,
-    const scalarField& nbrFaceZoneTemperature,
-    const scalarField& nbrFaceZoneKappaDelta
-)
-{
-    if
-    (
-        T().boundaryField()[patchID].type()
-     != mixedFvPatchScalarField::typeName
-    )
-    {
-        FatalErrorIn
-        (
-            "void buoyantBoussinesqPimpleFluid::setTemperature\n"
-            "(\n"
-            "    const label,\n"
-            "    const scalarField&,\n"
-            "    const scalarField&\n"
-            ")"
-        )
-            << "Bounary condition on " << T().name()
-            <<  " is "
-            << T().boundaryField()[patchID].type()
-            << " for patch " << mesh().boundary()[patchID].name()
-            << ", instead of "
-            << mixedFvPatchScalarField::typeName
-            << abort(FatalError);
-    }
-
-    scalarField nbrPatchTemperature =
-	globalPatch().globalFaceToPatch(nbrFaceZoneTemperature);
-
-    scalarField nbrPatchKappaDelta =
-	globalPatch().globalFaceToPatch(nbrFaceZoneKappaDelta);
-
-    mixedFvPatchScalarField& patchT =
-        refCast<mixedFvPatchScalarField>
-        (
-            T().boundaryField()[patchID]
-        );
-
-    patchT.refValue() = nbrPatchTemperature;
-
-    patchT.refGrad() = 0.0;
-
-    patchT.valueFraction() =
-        nbrPatchKappaDelta
-      / (nbrPatchKappaDelta + patchKappaDelta(patchID));
-
-    patchT.updateCoeffs();
 }
 
 

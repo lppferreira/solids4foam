@@ -419,12 +419,6 @@ public:
                 const label patchID
             ) const = 0;
 
-            //- Face zones viscous force (N/m2)
-            virtual List<tmp<vectorField> > faceZonesViscousForce() const;
-
-            //- Face zones pressure force (N/m2)
-            virtual List<tmp<scalarField> > faceZonesPressureForce() const;
-
             //- Patch heat flux
             virtual tmp<scalarField> patchHeatFlux
             (
@@ -443,35 +437,29 @@ public:
                 const label patchID
             ) const;
 
-            //- Patch viscous force (N/m2)
-            virtual tmp<vectorField> faceZoneViscousForce() const;
+            //- Face zones viscous force (N/m2)
+            virtual List<tmp<vectorField> > faceZonesViscousForce() const;
 
-            //- Patch pressure force (N/m2)
-            virtual tmp<scalarField> faceZonePressureForce() const;
+            //- Face zones pressure force (N/m2)
+            virtual List<tmp<scalarField> > faceZonesPressureForce() const;
 
-            //- FaceZone heat flux
-            virtual tmp<scalarField> faceZoneHeatFlux() const;
+            //- Face zones heat flux
+            virtual List<tmp<scalarField> > faceZonesHeatFlux() const;
 
-            //- faceZone temperature (K)
-            virtual tmp<scalarField> faceZoneTemperature() const;
+            //- Face zones temperature (K)
+            virtual List<tmp<scalarField> > faceZonesTemperature() const;
 
-            //- faceZone kappa*delta
-            virtual tmp<scalarField> faceZoneKappaDelta() const;
-
-            //- Set temperature and flux at specified patch
-            virtual void setTemperature
-            (
-                const label patchID,
-                const scalarField& nbrFaceZoneTemperature,
-                const scalarField& nbrFaceZoneKappaDelta
-            )
-            {}
+            //- Face zones kappa*delta
+            virtual List<tmp<scalarField> > faceZonesKappaDelta() const;
 
             //- This function will check that the U field was read from disk
             virtual void UisRequired();
 
             //- This function will check that the p field was read from disk
             virtual void pisRequired();
+
+            //- This function will check that the T field was read from disk
+            virtual void TisRequired();
 
             //- Make the global poly patches
             void makeGlobalPatches(const wordList& patchNames) const;
@@ -486,6 +474,14 @@ public:
 
             //- Update the size of the time-step
             virtual void setDeltaT(Time& runTime);
+
+            //- Set temperature and flux on global patches
+            virtual void setTemperature
+            (
+                const labelList& patchIDs,
+                const List<scalarField>& nbrFaceZonesTemperature,
+                const List<scalarField>& nbrFaceZonesKappaDelta
+            );
 
             //- Evolve the fluid model
             virtual bool evolve() = 0;

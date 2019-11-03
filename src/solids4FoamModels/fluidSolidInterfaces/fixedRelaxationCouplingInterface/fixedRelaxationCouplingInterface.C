@@ -97,7 +97,7 @@ bool fixedRelaxationCouplingInterface::evolve()
         moveFluidMesh();
 
         // Transfer temperature and flux from the solid to the fluid
-        updateFluidPatchTemperatureBC();
+        updateFluidTemperature();
 
         // Solve fluid
         fluid().evolve();
@@ -106,7 +106,7 @@ bool fixedRelaxationCouplingInterface::evolve()
         updateForce();
 
         // Transfer temperature and flux from the fluid to the solid
-        updateSolidPatchTemperatureBC();
+        updateSolidTemperature();
 
         // Solve solid
         solid().evolve();

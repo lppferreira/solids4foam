@@ -182,8 +182,8 @@ class fluidSolidInterface
         //- List of maximal interfaces displacements norm
         List<scalar> maxIntsDisplsNorm_;
 
-	//- Maximal heat flux residual norm
-	scalar maxHeatResidualNorm_;
+        //- List of maximal heat flux residual norm
+        List<scalar> maxHeatResidualsNorm_;
 
         //- Outer corrector
         label outerCorr_;
@@ -615,6 +615,18 @@ public:
                 return maxIntsDisplsNorm_;
             }
 
+            //- Return maximal heat flux residuals norm
+            List<scalar>& maxHeatResidualsNorm()
+            {
+                return maxHeatResidualsNorm_;
+            }
+
+            //- Return const maximal heat flux residuals norm
+            const List<scalar>& maxHeatResidualsNorm() const
+            {
+                return maxHeatResidualsNorm_;
+            }
+
 
         // Edit
 
@@ -647,20 +659,20 @@ public:
             //  found
             virtual void updateElasticWallPressureAcceleration();
 
+            //- Update interface temperature and heat flux (Solid Side)
+            virtual void updateSolidTemperature();
+
+            //- Update interface temperature and heat flux (Fluid Side)
+            virtual void updateFluidTemperature();
+
+            //- Update interface heat flux residual
+            virtual scalar updateHeatFluxResidual();
+
             //- Sync the fluidZonePointsDispl field across processors
             virtual void syncFluidZonePointsDispl
             (
                 List<vectorField>& fluidZonesPointsDispls
             );
-
-            //- Update interface temperature and heat flux (Solid Side)
-            virtual void updateSolidPatchTemperatureBC();
-
-            //- Update interface temperature and heat flux (Fluid Side)
-            virtual void updateFluidPatchTemperatureBC();
-
-            //- Update interface heat flux residual
-            virtual scalar updateHeatFluxResidual();
 
             //- Write fields
             virtual void writeFields(const Time& runTime);
