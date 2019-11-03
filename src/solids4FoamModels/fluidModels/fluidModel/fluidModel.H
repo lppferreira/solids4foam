@@ -154,12 +154,12 @@ class fluidModel
         //  interface called mesh.updated()
         bool fsiMeshUpdateChanged_;
 
-        //- Global poly patch
+        //- Ptr list of global poly patches
         //  This is a copy of a patch which is reconstructed in full on each
         //  processor. This is convenient for interpolating between two patches
         //  in parallel, as used, for example, in the fluid-solid interaction
         //  procedure
-        mutable autoPtr<globalPolyPatch> globalPatchPtr_;
+        mutable PtrList<globalPolyPatch> globalPatchesPtrList_;
 
 
     // Private Member Functions
@@ -419,6 +419,12 @@ public:
                 const label patchID
             ) const = 0;
 
+            //- Face zones viscous force (N/m2)
+            virtual List<tmp<vectorField> > faceZonesViscousForce() const;
+
+            //- Face zones pressure force (N/m2)
+            virtual List<tmp<scalarField> > faceZonesPressureForce() const;
+
             //- Patch heat flux
             virtual tmp<scalarField> patchHeatFlux
             (
@@ -467,17 +473,14 @@ public:
             //- This function will check that the p field was read from disk
             virtual void pisRequired();
 
-            //- This function will check that the T field was read from disk
-            virtual void TisRequired();
+            //- Make the global poly patches
+            void makeGlobalPatches(const wordList& patchNames) const;
 
-            //- Make the global poly patch
-            void makeGlobalPatch(const word& patchName) const;
+            //- Return const-access to the global poly patches
+            const PtrList<globalPolyPatch>& globalPatches() const;
 
-            //- Return const-access to the global poly patch
-            const globalPolyPatch& globalPatch() const;
-
-            //- Clear global poly patch
-            void clearGlobalPatch() const;
+            //- Clear global poly patches
+            void clearGlobalPatches() const;
 
         // Edit
 
