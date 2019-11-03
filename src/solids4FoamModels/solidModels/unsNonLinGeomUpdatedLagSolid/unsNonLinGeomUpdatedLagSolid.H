@@ -184,6 +184,12 @@ public:
                 return true;
             }
 
+            //- Does this model move the mesh?
+            virtual bool movingMesh() const
+            {
+                return true;
+            }
+
             //- Return Density (updated configuration)
             virtual const volScalarField& rho() const
             {
