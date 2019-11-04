@@ -2668,25 +2668,32 @@ Foam::scalar Foam::fluidSolidInterface::updateHeatFluxResidual()
 
             heatResidualNorm /= maxHeatResidualsNorm_[i] + SMALL;
 
-            Info<< "Relative heat flux residual = " 
-                << heatResidualNorm << "\n"
-                << "Absolute heat flux residual = "
-                << gMax(mag(heatFluxResidual)) << "\n"
-                << "Interface heat flux (fluid side) = "
+            Info<< "Conjugate boundary patch: "
+                << fluidMesh().boundary()
+                   [
+                       fluid().globalPatches()[i].patch().index()
+                   ].name()
+                << "\nRelative heat flux residual = " 
+                << heatResidualNorm
+                << "\nAbsolute heat flux residual = "
+                << gMax(mag(heatFluxResidual))
+                << "\nFluid side heat flux (surface-integrated) = "
                 << gSum
                    (
                        fluid().patchHeatFlux(fluidPatchIndices()[i])
                      * fluidMesh().boundary()[fluidPatchIndices()[i]].magSf()
                    )
-                << "\nInterface heat flux (solid side) = "
+                << " [W]" << "\nSolid side heat flux (surface-integrated) = "
                 << gSum
                    (
                        solid().patchHeatFlux(solidPatchIndices()[i])
                      * mag(solid().patchCurrentSf(solidPatchIndices()[i]))
                    )
-                << "\n" << endl;
+                << " [W]\n" << endl;
 
             heatResiduals[i] = heatResidualNorm;
+
+            Info<< endl;
         }
 
         return max(heatResiduals);
