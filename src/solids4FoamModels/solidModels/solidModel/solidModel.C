@@ -1596,7 +1596,7 @@ Foam::solidModel::faceZonesNormal() const
 
 
 Foam::List<Foam::tmp<Foam::scalarField> >
-Foam::fluidModel::faceZonesHeatFlux() const
+Foam::solidModel::faceZonesHeatFlux() const
 {
     List<tmp<scalarField> > tglobalHF
     (
@@ -1616,7 +1616,7 @@ Foam::fluidModel::faceZonesHeatFlux() const
 
 
 Foam::List<Foam::tmp<Foam::scalarField> >
-Foam::fluidModel::faceZonesTemperature() const
+Foam::solidModel::faceZonesTemperature() const
 {
     List<tmp<scalarField> > tglobalT
     (
@@ -1636,7 +1636,7 @@ Foam::fluidModel::faceZonesTemperature() const
 
 
 Foam::List<Foam::tmp<Foam::scalarField> >
-Foam::fluidModel::faceZonesKappaDelta() const
+Foam::solidModel::faceZonesKappaDelta() const
 {
     List<tmp<scalarField> > tglobalKD
     (
@@ -1912,10 +1912,10 @@ void Foam::solidModel::setTemperature
         }
 
         scalarField nbrPatchTemperature =
-	    globalPatches()[i].globalFaceToPatch(nbrFaceZoneTemperature);
+	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesTemperature[i]);
 
         scalarField nbrPatchKappaDelta =
-	    globalPatches()[i].globalFaceToPatch(nbrFaceZoneKappaDelta);
+	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesKappaDelta[i]);
 
         mixedTemperatureFvPatchScalarField& patchT =
             refCast<mixedTemperatureFvPatchScalarField>

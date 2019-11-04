@@ -906,10 +906,10 @@ void Foam::fluidModel::setTemperature
         }
 
         scalarField nbrPatchTemperature =
-	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesTemperature);
+	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesTemperature[i]);
 
         scalarField nbrPatchKappaDelta =
-	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesKappaDelta);
+	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesKappaDelta[i]);
 
         mixedFvPatchScalarField& patchT =
             refCast<mixedFvPatchScalarField>

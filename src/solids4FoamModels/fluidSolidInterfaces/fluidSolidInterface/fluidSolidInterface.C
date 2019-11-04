@@ -2429,7 +2429,7 @@ void Foam::fluidSolidInterface::updateSolidTemperature()
 {
     if (conjugate())
     {
-        const List<tmp<vectorField> > faceZonesTemperature
+        const List<tmp<scalarField> > faceZonesTemperature
         (
             fluid().faceZonesTemperature()
         );
@@ -2514,7 +2514,7 @@ void Foam::fluidSolidInterface::updateFluidTemperature()
 {
     if (conjugate())
     {
-        const List<tmp<vectorField> > faceZonesTemperature
+        const List<tmp<scalarField> > faceZonesTemperature
         (
             solid().faceZonesTemperature()
         );
@@ -2601,7 +2601,7 @@ Foam::scalar Foam::fluidSolidInterface::updateHeatFluxResidual()
     {
         List<scalar> heatResiduals(nGlobalPatches(), scalar(0));
 
-        const List<tmp<vectorField> > fluidFaceZonesHeatFlux
+        const List<tmp<scalarField> > fluidFaceZonesHeatFlux
         (
             fluid().faceZonesHeatFlux()
         );
