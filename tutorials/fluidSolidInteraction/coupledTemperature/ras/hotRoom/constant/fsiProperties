@@ -18,13 +18,11 @@ fluidSolidInterface    thermoCoupling;
 
 thermoCouplingCoeffs
 {
-    // Solid interface patch and faceZone
-    solidPatch           floor;
-    solidZone            floorZone;
+    // Solid interface patch list
+    solidPatch           (floor);
 
-    // Fluid interface patch and faceZone
-    fluidPatch           floor;
-    fluidZone            floorZone;
+    // Fluid interface patch list
+    fluidPatch           (floor);
 
     // Tolerance for the energy loop within each time-step
     energyTolerance      1e-5;
