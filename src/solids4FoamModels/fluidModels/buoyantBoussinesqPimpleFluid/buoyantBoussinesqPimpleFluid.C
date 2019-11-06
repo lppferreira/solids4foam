@@ -50,6 +50,27 @@ addToRunTimeSelectionTable(fluidModel, buoyantBoussinesqPimpleFluid, dictionary)
 
 // * * * * * * * * * * * * * * * Private Members * * * * * * * * * * * * * * //
 
+void buoyantBoussinesqPimpleFluid::FourierNo()
+{
+    // Finds the characteristic size
+    const volScalarField& cellDims = cellDimension(runTime());
+
+    FourierNum() = 0.0;
+    scalar meanFourierNum = 0.0;
+
+    FourierNum() = 
+      gMax((kappaEff_ + turbulence_->nut())
+           *runTime().deltaT0Value() / pow(cellDims.field(), 2));
+
+    meanFourierNum = 
+      gAverage((kappaEff_ + turbulence_->nut())
+               *runTime().deltaT0Value() / pow(cellDims.field(), 2));
+
+    Info<< "Fourier number mean: " << meanFourierNum
+        << " max calculated: " << FourierNum() << endl;
+}
+
+
 tmp<fvVectorMatrix> buoyantBoussinesqPimpleFluid::solveUEqn()
 {
     // Solve the momentum equation
@@ -209,8 +230,7 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
         1.0 - beta_*(T() - TRef_)
     ),
     pRefCell_(0),
-    pRefValue_(0),
-    FourierNo_(0)
+    pRefValue_(0)
 {
     UisRequired();
     pisRequired();
@@ -222,30 +242,10 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-scalar& buoyantBoussinesqPimpleFluid::FourierNo()
-{
-    // Finds the characteristic size
-    const volScalarField& cellDims = cellDimension(runTime());
-
-    FourierNo_ = 0.0;
-    scalar meanFourierNo = 0.0;
-
-    FourierNo_ = 
-      gMax((kappaEff_ + turbulence_->nut())
-           *runTime().deltaT0Value() / pow(cellDims.field(), 2));
-
-    meanFourierNo = 
-      gAverage((kappaEff_ + turbulence_->nut())
-               *runTime().deltaT0Value() / pow(cellDims.field(), 2));
-
-    Info<< "Fourier number mean: " << meanFourierNo
-        << " max calculated: " << FourierNo_ << endl;
-
-    return FourierNo_;
-}
-
-
-tmp<vectorField> buoyantBoussinesqPimpleFluid::patchViscousForce(const label patchID) const
+tmp<vectorField> buoyantBoussinesqPimpleFluid::patchViscousForce
+(
+    const label patchID
+) const
 {
     tmp<vectorField> tvF
     (

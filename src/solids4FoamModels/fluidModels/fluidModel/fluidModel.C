@@ -490,6 +490,8 @@ Foam::fluidModel::fluidModel
         mesh(),
         dimensionedScalar("zero", dimLength, 0.0)
     ),
+    alphaCoNum_(0.0),
+    FourierNum_(0.0),
     adjustTimeStep_
     (
         runTime.controlDict().lookupOrDefault<Switch>("adjustTimeStep", false)
@@ -497,6 +499,14 @@ Foam::fluidModel::fluidModel
     maxCo_
     (
         runTime.controlDict().lookupOrDefault<scalar>("maxCo", 1.0)
+    ),
+    maxAlphaCo_
+    (
+        runTime.controlDict().lookupOrDefault<scalar>("maxAlphaCo", 1.0)
+    ),
+    maxFourier_
+    (
+        runTime.controlDict().lookupOrDefault<scalar>("maxFourier", GREAT)
     ),
     maxDeltaT_
     (
@@ -608,13 +618,6 @@ Foam::volScalarField& Foam::fluidModel::cellDimension
     Info<< "Minimum cell dimension: " <<  gMin(cellDims_) << endl;
 
     return cellDims_;
-}
-
-
-Foam::scalar& Foam::fluidModel::FourierNo()
-{
-    notImplemented("fluidModel::FourierNo()");
-    return *reinterpret_cast<scalar*>(0);
 }
 
 

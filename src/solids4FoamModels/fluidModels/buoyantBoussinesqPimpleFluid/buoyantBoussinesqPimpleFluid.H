@@ -128,11 +128,11 @@ class buoyantBoussinesqPimpleFluid
         //- Reference pressure value
         scalar pRefValue_;
 
-        //- Fourier number
-        scalar FourierNo_;
-
 
     // Private Member Functions
+
+        //- Calculate Fourier number
+        void FourierNo();
 
         //- Solve velocity equation
         tmp<fvVectorMatrix> solveUEqn();
@@ -177,9 +177,6 @@ public:
     // Member Functions
 
         // Access
-
-            //- Return Fourier Number
-            virtual scalar& FourierNo();
 
             //- Patch viscous force (N/m2)
             virtual tmp<vectorField> patchViscousForce

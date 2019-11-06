@@ -122,11 +122,23 @@ class fluidModel
         //- cells dimension field
         volScalarField cellDims_;
 
+        //- alpha Courant number
+        scalar alphaCoNum_;
+
+        //- Fourier number
+        scalar FourierNum_;
+
         //- Adjustable time-step switch
         const Switch adjustTimeStep_;
 
         //- For adjustable time-step, this is the maximum Courant number
         const scalar maxCo_;
+
+        //- For adjustable time-step, this is the maximum vof-based Courant number
+	scalar maxAlphaCo_;
+
+        //- For adjustable time-step, this is the maximum Fourier number
+        scalar maxFourier_;
 
         //- For adjustable time-step, this is the maximum time-stpe
         const scalar maxDeltaT_;
@@ -389,11 +401,32 @@ public:
                 return phi_;
             }
 
-            //- Return cells dimension
+            //- Return cells dimension field
             virtual volScalarField& cellDimension(const Time&);
 
-            //- Return Fourier Number
-            virtual scalar& FourierNo();
+            //- Return alpha Courant number
+            const scalar& alphaCoNum() const
+            {
+                return alphaCoNum_;
+            }
+
+            //- Return alpha Courant number
+            scalar& alphaCoNum()
+            {
+                return alphaCoNum_;
+            }
+
+            //- Return Fourier number
+            const scalar& FourierNum() const
+            {
+                return FourierNum_;
+            }
+
+            //- Return Fourier number
+            scalar& FourierNum()
+            {
+                return FourierNum_;
+            }
 
             //- Non-const access to the fsiMeshUpdate flag
             virtual bool& fsiMeshUpdate()
