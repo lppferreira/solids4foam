@@ -139,11 +139,11 @@ class unsThermalNonLinGeomTotalLagSolid
         //- Relative tolerance
         const scalar relativeTol_;
 
-        //- Diffusion number
-        scalar DiffusionNo_;
-
 
     // Private Member Functions
+
+        //- Calculate Diffusion number
+        void DiffusionNo();
 
         //- Check if the momentum equation is converged
         bool converged
@@ -245,9 +245,6 @@ public:
                 // Note: Does not produce consistent result
                 // return boundaryPatchCurrent(patchID).areas();
             }
-
-            //- Return Diffusion Number
-            virtual scalar& DiffusionNo();
 
             //- Patch heat flux
             virtual tmp<scalarField> patchHeatFlux

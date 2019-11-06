@@ -75,11 +75,11 @@ class thermalSolid
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;
 
-        //- Diffusion number
-        scalar DiffusionNo_;
-
 
     // Private Member Functions
+
+        //- Calculate Diffusion number
+        void DiffusionNo();
 
         //- Check if the momentum equation is converged
         bool converged
@@ -140,9 +140,6 @@ public:
                 notImplemented("thermalSolid::solutionD()");
                 return const_cast<volVectorField&>(volVectorField::null());
             }
-
-            //- Return Diffusion Number
-            virtual scalar& DiffusionNo();
 
             //- Patch heat flux
             virtual tmp<scalarField> patchHeatFlux

@@ -49,6 +49,32 @@ addToRunTimeSelectionTable(solidModel, thermalLinGeomSolid, dictionary);
 
 // * * * * * * * * * * *  Private Member Functions * * * * * * * * * * * * * //
 
+void thermalLinGeomSolid::DiffusionNo()
+{
+    //- calculate solid Diffusion number
+    DiffusionNum() = 0.0;
+    scalar meanDiffusionNum = 0.0;
+
+    //- Can have fluid domains with 0 cells so do not test.
+    if (mesh().nInternalFaces())
+    {
+           surfaceScalarField kRhoCbyDelta =
+               mesh().surfaceInterpolation::deltaCoeffs()
+             * fvc::interpolate(kappa_)
+             / fvc::interpolate(rhoC_);
+
+           DiffusionNum() =
+               max(kRhoCbyDelta.internalField())*runTime().deltaT().value();
+
+           meanDiffusionNum =
+               (average(kRhoCbyDelta)).value()*runTime().deltaT().value();
+    }
+
+    Info<< "Diffusion Number mean: " << meanDiffusionNum
+        << " max: " << DiffusionNum() << endl;
+}
+
+
 bool thermalLinGeomSolid::converged
 (
     const int iCorr,
@@ -195,8 +221,7 @@ thermalLinGeomSolid::thermalLinGeomSolid
     ),
     impK_(mechanical().impK()),
     impKf_(mechanical().impKf()),
-    rImpK_(1.0/impK_),
-    DiffusionNo_(0)
+    rImpK_(1.0/impK_)
 {
     DisRequired();
     TisRequired();
@@ -207,32 +232,6 @@ thermalLinGeomSolid::thermalLinGeomSolid
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-scalar& thermalLinGeomSolid::DiffusionNo()
-{
-    //- calculate solid Diffusion number
-    DiffusionNo_ = 0.0;
-    scalar meanDiffusionNo = 0.0;
-
-    //- Can have fluid domains with 0 cells so do not test.
-    if (mesh().nInternalFaces())
-    {
-           surfaceScalarField kRhoCbyDelta =
-               mesh().surfaceInterpolation::deltaCoeffs()
-             * fvc::interpolate(kappa_)
-             / fvc::interpolate(rhoC_);
-
-           DiffusionNo_ = max(kRhoCbyDelta.internalField())*runTime().deltaT().value();
-
-           meanDiffusionNo = (average(kRhoCbyDelta)).value()*runTime().deltaT().value();
-    }
-
-    Info<< "Diffusion Number mean: " << meanDiffusionNo
-        << " max: " << DiffusionNo_ << endl;
-
-    return DiffusionNo_;
-}
-
 
 tmp<scalarField> thermalLinGeomSolid::patchHeatFlux
 (

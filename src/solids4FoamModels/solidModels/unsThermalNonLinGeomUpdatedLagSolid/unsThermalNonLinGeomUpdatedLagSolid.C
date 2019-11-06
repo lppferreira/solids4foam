@@ -60,6 +60,34 @@ addToRunTimeSelectionTable
 
 // * * * * * * * * * * *  Private Member Functions * * * * * * * * * * * * * //
 
+// Note: Sep 18 2019
+// The updated Lagrangian implementation does move the mesh at the end
+void unsThermalNonLinGeomUpdatedLagSolid::DiffusionNo()
+{
+    //- calculate solid Diffusion number
+    DiffusionNum() = 0.0;
+    scalar meanDiffusionNum = 0.0;
+
+    //- Can have fluid domains with 0 cells so do not test.
+    if (mesh().nInternalFaces())
+    {
+           surfaceScalarField kRhoCbyDelta =
+               mesh().surfaceInterpolation::deltaCoeffs()
+             * fvc::interpolate(kappa_)
+             / fvc::interpolate(rhoC_);
+
+           DiffusionNum() =
+               max(kRhoCbyDelta.internalField())*runTime().deltaT().value();
+
+           meanDiffusionNum =
+               (average(kRhoCbyDelta)).value()*runTime().deltaT().value();
+    }
+
+    Info<< "Diffusion Number mean: " << meanDiffusionNum
+        << " max: " << DiffusionNum() << endl;
+}
+
+
 bool unsThermalNonLinGeomUpdatedLagSolid::converged
 (
     const int iCorr,
@@ -460,8 +488,7 @@ unsThermalNonLinGeomUpdatedLagSolid::unsThermalNonLinGeomUpdatedLagSolid
     stabilisePressure_
     (
         solidModelDict().lookupOrDefault<Switch>("stabilisePressure", false)
-    ),
-    DiffusionNo_(0)
+    )
 {
     DDisRequired();
     TisRequired();
@@ -480,34 +507,6 @@ unsThermalNonLinGeomUpdatedLagSolid::~unsThermalNonLinGeomUpdatedLagSolid()
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-// Needs correction: Sep 18 2019
-// Note: Updated-Lagrangian implementation move the mesh at the end of the time-step
-scalar& unsThermalNonLinGeomUpdatedLagSolid::DiffusionNo()
-{
-    //- calculate solid Diffusion number
-    DiffusionNo_ = 0.0;
-    scalar meanDiffusionNo = 0.0;
-
-    //- Can have fluid domains with 0 cells so do not test.
-    if (mesh().nInternalFaces())
-    {
-           surfaceScalarField kRhoCbyDelta =
-               mesh().surfaceInterpolation::deltaCoeffs()
-             * fvc::interpolate(kappa_)
-             / fvc::interpolate(rhoC_);
-
-           DiffusionNo_ = max(kRhoCbyDelta.internalField())*runTime().deltaT().value();
-
-           meanDiffusionNo = (average(kRhoCbyDelta)).value()*runTime().deltaT().value();
-    }
-
-    Info<< "Diffusion Number mean: " << meanDiffusionNo
-        << " max: " << DiffusionNo_ << endl;
-
-    return DiffusionNo_;
-}
-
 
 tmp<scalarField> unsThermalNonLinGeomUpdatedLagSolid::patchHeatFlux
 (

@@ -83,11 +83,11 @@ class weakThermalLinGeomSolid
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;
 
-        //- Diffusion number
-        scalar DiffusionNo_;
-
 
     // Private Member Functions
+
+        //- Calculate Diffusion number
+        void DiffusionNo();
 
         //- Check convergence
         bool converged
@@ -139,9 +139,6 @@ public:
     // Member Functions
 
         // Access
-
-            //- Return Diffusion Number
-            virtual scalar& DiffusionNo();
 
             //- Patch heat flux
             virtual tmp<scalarField> patchHeatFlux

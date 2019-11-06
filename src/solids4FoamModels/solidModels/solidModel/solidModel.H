@@ -198,6 +198,12 @@ class solidModel
         //- Reference D (without relaxation) field used for Quasi-Newton method
         volVectorField unrelaxedDRef_;
 
+        //- Diffusion number
+        scalar DiffusionNum_;
+
+        //- For adjustable time-step, this is the maximum Diffusion number
+        scalar maxDiffusionNo_;
+
         //- Ptr list of global poly patches
         //  This is a copy of a patch which is reconstructed in full on each
         //  processor. This is convenient for interpolating between two patches
@@ -577,7 +583,16 @@ public:
             }
 
             //- Return Diffusion Number
-            virtual scalar& DiffusionNo();
+            const scalar& DiffusionNum() const
+            {
+                return DiffusionNum_;
+            }
+
+            //- Return Diffusion Number
+            scalar& DiffusionNum()
+            {
+                return DiffusionNum_;
+            }
 
             //- Patch heat flux
             virtual tmp<scalarField> patchHeatFlux

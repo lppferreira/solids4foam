@@ -96,11 +96,11 @@ class thermalLinGeomSolid
         //  will store the reciprocal for effficiency
         const volScalarField rImpK_;
 
-        //- Diffusion number
-        scalar DiffusionNo_;
-
 
     // Private Member Functions
+
+        //- Calculate Diffusion number
+        void DiffusionNo();
 
         //- Check if the momentum equation is converged
         bool converged
@@ -162,9 +162,6 @@ public:
                 // This model solves for D
                 return D();
             }
-
-            //- Return Diffusion Number
-            virtual scalar& DiffusionNo();
 
             //- Patch heat flux
             virtual tmp<scalarField> patchHeatFlux

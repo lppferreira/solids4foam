@@ -1139,6 +1139,11 @@ Foam::solidModel::solidModel
         meshPtr_(),
         dimensionedVector("zero", dimLength, vector::zero)
     ),
+    DiffusionNum_(0.0),
+    maxDiffusionNo_
+    (
+        runTime.controlDict().lookupOrDefault<scalar>("maxDiffusionNo", 10.0)
+    ),
     globalPatchesPtrList_()
 {
     // Force old time fields to be stored
@@ -1330,13 +1335,6 @@ Foam::vector Foam::solidModel::pointU(const label pointID) const
     mechanical().volToPoint().interpolate(U(), pointU);
 
     return pointU.internalField()[pointID];
-}
-
-
-Foam::scalar& Foam::solidModel::DiffusionNo()
-{
-    notImplemented("solidModel::DiffusionNo()");
-    return *reinterpret_cast<scalar*>(0);
 }
 
 
