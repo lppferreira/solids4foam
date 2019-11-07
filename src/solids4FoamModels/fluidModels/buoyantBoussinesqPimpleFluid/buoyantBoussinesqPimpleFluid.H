@@ -86,6 +86,9 @@ class buoyantBoussinesqPimpleFluid
 {
     // Private data
 
+        //- Temperature field
+        volScalarField T_;
+
         //- Transport model
         singlePhaseTransportModel laminarTransport_;
 
@@ -177,6 +180,18 @@ public:
     // Member Functions
 
         // Access
+
+            //- Return const temperature field
+            virtual const volScalarField& T() const
+            {
+                return T_;
+            }
+
+            //- Return temperature field
+            virtual volScalarField& T()
+            {
+                return T_;
+            }
 
             //- Patch viscous force (N/m2)
             virtual tmp<vectorField> patchViscousForce

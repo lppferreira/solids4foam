@@ -53,7 +53,7 @@ addToRunTimeSelectionTable(fluidModel, buoyantBoussinesqPimpleFluid, dictionary)
 void buoyantBoussinesqPimpleFluid::FourierNo()
 {
     // Finds the characteristic size
-    const volScalarField& cellDims = cellDimension(runTime());
+    const volScalarField& cellDims = cellDimension();
 
     FourierNum() = 0.0;
     scalar meanFourierNum = 0.0;
@@ -181,6 +181,18 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
 )
 :
     fluidModel(typeName, runTime, region),
+    T_
+    (
+        IOobject
+        (
+            "T",
+            runTime.timeName(),
+            mesh(),
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh()
+    ),
     laminarTransport_(U(), phi()),
     beta_(laminarTransport_.lookup("beta")),
     TRef_(laminarTransport_.lookup("TRef")),
@@ -234,7 +246,6 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
 {
     UisRequired();
     pisRequired();
-    TisRequired();
 
     setRefCell(p(), pimple().dict(), pRefCell_, pRefValue_);
     mesh().schemesDict().setFluxRequired(p().name());

@@ -80,8 +80,8 @@ bool Foam::fluidSolidInterface::updateCoupled()
             if
             (
                 !conjugate_
-             && fluid().Theader().headerOk()
-             && solid().Theader().headerOk()
+             && fluidMesh().thisDb().foundObject<volScalarField>("T")
+             && solidMesh().thisDb().foundObject<volScalarField>("T")
             )
             {
                 conjugate_ = true;

@@ -98,17 +98,11 @@ class fluidModel
         //- Pressure field header
         IOobject pheader_;
 
-        //- Temperature field header
-        IOobject Theader_;
-
         //- Velocity field
         volVectorField U_;
 
         //- Pressure field
         volScalarField p_;
-
-        //- Temperature field
-        volScalarField T_;
 
         //- Velocity gradient
         volTensorField gradU_;
@@ -135,7 +129,7 @@ class fluidModel
         const scalar maxCo_;
 
         //- For adjustable time-step, this is the maximum vof-based Courant number
-	scalar maxAlphaCo_;
+        scalar maxAlphaCo_;
 
         //- For adjustable time-step, this is the maximum Fourier number
         scalar maxFourier_;
@@ -347,22 +341,23 @@ public:
                 return p_;
             }
 
-            //- Return temperature field header
-            virtual IOobject& Theader()
-            {
-                return Theader_;
-            }
-
             //- Return const temperature field
             virtual const volScalarField& T() const
             {
-                return T_;
+                notImplemented("fluidModel::T() const");
+
+                return volScalarField::null();
             }
 
             //- Return temperature field
             virtual volScalarField& T()
             {
-                return T_;
+                notImplemented("fluidModel::T()");
+
+                return const_cast<volScalarField&>
+                (
+                    volScalarField::null()
+                );
             }
 
             //- Return const velocity gradient field
@@ -402,7 +397,7 @@ public:
             }
 
             //- Return cells dimension field
-            virtual volScalarField& cellDimension(const Time&);
+            virtual volScalarField& cellDimension();
 
             //- Return alpha Courant number
             const scalar& alphaCoNum() const
@@ -490,9 +485,6 @@ public:
 
             //- This function will check that the p field was read from disk
             virtual void pisRequired();
-
-            //- This function will check that the T field was read from disk
-            virtual void TisRequired();
 
             //- Make the global poly patches
             void makeGlobalPatches(const wordList& patchNames) const;

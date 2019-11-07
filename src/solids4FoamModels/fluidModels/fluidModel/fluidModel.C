@@ -423,7 +423,6 @@ Foam::fluidModel::fluidModel
     g_(readG()),
     Uheader_("U", runTime.timeName(), mesh(), IOobject::MUST_READ),
     pheader_("p", runTime.timeName(), mesh(), IOobject::MUST_READ),
-    Theader_("T", runTime.timeName(), mesh(), IOobject::MUST_READ),
     U_
     (
         IOobject
@@ -449,19 +448,6 @@ Foam::fluidModel::fluidModel
         ),
         mesh(),
         dimensionedScalar("zero", dimPressure, 0.0)
-    ),
-    T_
-    (
-        IOobject
-        (
-            "T",
-            runTime.timeName(),
-            mesh(),
-            IOobject::READ_IF_PRESENT,
-            IOobject::AUTO_WRITE
-        ),
-        mesh(),
-        dimensionedScalar("zero", dimTemperature, 0.0)
     ),
     gradU_(fvc::grad(U_)),
     gradp_(fvc::grad(p_)),
@@ -570,17 +556,14 @@ const Foam::oversetMesh& Foam::fluidModel::osMesh() const
 #endif
 
 
-Foam::volScalarField& Foam::fluidModel::cellDimension
-(
-    const Time& runTime
-)
+Foam::volScalarField& Foam::fluidModel::cellDimension()
 {
     volScalarField maxCellDims
     (
         IOobject
         (
             "maxCellDims",
-            runTime.timeName(),
+            runTime().timeName(),
             mesh(),
             IOobject::NO_READ,
             IOobject::NO_WRITE
@@ -780,17 +763,6 @@ void Foam::fluidModel::pisRequired()
     {
         FatalErrorIn(type() + "::pisRequired()")
             << "This fluidModel requires the 'p' field to be specified!"
-            << abort(FatalError);
-    }
-}
-
-
-void Foam::fluidModel::TisRequired()
-{
-    if (!Theader_.headerOk())
-    {
-        FatalErrorIn(type() + "::TisRequired()")
-            << "This fluidModel requires the 'T' field to be specified!"
             << abort(FatalError);
     }
 }
