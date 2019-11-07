@@ -53,7 +53,7 @@ addToRunTimeSelectionTable(fluidModel, buoyantBoussinesqPimpleFluid, dictionary)
 void buoyantBoussinesqPimpleFluid::FourierNo()
 {
     // Finds the characteristic size
-    const volScalarField& cellDims = cellDimension();
+    const volScalarField& cellDims = cellDimensions();
 
     FourierNum() = 0.0;
     scalar meanFourierNum = 0.0;

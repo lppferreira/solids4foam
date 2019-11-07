@@ -397,7 +397,7 @@ public:
             }
 
             //- Return cells dimension field
-            virtual volScalarField& cellDimension();
+            virtual volScalarField& cellDimensions();
 
             //- Return alpha Courant number
             const scalar& alphaCoNum() const
