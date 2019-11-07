@@ -2692,9 +2692,9 @@ Foam::scalar Foam::fluidSolidInterface::updateHeatFluxResidual()
                 << " [W]\n" << endl;
 
             heatResiduals[i] = heatResidualNorm;
-
-            Info<< endl;
         }
+
+        Info<< endl;
 
         return max(heatResiduals);
     }

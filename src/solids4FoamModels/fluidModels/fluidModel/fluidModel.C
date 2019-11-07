@@ -829,7 +829,13 @@ void Foam::fluidModel::setDeltaT(Time& runTime)
         CourantNo(CoNum, meanCoNum, velMag);
         fvc::makeAbsolute(phi(), U());
 
-        scalar maxDeltaTFact = maxCo_/(CoNum + SMALL);
+        scalar maxDeltaTFact =
+            min
+            (
+                min(maxCo_/(CoNum + SMALL), maxAlphaCo_/(alphaCoNum() + SMALL)),
+                maxFourier_/(FourierNum() + SMALL)
+            );
+
         scalar deltaTFact =
             min(min(maxDeltaTFact, 1.0 + 0.1*maxDeltaTFact), 1.2);
 
