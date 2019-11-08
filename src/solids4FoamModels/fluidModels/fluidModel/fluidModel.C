@@ -492,7 +492,7 @@ Foam::fluidModel::fluidModel
     ),
     maxFourier_
     (
-        runTime.controlDict().lookupOrDefault<scalar>("maxFourier", GREAT)
+        runTime.controlDict().lookupOrDefault<scalar>("maxFourier", 10.0)
     ),
     maxDeltaT_
     (
