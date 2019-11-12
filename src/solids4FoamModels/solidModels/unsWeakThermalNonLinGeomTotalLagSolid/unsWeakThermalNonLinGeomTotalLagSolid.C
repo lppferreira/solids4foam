@@ -419,6 +419,9 @@ bool unsWeakThermalNonLinGeomTotalLagSolid::evolve()
     // thermal stress is to be included in the momentum equation.
     unsNonLinGeomTotalLagSolid::evolve();
 
+    Info<< "Solid temperature min/max(T) = " << min(T()).value()
+	<< ", " << max(T()).value() << " [K]" << endl;
+
     blockLduMatrix::debug = 1;
 
     return true;

@@ -691,6 +691,9 @@ bool unsThermalNonLinGeomUpdatedLagSolid::evolve()
     // Velocity
     U() = fvc::ddt(D());
 
+    Info<< "Solid temperature min/max(T) = " << min(T()).value()
+	<< ", " << max(T()).value() << " [K]" << endl;
+
     blockLduMatrix::debug = 1;
 
     return true;

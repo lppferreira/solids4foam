@@ -664,6 +664,9 @@ bool unsThermalNonLinGeomTotalLagSolid::evolve()
     // Increment of point displacement
     pointDD() = pointD() - pointD().oldTime();
 
+    Info<< "Solid temperature min/max(T) = " << min(T()).value()
+	<< ", " << max(T()).value() << " [K]" << endl;
+
     blockLduMatrix::debug = 1;
 
     if (nonLinear_ && enforceLinear())

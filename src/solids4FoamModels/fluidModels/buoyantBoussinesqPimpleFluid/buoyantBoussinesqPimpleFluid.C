@@ -169,6 +169,9 @@ void buoyantBoussinesqPimpleFluid::solvePEqn
     }
 
     fluidModel::continuityErrs();
+
+    // Make the fluxes relative to the mesh motion
+    fvc::makeRelative(phi(), U());
 }
 
 
@@ -295,17 +298,17 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchHeatFlux
     const label patchID
 ) const
 {
-    tmp<scalarField> ttF
+    tmp<scalarField> thF
     (
         new scalarField(mesh().boundary()[patchID].size(), 0)
     );
 
-    ttF() =
+    thF() =
         kappaEff_.boundaryField()[patchID]
       * rho_.value()*C_.value()
       * T().boundaryField()[patchID].snGrad();
 
-    return ttF;
+    return thF;
 }
 
 
@@ -399,13 +402,13 @@ bool buoyantBoussinesqPimpleFluid::evolve()
 
         UEqn.clear();
 
-        // Make the fluxes relative to the mesh motion
-        fvc::makeRelative(phi(), U());
-
         gradU() = fvc::grad(U());
 
         turbulence_->correct();
     }
+
+    Info<< "Fluid temperature min/max(T) = " << min(T()).value()
+	<< ", " << max(T()).value() << " [K]" << endl;
 
     // Make the fluxes absolut to the mesh motion
     fvc::makeAbsolute(phi(), U());
