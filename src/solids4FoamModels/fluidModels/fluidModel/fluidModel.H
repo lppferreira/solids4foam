@@ -447,7 +447,7 @@ public:
                 const label patchID
             ) const = 0;
 
-            //- Patch heat flux
+            //- Patch heat flux (W/m2)
             virtual tmp<scalarField> patchHeatFlux
             (
                 const label patchID
@@ -477,14 +477,23 @@ public:
                 const label interfaceI
             ) const;
 
-            //- Face zones heat flux
-            virtual List<tmp<scalarField> > faceZonesHeatFlux() const;
+            //- Face zone heat flux (W/m2)
+            virtual tmp<scalarField> faceZoneHeatFlux
+            (
+                const label interfaceI
+            ) const;
 
-            //- Face zones temperature (K)
-            virtual List<tmp<scalarField> > faceZonesTemperature() const;
+            //- Face zone temperature (K)
+            virtual tmp<scalarField> faceZoneTemperature
+            (
+                const label interfaceI
+            ) const;
 
-            //- Face zones kappa*delta
-            virtual List<tmp<scalarField> > faceZonesKappaDelta() const;
+            //- Face zone kappa*delta
+            virtual tmp<scalarField> faceZoneKappaDelta
+            (
+                const label interfaceI
+            ) const;
 
             //- This function will check that the U field was read from disk
             virtual void UisRequired();
@@ -506,12 +515,22 @@ public:
             //- Update the size of the time-step
             virtual void setDeltaT(Time& runTime);
 
-            //- Set temperature and flux on global patches
+            //- Set temperature and flux at specified patch
             virtual void setTemperature
             (
-                const labelList& patchIDs,
-                const List<scalarField>& nbrFaceZonesTemperature,
-                const List<scalarField>& nbrFaceZonesKappaDelta
+                const label patchID,
+                fvPatchScalarField& temperaturePatch,
+                const scalarField& temperature,
+                const scalarField& kappaDelta
+            );
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label interfaceI,
+                const label patchID,
+                const scalarField& nbrFaceZoneTemperature,
+                const scalarField& nbrFaceZoneKappaDelta
             );
 
             //- Evolve the fluid model

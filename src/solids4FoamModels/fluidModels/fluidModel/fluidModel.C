@@ -668,63 +668,39 @@ Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZonePressureForce
 }
 
 
-Foam::List<Foam::tmp<Foam::scalarField> >
-Foam::fluidModel::faceZonesHeatFlux() const
+Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneHeatFlux
+(
+    const label interfaceI
+) const
 {
-    List<tmp<scalarField> > tglobalHF
-    (
-        globalPatches().size()
-    );
+    const scalarField patchHF =
+        patchHeatFlux(globalPatches()[interfaceI].patch().index());
 
-    forAll(globalPatches(), i)
-    {
-        const scalarField patchHF =
-            patchHeatFlux(globalPatches()[i].patch().index());
-
-        tglobalHF[i] = globalPatches()[i].patchFaceToGlobal(patchHF);
-    }
-
-    return tglobalHF;
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchHF);
 }
 
 
-Foam::List<Foam::tmp<Foam::scalarField> >
-Foam::fluidModel::faceZonesTemperature() const
+Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneTemperature
+(
+    const label interfaceI
+) const
 {
-    List<tmp<scalarField> > tglobalT
-    (
-        globalPatches().size()
-    );
+    const scalarField patchT =
+        patchTemperature(globalPatches()[interfaceI].patch().index());
 
-    forAll(globalPatches(), i)
-    {
-        const scalarField patchT =
-            patchTemperature(globalPatches()[i].patch().index());
-
-        tglobalT[i] = globalPatches()[i].patchFaceToGlobal(patchT);
-    }
-
-    return tglobalT;
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchT);
 }
 
 
-Foam::List<Foam::tmp<Foam::scalarField> >
-Foam::fluidModel::faceZonesKappaDelta() const
+Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneKappaDelta
+(
+    const label interfaceI
+) const
 {
-    List<tmp<scalarField> > tglobalKD
-    (
-        globalPatches().size()
-    );
+    const scalarField patchKD =
+        patchKappaDelta(globalPatches()[interfaceI].patch().index());
 
-    forAll(globalPatches(), i)
-    {
-        const scalarField patchKD =
-            patchKappaDelta(globalPatches()[i].patch().index());
-
-        tglobalKD[i] = globalPatches()[i].patchFaceToGlobal(patchKD);
-    }
-
-    return tglobalKD;
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchKD);
 }
 
 
@@ -837,59 +813,70 @@ void Foam::fluidModel::setDeltaT(Time& runTime)
 
 void Foam::fluidModel::setTemperature
 (
-    const labelList& patchIDs,
-    const List<scalarField>& nbrFaceZonesTemperature,
-    const List<scalarField>& nbrFaceZonesKappaDelta
+    const label patchID,
+    fvPatchScalarField& temperaturePatch,
+    const scalarField& temperature,
+    const scalarField& kappaDelta,
 )
 {
-    forAll(globalPatches(), i)
+    if
+    (
+        temperaturePatch.type()
+     != mixedFvPatchScalarField::typeName
+    )
     {
-        if
+        FatalErrorIn
         (
-            T().boundaryField()[patchIDs[i]].type()
-         != mixedFvPatchScalarField::typeName
+            "void fluidModel::setTemperature\n"
+            "(\n"
+            "    fvPatchScalarField&,\n"
+            "    const scalarField&,\n"
+            "    const scalarField&\n"
+            ")"
         )
-        {
-            FatalErrorIn
-            (
-                "void fluidModel::setTemperature\n"
-                "(\n"
-                "    const labelList&,\n"
-                "    const List<scalarField>&,\n"
-                "    const List<scalarField>&\n"
-                ")"
-            )
-                << "Bounary condition on " << T().name()
-                <<  " is "
-                << T().boundaryField()[patchIDs[i]].type()
-                << " for patch " << mesh().boundary()[patchIDs[i]].name()
-                << ", instead of "
-                << mixedFvPatchScalarField::typeName
-                << abort(FatalError);
-        }
-
-        scalarField nbrPatchTemperature =
-	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesTemperature[i]);
-
-        scalarField nbrPatchKappaDelta =
-	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesKappaDelta[i]);
-
-        mixedFvPatchScalarField& patchT =
-            refCast<mixedFvPatchScalarField>
-            (
-                T().boundaryField()[patchIDs[i]]
-            );
-
-        patchT.refValue() = nbrPatchTemperature;
-
-        patchT.refGrad() = 0.0;
-
-        patchT.valueFraction() =
-            nbrPatchKappaDelta
-          / (nbrPatchKappaDelta + patchKappaDelta(patchIDs[i]));
-
-        patchT.updateCoeffs();
+            << "Bounary condition on " << T().name() <<  " is "
+            << temperaturePatch.type()
+            << " for patch " << temperaturePatch.patch().name()
+            << ", instead of "
+            << mixedFvPatchScalarField::typeName
+            << abort(FatalError);
     }
+
+    mixedFvPatchScalarField& patchT =
+        refCast<mixedFvPatchScalarField>(temperaturePatch);
+
+    patchT.refValue() = temperature;
+
+    patchT.refGrad() = 0.0;
+
+    patchT.valueFraction() =
+        kappaDelta/(kappaDelta + patchKappaDelta(patchID));
+
+    patchT.updateCoeffs();
+}
+
+
+void Foam::fluidModel::setTemperature
+(
+    const label interfaceI,
+    const label patchID,
+    const scalarField& nbrFaceZoneTemperature,
+    const scalarField& nbrFaceZoneKappaDelta
+)
+{
+    const scalarField patchTemperature =
+	globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneTemperature);
+
+    const scalarField patchKappaDelta =
+	globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneKappaDelta);
+
+    setTemperature
+    (
+        patchID,
+        T().boundaryField()[patchID],
+        patchTemperature,
+        patchKappaDelta
+    );
 }
 
 

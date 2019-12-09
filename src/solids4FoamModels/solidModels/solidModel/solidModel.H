@@ -588,7 +588,7 @@ public:
                 return DiffusionNum_;
             }
 
-            //- Patch heat flux
+            //- Patch heat flux (W/m2)
             virtual tmp<scalarField> patchHeatFlux
             (
                 const label patchID
@@ -624,14 +624,23 @@ public:
                 const label interfaceI
             ) const;
 
-            //- Face zones heat flux
-            virtual List<tmp<scalarField> > faceZonesHeatFlux() const;
+            //- Face zone heat flux (W/m2)
+            virtual tmp<scalarField> faceZoneHeatFlux
+            (
+                const label interfaceI
+            ) const;
 
-            //- Face zones temperature (K)
-            virtual List<tmp<scalarField> > faceZonesTemperature() const;
+            //- Face zone temperature (K)
+            virtual tmp<scalarField> faceZoneTemperature
+            (
+                const label interfaceI
+            ) const;
 
-            //- Face zones kappa*delta
-            virtual List<tmp<scalarField> > faceZonesKappaDelta() const;
+            //- Face zone kappa*delta
+            virtual tmp<scalarField> faceZoneKappaDelta
+            (
+                const label interfaceI
+            ) const;
 
             //- Return enforceLinear switch
             const Switch& enforceLinear() const
@@ -697,6 +706,15 @@ public:
                 const scalarField& pressure
             );
 
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                fvPatchScalarField& temperaturePatch,
+                const scalarField& temperature,
+                const scalarField& kappaDelta
+            );
+
             virtual void setTraction
             (
                 const label interfaceI,
@@ -712,12 +730,13 @@ public:
                 const scalarField& faceZonePressure
             );
 
-            //- Set temperature and flux on global patches
+            //- Set temperature and flux at specified patch
             virtual void setTemperature
             (
-                const labelList& patchIDs,
-                const List<scalarField>& nbrFaceZonesTemperature,
-                const List<scalarField>& nbrFaceZonesKappaDelta
+                const label interfaceI,
+                const label patchID,
+                const scalarField& nbrFaceZoneTemperature,
+                const scalarField& nbrFaceZoneKappaDelta
             );
 
             //- Check if solid model is diverging using the Jacobian field

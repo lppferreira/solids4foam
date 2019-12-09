@@ -1248,63 +1248,39 @@ Foam::tmp<Foam::vectorField> Foam::solidModel::faceZoneAcceleration
 }
 
 
-Foam::List<Foam::tmp<Foam::scalarField> >
-Foam::solidModel::faceZonesHeatFlux() const
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneHeatFlux
+(
+    const label interfaceI
+) const
 {
-    List<tmp<scalarField> > tglobalHF
-    (
-        globalPatches().size()
-    );
+    const scalarField patchHF =
+        patchHeatFlux(globalPatches()[interfaceI].patch().index());
 
-    forAll(globalPatches(), i)
-    {
-        const scalarField patchHF =
-            patchHeatFlux(globalPatches()[i].patch().index());
-
-        tglobalHF[i] = globalPatches()[i].patchFaceToGlobal(patchHF);
-    }
-
-    return tglobalHF;
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchHF);
 }
 
 
-Foam::List<Foam::tmp<Foam::scalarField> >
-Foam::solidModel::faceZonesTemperature() const
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneTemperature
+(
+    const label interfaceI
+) const
 {
-    List<tmp<scalarField> > tglobalT
-    (
-        globalPatches().size()
-    );
+    const scalarField patchT =
+        patchTemperature(globalPatches()[interfaceI].patch().index());
 
-    forAll(globalPatches(), i)
-    {
-        const scalarField patchT =
-            patchTemperature(globalPatches()[i].patch().index());
-
-        tglobalT[i] = globalPatches()[i].patchFaceToGlobal(patchT);
-    }
-
-    return tglobalT;
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchT);
 }
 
 
-Foam::List<Foam::tmp<Foam::scalarField> >
-Foam::solidModel::faceZonesKappaDelta() const
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneKappaDelta
+(
+    const label interfaceI
+) const
 {
-    List<tmp<scalarField> > tglobalKD
-    (
-        globalPatches().size()
-    );
+    const scalarField patchKD =
+        patchKappaDelta(globalPatches()[interfaceI].patch().index());
 
-    forAll(globalPatches(), i)
-    {
-        const scalarField patchKD =
-            patchKappaDelta(globalPatches()[i].patch().index());
-
-        tglobalKD[i] = globalPatches()[i].patchFaceToGlobal(patchKD);
-    }
-
-    return tglobalKD;
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchKD);
 }
 
 
@@ -1467,6 +1443,51 @@ void Foam::solidModel::setPressure
 }
 
 
+void Foam::solidModel::setTemperature
+(
+    const label patchID,
+    fvPatchScalarField& temperaturePatch,
+    const scalarField& temperature,
+    const scalarField& kappaDelta,
+)
+{
+    if
+    (
+        temperaturePatch.type()
+     != mixedTemperatureFvPatchScalarField::typeName
+    )
+    {
+        FatalErrorIn
+        (
+            "void solidModel::setTemperature\n"
+            "(\n"
+            "    fvPatchScalarField&,\n"
+            "    const scalarField&,\n"
+            "    const scalarField&\n"
+            ")"
+        )
+            << "Bounary condition on " << T().name() <<  " is "
+            << temperaturePatch.type()
+            << " for patch " << temperaturePatch.patch().name()
+            << ", instead of "
+            << mixedTemperatureFvPatchScalarField::typeName
+            << abort(FatalError);
+    }
+
+    mixedTemperatureFvPatchScalarField& patchT =
+        refCast<mixedTemperatureFvPatchScalarField>(temperaturePatch);
+
+    patchT.refValue() = temperature;
+
+    patchT.refGrad() = 0.0;
+
+    patchT.valueFraction() =
+        kappaDelta/(kappaDelta + patchKappaDelta(patchID));
+
+    patchT.updateCoeffs();
+}
+
+
 void Foam::solidModel::setTraction
 (
     const label interfaceI,
@@ -1497,59 +1518,25 @@ void Foam::solidModel::setPressure
 
 void Foam::solidModel::setTemperature
 (
-    const labelList& patchIDs,
-    const List<scalarField>& nbrFaceZonesTemperature,
-    const List<scalarField>& nbrFaceZonesKappaDelta
+    const label interfaceI,
+    const label patchID,
+    const scalarField& nbrFaceZoneTemperature,
+    const scalarField& nbrFaceZoneKappaDelta
 )
 {
-    forAll(globalPatches(), i)
-    {
-        if
-        (
-            T().boundaryField()[patchIDs[i]].type()
-         != mixedTemperatureFvPatchScalarField::typeName
-        )
-        {
-            FatalErrorIn
-            (
-                "void solidModel::setTemperature\n"
-                "(\n"
-                "    const labelList&,\n"
-                "    const List<scalarField>&,\n"
-                "    const List<scalarField>&\n"
-                ")"
-            )
-                << "Bounary condition on " << T().name()
-                <<  " is "
-                << T().boundaryField()[patchIDs[i]].type()
-                << " for patch " << mesh().boundary()[patchIDs[i]].name()
-                << ", instead of "
-                << mixedTemperatureFvPatchScalarField::typeName
-                << abort(FatalError);
-        }
+    const scalarField patchTemperature =
+	globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneTemperature);
 
-        scalarField nbrPatchTemperature =
-	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesTemperature[i]);
+    const scalarField patchKappaDelta =
+	globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneKappaDelta);
 
-        scalarField nbrPatchKappaDelta =
-	    globalPatches()[i].globalFaceToPatch(nbrFaceZonesKappaDelta[i]);
-
-        mixedTemperatureFvPatchScalarField& patchT =
-            refCast<mixedTemperatureFvPatchScalarField>
-            (
-                T().boundaryField()[patchIDs[i]]
-            );
-
-        patchT.refValue() = nbrPatchTemperature;
-
-        patchT.refGrad() = 0.0;
-
-        patchT.valueFraction() =
-            nbrPatchKappaDelta
-          / (nbrPatchKappaDelta + patchKappaDelta(patchIDs[i]));
-
-        patchT.updateCoeffs();
-    }
+    setTemperature
+    (
+        patchID,
+        T().boundaryField()[patchID],
+        patchTemperature,
+        patchKappaDelta
+    );
 }
 
 
