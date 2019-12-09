@@ -158,35 +158,45 @@ void IQNILSCouplingInterface::updateDisplacement()
     if (outerCorr() == 1)
     {
         // Clean up data from old time steps
-        forAll(fluid().globalPatches(), patchI)
+        forAll(fluid().globalPatches(), interfaceI)
         {
             Info<< "Modes before clean-up ("
                 << fluidMesh().boundary()
                    [
-                       fluid().globalPatches()[patchI].patch().index()
+                       fluid().globalPatches()[interfaceI].patch().index()
                    ].name()
-                << "): " << fluidPatchesPointsT_[patchI].size();
+                << "): " << fluidPatchesPointsT_[interfaceI].size();
 
             while (true)
             {
-                if (fluidPatchesPointsT_[patchI].size())
+                if (fluidPatchesPointsT_[interfaceI].size())
                 {
                     if
                     (
                         (fluid().runTime().timeIndex() - couplingReuse())
-                      > fluidPatchesPointsT_[patchI][0]
+                      > fluidPatchesPointsT_[interfaceI][0]
                     )
                     {
-                        for (label i = 0; i < fluidPatchesPointsT_[patchI].size() - 1; i++)
+                        for
+                        (
+                            label i = 0;
+                            i < fluidPatchesPointsT_[interfaceI].size() - 1;
+                            i++
+                        )
                         {
-                            fluidPatchesPointsT_[patchI][i] = fluidPatchesPointsT_[patchI][i + 1];
-                            fluidPatchesPointsV_[patchI][i] = fluidPatchesPointsV_[patchI][i + 1];
-                            fluidPatchesPointsW_[patchI][i] = fluidPatchesPointsW_[patchI][i + 1];
+                            fluidPatchesPointsT_[interfaceI][i] =
+                                fluidPatchesPointsT_[interfaceI][i + 1];
+
+                            fluidPatchesPointsV_[interfaceI][i] =
+                                fluidPatchesPointsV_[interfaceI][i + 1];
+
+                            fluidPatchesPointsW_[interfaceI][i] =
+                                fluidPatchesPointsW_[interfaceI][i + 1];
                         }
 
-                        fluidPatchesPointsT_[patchI].remove();
-                        fluidPatchesPointsV_[patchI].remove();
-                        fluidPatchesPointsW_[patchI].remove();
+                        fluidPatchesPointsT_[interfaceI].remove();
+                        fluidPatchesPointsV_[interfaceI].remove();
+                        fluidPatchesPointsW_[interfaceI].remove();
                     }
                     else
                     {
@@ -202,44 +212,47 @@ void IQNILSCouplingInterface::updateDisplacement()
             Info<< ", modes after clean-up ("
                 << fluidMesh().boundary()
                    [
-                       fluid().globalPatches()[patchI].patch().index()
+                       fluid().globalPatches()[interfaceI].patch().index()
                    ].name()
-                << "): " << fluidPatchesPointsT_[patchI].size() << endl;
+                << "): " << fluidPatchesPointsT_[interfaceI].size() << endl;
         }
     }
     else if (outerCorr() == 2)
     {
         // Set reference in the first coupling iteration
-        forAll(fluid().globalPatches(), patchI)
+        forAll(fluid().globalPatches(), interfaceI)
         {
-            solidZonesPointsDisplsRef()[patchI] = solidZonesPointsDispls()[patchI];
-            fluidZonesPointsDisplsRef()[patchI] = fluidZonesPointsDispls()[patchI];
+            solidZonesPointsDisplsRef()[interfaceI] =
+                solidZonesPointsDispls()[interfaceI];
+
+            fluidZonesPointsDisplsRef()[interfaceI] =
+                fluidZonesPointsDispls()[interfaceI];
         }
     }
     else
     {
-        forAll(fluid().globalPatches(), patchI)
+        forAll(fluid().globalPatches(), interfaceI)
         {
             // Reference has been set in the first coupling iteration
-            fluidPatchesPointsV_[patchI].append
+            fluidPatchesPointsV_[interfaceI].append
             (
                 (
-                    solidZonesPointsDispls()[patchI]
-                  - fluidZonesPointsDispls()[patchI]
+                    solidZonesPointsDispls()[interfaceI]
+                  - fluidZonesPointsDispls()[interfaceI]
                 )
               - (
-                    solidZonesPointsDisplsRef()[patchI]
-                  - fluidZonesPointsDisplsRef()[patchI]
+                    solidZonesPointsDisplsRef()[interfaceI]
+                  - fluidZonesPointsDisplsRef()[interfaceI]
                 )
             );
 
-            fluidPatchesPointsW_[patchI].append
+            fluidPatchesPointsW_[interfaceI].append
             (
-                solidZonesPointsDispls()[patchI]
-              - solidZonesPointsDisplsRef()[patchI]
+                solidZonesPointsDispls()[interfaceI]
+              - solidZonesPointsDisplsRef()[interfaceI]
             );
 
-            fluidPatchesPointsT_[patchI].append
+            fluidPatchesPointsT_[interfaceI].append
             (
                 fluid().runTime().timeIndex()
             );
@@ -247,9 +260,9 @@ void IQNILSCouplingInterface::updateDisplacement()
     }
 
 
-    forAll(fluid().globalPatches(), patchI)
+    forAll(fluid().globalPatches(), interfaceI)
     {
-        if (fluidPatchesPointsT_[patchI].size() > 1)
+        if (fluidPatchesPointsT_[interfaceI].size() > 1)
         {
             // Previoulsy given in the function:
             // updateDisplacementUsingIQNILS();
@@ -258,7 +271,7 @@ void IQNILSCouplingInterface::updateDisplacement()
             // with as columns the items
             // in the DynamicList and calculate the QR-decomposition of V
             // with modified Gram-Schmidt
-            label cols = fluidPatchesPointsV_[patchI].size();
+            label cols = fluidPatchesPointsV_[interfaceI].size();
             RectangularMatrix<scalar> R(cols, cols, 0.0);
             RectangularMatrix<scalar> C(cols, 1);
             RectangularMatrix<scalar> Rcolsum(1, cols);
@@ -266,7 +279,7 @@ void IQNILSCouplingInterface::updateDisplacement()
 
             for (label i = 0; i < cols; i++)
             {
-                Q.append(fluidPatchesPointsV_[patchI][cols-1-i]);
+                Q.append(fluidPatchesPointsV_[interfaceI][cols-1-i]);
             }
 
             for (label i = 0; i < cols; i++)
@@ -287,8 +300,8 @@ void IQNILSCouplingInterface::updateDisplacement()
                     (
                         Q[i]
                       & (
-                            fluidZonesPointsDispls()[patchI]
-                          - solidZonesPointsDispls()[patchI]
+                            fluidZonesPointsDispls()[interfaceI]
+                          - solidZonesPointsDispls()[interfaceI]
                         )
                     );
             }
@@ -335,13 +348,16 @@ void IQNILSCouplingInterface::updateDisplacement()
                 }
             }
 
-            fluidZonesPointsDisplsPrev()[patchI] = fluidZonesPointsDispls()[patchI];
+            fluidZonesPointsDisplsPrev()[interfaceI] =
+                fluidZonesPointsDispls()[interfaceI];
 
-            fluidZonesPointsDispls()[patchI] = solidZonesPointsDispls()[patchI];
+            fluidZonesPointsDispls()[interfaceI] =
+                solidZonesPointsDispls()[interfaceI];
 
             for (label i = 0; i < cols; i++)
             {
-                fluidZonesPointsDispls()[patchI] += fluidPatchesPointsW_[patchI][i]*C[cols-1-i][0];
+                fluidZonesPointsDispls()[interfaceI] +=
+                    fluidPatchesPointsW_[interfaceI][i]*C[cols-1-i][0];
             }
         }
         else
@@ -350,19 +366,21 @@ void IQNILSCouplingInterface::updateDisplacement()
             Info<< "Current fsi under-relaxation factor ("
                 << fluidMesh().boundary()
                    [
-                       fluid().globalPatches()[patchI].patch().index()
+                       fluid().globalPatches()[interfaceI].patch().index()
                    ].name()
                 << "): " << relaxationFactor_ << endl;
 
-            fluidZonesPointsDisplsPrev()[patchI] = fluidZonesPointsDispls()[patchI];
+            fluidZonesPointsDisplsPrev()[interfaceI] =
+                fluidZonesPointsDispls()[interfaceI];
 
             if ((outerCorr() == 1) && predictor())
             {
-                fluidZonesPointsDispls()[patchI] += residuals()[patchI];
+                fluidZonesPointsDispls()[interfaceI] += residuals()[interfaceI];
             }
             else
             {
-                fluidZonesPointsDispls()[patchI] += relaxationFactor_*residuals()[patchI];
+                fluidZonesPointsDispls()[interfaceI] +=
+                    relaxationFactor_*residuals()[interfaceI];
             }
         }
     }

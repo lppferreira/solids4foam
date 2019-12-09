@@ -606,26 +606,23 @@ public:
                 const label patchID
             ) const;
 
-            //- Face zones point displacement increment
-            virtual List<tmp<vectorField> > faceZonesPointDisplacementIncrement() const;
+            //- Face zone point displacement increment
+            virtual tmp<vectorField> faceZonePointDisplacementIncrement
+            (
+                const label interfaceI
+            ) const;
 
-            //- Face zones point displacement increment
-            virtual List<tmp<vectorField> > faceZonesPointDisplacementOld() const;
+            //- Face zone point displacement increment
+            virtual tmp<vectorField> faceZonePointDisplacementOld
+            (
+                const label interfaceI
+            ) const;
 
-            //- Face zones velocity
-            virtual List<tmp<vectorField> > faceZonesAcceleration() const;
-
-            //- Face zones velocity
-            virtual List<tmp<vectorField> > faceZonesVelocity() const;
-
-            //- Face zones surface velocity gradient
-            virtual List<tmp<tensorField> > faceZonesSurfaceGradientOfVelocity() const;
-
-            //- Face zones primitive patch in current configuration
-            virtual List<tmp<vectorField> > currentFaceZonesPoints() const;
-
-            //- Face zones current normal
-            virtual List<tmp<vectorField> > faceZonesNormal() const;
+            //- Face zone acceleration
+            virtual tmp<vectorField> faceZoneAcceleration
+            (
+                const label interfaceI
+            ) const;
 
             //- Face zones heat flux
             virtual List<tmp<scalarField> > faceZonesHeatFlux() const;
@@ -672,7 +669,11 @@ public:
             virtual void TisRequired();
 
             //- Make the global poly patches
-            void makeGlobalPatches(const wordList& patchNames) const;
+            void makeGlobalPatches
+            (
+                const wordList& patchNames,
+                const bool currentConfiguration = true
+            ) const;
 
             //- Return const-access to the global poly patches
             const PtrList<globalPolyPatch>& globalPatches() const;
@@ -696,32 +697,19 @@ public:
                 const scalarField& pressure
             );
 
-            //- Set traction at specified patch
             virtual void setTraction
             (
-                const labelList& patchIDs,
-                const List<vectorField>& faceZonesTraction
-            );
-
-            //- Set traction at specified patch
-            virtual void setTraction
-            (
-                const labelList& patchIDs,
-                const PtrList<vectorIOField>& faceZonesTraction
+                const label interfaceI,
+                const label patchID,
+                const vectorField& faceZoneTraction
             );
 
             //- Set traction at specified patch
             virtual void setPressure
             (
-                const labelList& patchIDs,
-                const List<scalarField>& faceZonesPressure
-            );
-
-            //- Set traction at specified patch
-            virtual void setPressure
-            (
-                const labelList& patchIDs,
-                const PtrList<scalarIOField>& faceZonesPressure
+                const label interfaceI,
+                const label patchID,
+                const scalarField& faceZonePressure
             );
 
             //- Set temperature and flux on global patches
