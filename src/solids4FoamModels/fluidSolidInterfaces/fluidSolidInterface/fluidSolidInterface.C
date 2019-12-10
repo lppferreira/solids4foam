@@ -790,6 +790,11 @@ void Foam::fluidSolidInterface::moveFluidMesh()
         const bool fvMotionSolver =
             fluidMesh().foundObject<pointVectorField>("pointMotionU");
 
+        // If the pointDisplacement field is in the object registry then we assume
+        // that the fv displacement solver is being used
+        const bool fvDisplacementSolver =
+            fluidMesh().foundObject<pointVectorField>("pointDisplacement");
+
         if (feMotionSolver)
         {
             tetPointVectorField& motionU =
@@ -848,6 +853,31 @@ void Foam::fluidSolidInterface::moveFluidMesh()
                         fluidPatchesPointsDispls[interfaceI]
                       - fluidPatchesPointsDisplsPrev[interfaceI]
                     )/fluid().runTime().deltaT().value();
+            }
+        }
+        else if (fvDisplacementSolver)
+        {
+            pointVectorField& motionD =
+                const_cast<pointVectorField&>
+                (
+                    fluidMesh().objectRegistry::
+                    lookupObject<pointVectorField>
+                    (
+                        "pointDisplacement"
+                    )
+                );
+
+            forAll(fluid().globalPatches(), interfaceI)
+            {
+                fixedValuePointPatchVectorField& motionDFluidPatch =
+                    refCast<fixedValuePointPatchVectorField>
+                    (
+                        motionD.boundaryField()[fluidPatchIndices()[interfaceI]]
+                    );
+
+                motionDFluidPatch ==
+                    fluidPatchesPointsDispls[interfaceI]
+                  - fluidPatchesPointsDisplsPrev[interfaceI];
             }
         }
         else if (isA<newSubsetMotionSolverFvMesh>(fluidMesh()))
