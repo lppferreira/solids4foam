@@ -876,7 +876,8 @@ void Foam::fluidSolidInterface::moveFluidMesh()
                     );
 
                 motionDFluidPatch ==
-                    fluidPatchesPointsDispls[interfaceI]
+                    motionDFluidPatch
+                  + fluidPatchesPointsDispls[interfaceI]
                   - fluidPatchesPointsDisplsPrev[interfaceI];
             }
         }
