@@ -18,13 +18,13 @@ FoamFile
 fluidSolidInterface    Aitken;
 //fluidSolidInterface    IQNILS;
 
-"fixedRelaxationCoeffs|AitkenCoeffs|ISNILSCoeffs"
+"fixedRelaxationCoeffs|AitkenCoeffs|IQNILSCoeffs"
 {
     // Solid interface patch list
-    solidPatch (interface);
+    solidPatch interface;
 
     // Fluid interface patch list
-    fluidPatch (interface);
+    fluidPatch interface;
 
     // Under-relaxation factor for passing the solid interface
     // displacement/velocity to the fluid interface
