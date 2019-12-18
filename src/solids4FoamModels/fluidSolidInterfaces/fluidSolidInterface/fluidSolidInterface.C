@@ -436,6 +436,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     residualsPrev_.setSize(nGlobalPatches_);
     maxResidualsNorm_.setSize(nGlobalPatches_);
     maxIntsDisplsNorm_.setSize(nGlobalPatches_);
+    maxHeatResidualsNorm_.setSize(nGlobalPatches_);
 
     initializeFields();
 

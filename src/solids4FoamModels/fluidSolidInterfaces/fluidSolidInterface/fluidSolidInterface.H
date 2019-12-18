@@ -333,6 +333,12 @@ public:
                 return outerCorrTolerance_;
             }
 
+            //- Return outer corrector loop tolerance: heat flux
+            scalar energyTolerance() const
+            {
+                return energyTolerance_;
+            }
+
             //- Return max numter of outer correctors
             label nOuterCorr() const
             {

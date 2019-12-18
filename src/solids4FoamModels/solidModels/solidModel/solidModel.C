@@ -1448,7 +1448,7 @@ void Foam::solidModel::setTemperature
     const label patchID,
     fvPatchScalarField& temperaturePatch,
     const scalarField& temperature,
-    const scalarField& kappaDelta,
+    const scalarField& kappaDelta
 )
 {
     if
