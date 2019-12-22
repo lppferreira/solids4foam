@@ -1525,10 +1525,10 @@ void Foam::solidModel::setTemperature
 )
 {
     const scalarField patchTemperature =
-	globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneTemperature);
+        globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneTemperature);
 
     const scalarField patchKappaDelta =
-	globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneKappaDelta);
+        globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneKappaDelta);
 
     setTemperature
     (

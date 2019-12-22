@@ -194,7 +194,7 @@ bool unsThermalNonLinGeomUpdatedLagSolid::converged
     {
         maxIterReached()++;
         Warning
-            << "Max iterations reached within the enery-momentum loop" << endl;
+            << "Max iterations reached within the energy-momentum loop" << endl;
     }
 
     return converged;
