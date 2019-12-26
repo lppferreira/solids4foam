@@ -61,19 +61,35 @@ bool Foam::fluidSolidInterface::updateCoupled()
             // Enable coupling
             coupled_ = true;
 
-            // Enable thermal coupling but before doing so,
-            // we need to make sure temperature field is present
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+bool Foam::fluidSolidInterface::updateConjugate()
+{
+    if (couplingStartTime_ > SMALL && !conjugate_)
+    {
+        if (runTime().value() > (couplingStartTime_ - SMALL))
+        {
+            InfoIn("fluidSolidInterface::updateConjugate()")
+                << "Enabling fluid-solid energy coupling" << endl;
+
+            // Enable energy coupling but before doing so,
+            // Note: Before doing so, make sure temperature fields are present
             if
             (
-                !conjugate_
              && fluidMesh().thisDb().foundObject<volScalarField>("T")
              && solidMesh().thisDb().foundObject<volScalarField>("T")
             )
             {
                 conjugate_ = true;
-            }
 
-            return true;
+                return true;
+            }
         }
     }
 
@@ -1253,6 +1269,12 @@ void Foam::fluidSolidInterface::updateElasticWallPressureAcceleration()
 
 void Foam::fluidSolidInterface::updateSolidTemperature()
 {
+    // Check if energy coupling switch needs to be updated
+    if (!conjugate_)
+    {
+        updateConjugate();
+    }
+
     if (conjugate())
     {
         for (label interfaceI = 0; interfaceI < nGlobalPatches_; interfaceI++)
@@ -1315,6 +1337,12 @@ void Foam::fluidSolidInterface::updateSolidTemperature()
 
 void Foam::fluidSolidInterface::updateFluidTemperature()
 {
+    // Check if energy coupling switch needs to be updated
+    if (!conjugate_)
+    {
+        updateConjugate();
+    }
+
     if (conjugate())
     {
         for (label interfaceI = 0; interfaceI < nGlobalPatches_; interfaceI++)

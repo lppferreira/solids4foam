@@ -178,6 +178,9 @@ class fluidSolidInterface
         //- Update the coupled switch based on the couplingStartTime
         bool updateCoupled();
 
+        //- Update the conjugate switch based on the couplingStartTime
+        bool updateConjugate();
+
         //- Calculate interface-to-interface list
         void calcInterfaceToInterfaceList() const;
 
