@@ -55,8 +55,6 @@ addToRunTimeSelectionTable
 
 // * * * * * * * * * * *  Private Member Functions * * * * * * * * * * * * * //
 
-// Note: Sep 18 2019
-// The total Lagrangian implementation does not move the mesh
 void unsThermalNonLinGeomTotalLagSolid::DiffusionNo()
 {
     //- calculate solid Diffusion number
@@ -197,95 +195,6 @@ bool unsThermalNonLinGeomTotalLagSolid::converged
 }
 
 
-const standAlonePatch& unsThermalNonLinGeomTotalLagSolid::boundaryPatchCurrent
-(
-    const label patchID
-) const
-{
-    deformedPatchPtr_ =
-        new standAlonePatch
-        (
-            mesh().boundaryMesh()[patchID].localFaces(),
-            mesh().boundaryMesh()[patchID].localPoints()
-        );
-    standAlonePatch& deformedPatch = *deformedPatchPtr_;
-
-    // Calculate the deformed points
-    const pointField deformedPoints =
-        mechanical().volToPoint().interpolate
-        (
-            mesh().boundaryMesh()[patchID],
-            D()
-        )
-      + mesh().boundaryMesh()[patchID].localPoints();
-
-    // Move the standAlonePatch points
-    const_cast<pointField&>(deformedPatch.points()) = deformedPoints;
-
-    // Return the boundary patch in its deformed configuration
-    return *deformedPatchPtr_;
-}
-
-
-tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::deltaCoeffsCurrent
-(
-    const label patchID
-) const
-{
-    tmp<scalarField> tdeltaCoeffsCurrent
-    (
-        new scalarField(mesh().boundary()[patchID].size(), 0)
-    );
-
-    // Patch delta vector (initial configuration)
-    const vectorField delta = mesh().boundary()[patchID].delta();
-
-    // Patch delta vector (deformed configuration)
-    const vectorField deltaCurrent =
-    (
-        D().boundaryField()[patchID]
-      - D().boundaryField()[patchID].patchInternalField()
-    ) + delta;
-
-    // Note: we have two options to calculate deformed unit normal
-    // 1. Use the cell-centred deformation gradient field 'F'.
-    // 2. Calculate the deformed normals by interpolating displacements
-    //    to the points and calculating the normals on the deformed patch.
-    // For now we use method 1. as the result of the method 2. is not consistent,
-    // perhaps due the governing equation formulation
-
-    // Patch unit normals (initial configuration)
-    const vectorField n = mesh().boundary()[patchID].nf();
-
-    // Patch total deformation gradient inverse
-    const tensorField& FinvBf = Finvf_.boundaryField()[patchID];
-
-    // Patch total Jacobian
-    const scalarField& JBf = Jf_.boundaryField()[patchID];
-
-    // Patch unit normals (deformed configuration)
-    const vectorField nCurrent = JBf*FinvBf.T() & n;
-
-    // Patch unit normals (deformed configuration)
-    // const vectorField& nCurrent
-    // (
-    //     boundaryPatchCurrent(patchID).faceNormals()
-    // );
-
-    forAll(tdeltaCoeffsCurrent(), faceI)
-    {
-        tdeltaCoeffsCurrent()[faceI] =
-            scalar(1) / max
-            (
-                nCurrent[faceI] & deltaCurrent[faceI],
-                0.05*mag(deltaCurrent[faceI])
-            );
-    }
-
-    return tdeltaCoeffsCurrent;
-}
-
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 unsThermalNonLinGeomTotalLagSolid::unsThermalNonLinGeomTotalLagSolid
@@ -295,7 +204,6 @@ unsThermalNonLinGeomTotalLagSolid::unsThermalNonLinGeomTotalLagSolid
 )
 :
     solidModel(typeName, runTime, region),
-    deformedPatchPtr_(NULL),
     sigmaf_
     (
         IOobject
@@ -448,14 +356,6 @@ unsThermalNonLinGeomTotalLagSolid::unsThermalNonLinGeomTotalLagSolid
 }
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-unsThermalNonLinGeomTotalLagSolid::~unsThermalNonLinGeomTotalLagSolid()
-{
-    deleteDemandDrivenData(deformedPatchPtr_);
-}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::patchHeatFlux
@@ -503,7 +403,8 @@ tmp<scalarField> unsThermalNonLinGeomTotalLagSolid::patchKappaDelta
     );
 
     tKD() =
-        kappa_.boundaryField()[patchID]*deltaCoeffsCurrent(patchID);
+        kappa_.boundaryField()[patchID]
+      * mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;
 }
@@ -781,7 +682,7 @@ void unsThermalNonLinGeomTotalLagSolid::writeFields(const Time& runTime)
                 << gSum
                    (
                        wallHeatFluxBf[patchI]
-                     * mag(patchCurrentSf(patchI))
+                     * mag(currentPatchSf(patchI))
                    )
                 << endl;
         }

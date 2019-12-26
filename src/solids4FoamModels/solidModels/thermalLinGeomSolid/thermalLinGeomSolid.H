@@ -163,7 +163,7 @@ public:
                 return D();
             }
 
-            //- Patch heat flux
+            //- Patch heat flux (W/m2)
             virtual tmp<scalarField> patchHeatFlux
             (
                 const label patchID

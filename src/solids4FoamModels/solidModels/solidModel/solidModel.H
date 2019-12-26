@@ -565,10 +565,10 @@ public:
             //  solution variable
             virtual volVectorField& solutionD() = 0;
 
-            //- Patch face area vector
+            //- Deformed patch face area vector
             //- Note: will be overridden in Total Lagrangian models
-            //- to account for the deformation.
-            virtual tmp<vectorField> patchCurrentSf
+            //  to account for the deformation.
+            virtual tmp<vectorField> currentPatchSf
             (
                 const label patchID
             ) const

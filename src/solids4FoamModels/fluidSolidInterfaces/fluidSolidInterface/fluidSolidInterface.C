@@ -1447,7 +1447,7 @@ Foam::scalar Foam::fluidSolidInterface::updateHeatFluxResidual()
                 << gSum
                    (
                        solid().patchHeatFlux(solidPatchIndices()[interfaceI])
-                     * mag(solid().patchCurrentSf(solidPatchIndices()[interfaceI]))
+                     * mag(solid().currentPatchSf(solidPatchIndices()[interfaceI]))
                    )
                 << " [W]\n" << endl;
 
