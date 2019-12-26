@@ -82,7 +82,7 @@ bool Foam::fluidSolidInterface::updateConjugate()
             // Note: Before doing so, make sure temperature fields are present
             if
             (
-             && fluidMesh().thisDb().foundObject<volScalarField>("T")
+                fluidMesh().thisDb().foundObject<volScalarField>("T")
              && solidMesh().thisDb().foundObject<volScalarField>("T")
             )
             {
