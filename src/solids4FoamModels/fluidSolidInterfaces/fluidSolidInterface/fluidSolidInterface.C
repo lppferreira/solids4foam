@@ -1455,8 +1455,6 @@ Foam::scalar Foam::fluidSolidInterface::updateHeatFluxResidual()
             maxHeatResidual = max(maxHeatResidual, heatResidualNorm);
         }
 
-        Info<< endl;
-
         return maxHeatResidual;
     }
     else
