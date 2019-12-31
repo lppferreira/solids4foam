@@ -75,9 +75,6 @@ class unsWeakThermalNonLinGeomTotalLagSolid
 {
     // Private data
 
-        //- Interface patch in its deformed configuration
-        mutable standAlonePatch* deformedPatchPtr_;
-
         //- Thermal model
         thermalModel thermal_;
 
@@ -103,18 +100,6 @@ class unsWeakThermalNonLinGeomTotalLagSolid
             const lduSolverPerformance& solverPerfT,
             const volScalarField& T
         );
-
-        //- Patch in deformed configuration
-        const standAlonePatch& boundaryPatchCurrent
-        (
-            const label patchID
-        ) const;
-
-        //- Patch deltaCoeffs in deformed configuration
-        tmp<scalarField> deltaCoeffsCurrent
-        (
-            const label patchID
-        ) const;
 
         //- Disallow default bitwise copy construct
         unsWeakThermalNonLinGeomTotalLagSolid(const unsWeakThermalNonLinGeomTotalLagSolid&);
@@ -151,21 +136,16 @@ public:
 
     // Destructor
 
-        virtual ~unsWeakThermalNonLinGeomTotalLagSolid();
+        virtual ~unsWeakThermalNonLinGeomTotalLagSolid()
+        {}
 
 
     // Member Functions
 
         // Access
 
-            //- Patch deformed face area vector
-            // Note: we have two options to calculate deformed patch face area vector
-            // 1. Use the cell-centred deformation gradient field 'F'.
-            // 2. Calculate the deformed face area vector by interpolating displacements
-            //    to the points and calculating the face area vector on the deformed patch.
-            // For now we use method 1. as the result of the method 2. is not consistent,
-            // perhaps due the governing equation formulation
-            virtual tmp<vectorField> patchCurrentSf
+            //- Deformed patch face area vector
+            virtual tmp<vectorField> currentPatchSf
             (
                 const label patchID
             ) const
@@ -176,12 +156,9 @@ public:
                   * Finvf().boundaryField()[patchID].T()
                   & mesh().boundary()[patchID].Sf()
                 );
-
-                // Note: Does not produce consistent result
-                // return boundaryPatchCurrent(patchID).areas();
             }
 
-            //- Patch heat flux
+            //- Patch heat flux (W/m2)
             virtual tmp<scalarField> patchHeatFlux
             (
                 const label patchID

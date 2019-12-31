@@ -141,7 +141,7 @@ public:
                 return const_cast<volVectorField&>(volVectorField::null());
             }
 
-            //- Patch heat flux
+            //- Patch heat flux (W/m2)
             virtual tmp<scalarField> patchHeatFlux
             (
                 const label patchID

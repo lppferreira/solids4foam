@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | foam-extend: Open Source CFD
-   \\    /   O peration     |
-    \\  /    A nd           | For copyright notice see file Copyright
-     \\/     M anipulation  |
+   \\    /   O peration     | Version:     4.1
+    \\  /    A nd           | Web:         http://www.foam-extend.org
+     \\/     M anipulation  | For copyright notice see file Copyright
 -------------------------------------------------------------------------------
 License
     This file is part of foam-extend.
@@ -25,140 +25,13 @@ License
 
 #include "mixedTemperatureFvPatchScalarField.H"
 #include "addToRunTimeSelectionTable.H"
+#include "fvPatchFieldMapper.H"
 #include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-
-// * * * * * * * * * * * * * * Private Functions * * * * * * * * * * * * * * //
-
-bool mixedTemperatureFvPatchScalarField::staticMesh() const
-{
-    // If the deformation gradient "F" and the displacement increment DD" are
-    // found then we can assume it is a moving mesh (updated Lagrangian) case
-    if (db().foundObject<volVectorField>("D") && nonLinearGeometry())
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-
-bool mixedTemperatureFvPatchScalarField::movingMesh() const
-{
-    // If the deformation gradient "F" and the displacement increment DD" are
-    // found then we can assume it is a moving mesh (updated Lagrangian) case
-    if (db().foundObject<volVectorField>("DD") && nonLinearGeometry())
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-
-bool mixedTemperatureFvPatchScalarField::nonLinearGeometry() const
-{
-    // If the deformation gradient "F" is found then we will assume the case to
-    // be nonlinear geometry (i.e. finite strain)
-    if (db().foundObject<volTensorField>("F"))
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-
-void mixedTemperatureFvPatchScalarField::updateDeformedFields()
-{
-    const vectorField n = patch().nf();
-
-    const vectorField delta = patch().delta();
-
-    // non-Orthogonal correction vector
-    // Note: using undeformed unit normal and delta vectors 
-    nonOrthCorrVector_ = delta - n*(n & delta);
-
-    if (staticMesh())
-    {
-        // Lookup displacement (D) from solver
-        const fvPatchField<vector>& DBf =
-            patch().lookupPatchField<volVectorField, vector>("D");
-
-        // Lookup inverse of the total deformation gradient from solver
-        const fvsPatchField<tensor>& FinvBf =
-            patch().lookupPatchField<surfaceTensorField, tensor>("Finvf");
-
-        // Lookup Jacobian of total deformation gradient from solver
-        const fvsPatchField<scalar>& JBf =
-            patch().lookupPatchField<surfaceScalarField, scalar>("Jf");
-
-        // Unit normals: deformed configuration
-        const vectorField nCurrent = JBf*FinvBf.T() & n;
-
-        // Patch delta: deformed configuration
-        const vectorField deltaCurrent =
-            (DBf - DBf.patchInternalField()) + delta;
-
-        // Patch deltaCoeffs: deformed configuration
-        forAll(deltaCoeffsCurrent_, faceI)
-        {
-            deltaCoeffsCurrent_[faceI] =
-                scalar(1) / max
-                (
-                    nCurrent[faceI] & deltaCurrent[faceI],
-                    0.05*mag(deltaCurrent[faceI])
-                );
-        }
-    }
-    else if (movingMesh())
-    {
-        // Lookup displacement increment (DD) from solver
-        const fvPatchField<vector>& DDBf =
-            patch().lookupPatchField<volVectorField, vector>("DD");
-
-        // Lookup inverse of the total deformation gradient from solver
-        const fvsPatchField<tensor>& relFinvBf =
-            patch().lookupPatchField<surfaceTensorField, tensor>("relFinvf");
-
-        // Lookup Jacobian of total deformation gradient from solver
-        const fvsPatchField<scalar>& relJBf =
-            patch().lookupPatchField<surfaceScalarField, scalar>("relJf");
-
-        // Unit normals: deformed configuration
-        const vectorField nCurrent = relJBf*relFinvBf.T() & n;
-
-        // Patch delta: deformed configuration
-        const vectorField deltaCurrent =
-            (DDBf - DDBf.patchInternalField()) + delta;
-
-        // Patch deltaCoeffs: deformed configuration
-        forAll(deltaCoeffsCurrent_, faceI)
-        {
-            deltaCoeffsCurrent_[faceI] =
-                scalar(1) / max
-                (
-                    nCurrent[faceI] & deltaCurrent[faceI],
-                    0.05*mag(deltaCurrent[faceI])
-                );
-        }
-    }
-    else
-    {
-        deltaCoeffsCurrent_ = this->patch().deltaCoeffs();
-    }
-}
-
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -169,34 +42,11 @@ mixedTemperatureFvPatchScalarField::mixedTemperatureFvPatchScalarField
 )
 :
     mixedFvPatchScalarField(p, iF),
-    fieldName_("undefined"),
-    nonOrthCorrVector_(p.size(), vector::zero),
-    deltaCoeffsCurrent_(p.size(), 0)
-{}
-
-
-mixedTemperatureFvPatchScalarField::mixedTemperatureFvPatchScalarField
-(
-    const fvPatch& p,
-    const DimensionedField<scalar, volMesh>& iF,
-    const dictionary& dict
-)
-:
-    mixedFvPatchScalarField(p, iF, dict),
-    fieldName_(dimensionedInternalField().name()),
-    nonOrthCorrVector_(p.size(), vector::zero),
-    deltaCoeffsCurrent_(p.size(), 0)
+    fieldName_("undefined")
 {
-    // Call evaluate only if the value is not found. Used to avoid evaluating
-    // when we have incomplete meshes during Parallel Load Balancing. When
-    // shipping the field over to another processor, we first call write, making
-    // sure that the value is written and read it on the other side (see
-    // write member function). If this proves to be problematic, we can always
-    // initialize with patch internal field for the start-up. VV, 12/Apr/2019.
-    if (!dict.found("value"))
-    {
-        evaluate();
-    }
+    valueFraction() = 0.0;
+    refValue() = 0.0;
+    refGrad() = 0.0;
 }
 
 
@@ -209,34 +59,40 @@ mixedTemperatureFvPatchScalarField::mixedTemperatureFvPatchScalarField
 )
 :
     mixedFvPatchScalarField(ptf, p, iF, mapper),
-    fieldName_(ptf.fieldName_),
-    nonOrthCorrVector_(ptf.nonOrthCorrVector_, mapper),
-    deltaCoeffsCurrent_(ptf.deltaCoeffsCurrent_, mapper)
+    fieldName_(ptf.fieldName_)
 {}
 
 
 mixedTemperatureFvPatchScalarField::mixedTemperatureFvPatchScalarField
 (
-    const mixedTemperatureFvPatchScalarField& ptf
+    const fvPatch& p,
+    const DimensionedField<scalar, volMesh>& iF,
+    const dictionary& dict
 )
 :
-    mixedFvPatchScalarField(ptf),
-    fieldName_(ptf.fieldName_),
-    nonOrthCorrVector_(ptf.nonOrthCorrVector_),
-    deltaCoeffsCurrent_(ptf.deltaCoeffsCurrent_)
+    mixedFvPatchScalarField(p, iF, dict),
+    fieldName_(dimensionedInternalField().name())
 {}
 
 
 mixedTemperatureFvPatchScalarField::mixedTemperatureFvPatchScalarField
 (
-    const mixedTemperatureFvPatchScalarField& ptf,
+    const mixedTemperatureFvPatchScalarField& tppsf
+)
+:
+    mixedFvPatchScalarField(tppsf),
+    fieldName_(tppsf.fieldName_)
+{}
+
+
+mixedTemperatureFvPatchScalarField::mixedTemperatureFvPatchScalarField
+(
+    const mixedTemperatureFvPatchScalarField& tppsf,
     const DimensionedField<scalar, volMesh>& iF
 )
 :
-    mixedFvPatchScalarField(ptf, iF),
-    fieldName_(ptf.fieldName_),
-    nonOrthCorrVector_(ptf.nonOrthCorrVector_),
-    deltaCoeffsCurrent_(ptf.deltaCoeffsCurrent_)
+    mixedFvPatchScalarField(tppsf, iF),
+    fieldName_(tppsf.fieldName_)
 {}
 
 
@@ -252,15 +108,21 @@ void mixedTemperatureFvPatchScalarField::evaluate
         this->updateCoeffs();
     }
 
-    // Update deformed fields
-    updateDeformedFields();
-
-    // Lookup grad from solver
+    // lookup: grad field from solver
     const fvPatchField<vector>& gradField =
         patch().lookupPatchField<volVectorField, vector>
         (
             "grad(" + fieldName_ + ")"
         );
+
+    // Unit normals
+    const vectorField n = patch().nf();
+
+    // Delta vectors
+    const vectorField delta = patch().delta();
+
+    // non-Orthogonal correction vectors
+    const vectorField k = (I - sqr(n)) & delta;
 
     Field<scalar>::operator=
     (
@@ -268,8 +130,8 @@ void mixedTemperatureFvPatchScalarField::evaluate
       + (1.0 - valueFraction())*
         (
             this->patchInternalField()
-          + (nonOrthCorrVector_ & gradField.patchInternalField())
-          + refGrad()/deltaCoeffsCurrent_
+          + (k & gradField.patchInternalField())
+          + refGrad()/this->patch().deltaCoeffs()
         )
     );
 
@@ -279,12 +141,21 @@ void mixedTemperatureFvPatchScalarField::evaluate
 
 tmp<Field<scalar> > mixedTemperatureFvPatchScalarField::snGrad() const
 {
-    // Lookup grad from solver
+    // lookup: grad field from solver
     const fvPatchField<vector>& gradField =
         patch().lookupPatchField<volVectorField, vector>
         (
             "grad(" + fieldName_ + ")"
         );
+
+    // Unit normals
+    const vectorField n = patch().nf();
+
+    // Delta vectors
+    const vectorField delta = patch().delta();
+
+    // non-Orthogonal correction vectors
+    const vectorField k = (I - sqr(n)) & delta;
 
     return
         valueFraction()
@@ -292,46 +163,17 @@ tmp<Field<scalar> > mixedTemperatureFvPatchScalarField::snGrad() const
             refValue()
           - (
                 this->patchInternalField()
-              + (nonOrthCorrVector_ & gradField.patchInternalField())
+              + (k & gradField.patchInternalField())
             )
         )
-       *deltaCoeffsCurrent_
-      + (1.0 - valueFraction())*refGrad();
-}
-
-
-tmp<Field<scalar> > mixedTemperatureFvPatchScalarField::valueBoundaryCoeffs
-(
-    const tmp<scalarField>&
-) const
-{
-    return
-         valueFraction()*refValue()
-       + (1.0 - valueFraction())*refGrad()/deltaCoeffsCurrent_;
-}
-
-
-tmp<Field<scalar> > mixedTemperatureFvPatchScalarField::gradientInternalCoeffs() const
-{
-    return -pTraits<scalar>::one*valueFraction()*deltaCoeffsCurrent_;
-}
-
-
-tmp<Field<scalar> > mixedTemperatureFvPatchScalarField::gradientBoundaryCoeffs() const
-{
-    return
-        valueFraction()*deltaCoeffsCurrent_*refValue()
+       *this->patch().deltaCoeffs()
       + (1.0 - valueFraction())*refGrad();
 }
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-makePatchTypeField
-(
-    fvPatchScalarField,
-    mixedTemperatureFvPatchScalarField
-);
+makePatchTypeField(fvPatchScalarField, mixedTemperatureFvPatchScalarField);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
