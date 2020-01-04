@@ -115,6 +115,9 @@ class fluidSolidInterface
         //- Optional: enable coupling after specified time
         const scalar couplingStartTime_;
 
+        //- Optional: enable conjugate after specified time
+        const scalar conjugateStartTime_;
+
         //- Predictor on/off
         const Switch predictor_;
 

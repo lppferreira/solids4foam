@@ -71,25 +71,16 @@ bool Foam::fluidSolidInterface::updateCoupled()
 
 bool Foam::fluidSolidInterface::updateConjugate()
 {
-    if (couplingStartTime_ > SMALL && !conjugate_)
+    if (conjugateStartTime_ > SMALL && !conjugate_)
     {
-        if (runTime().value() > (couplingStartTime_ - SMALL))
+        if (runTime().value() > (conjugateStartTime_ - SMALL))
         {
             InfoIn("fluidSolidInterface::updateConjugate()")
                 << "Enabling fluid-solid energy coupling" << endl;
 
-            // Enable energy coupling but before doing so,
-            // Note: Before doing so, make sure temperature fields are present
-            if
-            (
-                fluidMesh().thisDb().foundObject<volScalarField>("T")
-             && solidMesh().thisDb().foundObject<volScalarField>("T")
-            )
-            {
-                conjugate_ = true;
+            conjugate_ = true;
 
-                return true;
-            }
+            return true;
         }
     }
 
@@ -300,6 +291,10 @@ Foam::fluidSolidInterface::fluidSolidInterface
     (
         fsiProperties_.lookupOrDefault<scalar>("couplingStartTime", -1.0)
     ),
+    conjugateStartTime_
+    (
+        fsiProperties_.lookupOrDefault<scalar>("conjugateStartTime", -1.0)
+    ),
     predictor_(fsiProperties_.lookupOrDefault<Switch>("predictor", false)),
     interfaceDeformationLimit_
     (
@@ -340,6 +335,20 @@ Foam::fluidSolidInterface::fluidSolidInterface
                 << endl;
 
             coupled_ = false;
+        }
+    }
+
+    // Check if conjugateStartTime is specified
+    if (conjugateStartTime_ > SMALL)
+    {
+        if (conjugate_)
+        {
+            WarningIn(type + "::fsiProperties(...)")
+                << "When using the conjugateStartTime option, the conjugate "
+                << "option should be set to off: resetting conjugate to off"
+                << endl;
+
+            conjugate_ = false;
         }
     }
 
