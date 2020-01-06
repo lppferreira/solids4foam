@@ -83,7 +83,10 @@ class buoyantBoussinesqPimpleFluid
 {
     // Private data
 
-        //- Temperature
+        //- Pressure field
+        volScalarField p_rgh_;
+
+        //- Temperature field
         volScalarField T_;
 
         //- Transport model
@@ -107,14 +110,23 @@ class buoyantBoussinesqPimpleFluid
         //- Effective fluid conductivity
         volScalarField kappaEff_;
 
-        //- Density
+        //- Fluid density
         dimensionedScalar rho_;
 
         //- Gravitional acceleration
         const uniformDimensionedVectorField g_;
 
-        //- Beta*(g*h) field
-        surfaceScalarField betaghf_;
+        //- Reference height field
+        uniformDimensionedScalarField hRef_;
+
+        //- gravity*reference height
+        dimensionedScalar ghRef_;
+
+        //- gravity*height
+        volScalarField gh_;
+
+        //- gravity*height: face-interpolated
+        surfaceScalarField ghf_;
 
         //- Kinematic density for buoyancy force
         volScalarField rhok_;
