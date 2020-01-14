@@ -148,9 +148,6 @@ void buoyantBoussinesqPimpleFluid::solvePEqn
 
     adjustPhi(phiHbyA, U(), p_rgh_);
 
-    // Make the fluxes relative to the mesh motion
-    fvc::makeRelative(phiHbyA, U());
-
     while (pimple().correctNonOrthogonal())
     {
         fvScalarMatrix p_rghEqn
