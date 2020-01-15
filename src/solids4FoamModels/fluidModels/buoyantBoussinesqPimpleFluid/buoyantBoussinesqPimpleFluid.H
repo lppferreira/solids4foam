@@ -110,8 +110,8 @@ class buoyantBoussinesqPimpleFluid
         //- Turbulent Transport model
         autoPtr<incompressible::turbulenceModel> turbulence_;
 
-        //- Effective fluid conductivity
-        volScalarField kappaEff_;
+        //- Effective fluid thermal diffusivity
+        volScalarField alphaEff_;
 
         //- Fluid density
         dimensionedScalar rho_;

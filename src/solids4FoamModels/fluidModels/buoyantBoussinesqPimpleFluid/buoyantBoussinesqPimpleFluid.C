@@ -59,11 +59,11 @@ void buoyantBoussinesqPimpleFluid::FourierNo()
     scalar meanFourierNum = 0.0;
 
     FourierNum() = 
-      gMax((kappaEff_ + turbulence_->nut())
+      gMax((alphaEff_ + turbulence_->nut())
            *runTime().deltaT0Value() / pow(cellDims.field(), 2));
 
     meanFourierNum = 
-      gAverage((kappaEff_ + turbulence_->nut())
+      gAverage((alphaEff_ + turbulence_->nut())
                *runTime().deltaT0Value() / pow(cellDims.field(), 2));
 
     Info<< "Fourier number mean: " << meanFourierNum
@@ -107,14 +107,14 @@ tmp<fvVectorMatrix> buoyantBoussinesqPimpleFluid::solveUEqn()
 
 void buoyantBoussinesqPimpleFluid::solveTEqn()
 {
-    kappaEff_ =
+    alphaEff_ =
         turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_;
 
     fvScalarMatrix TEqn
     (
         fvm::ddt(T_)
       + fvm::div(phi(), T_)
-      - fvm::laplacian(kappaEff_, T_)
+      - fvm::laplacian(alphaEff_, T_)
     );
 
     TEqn.relax();
@@ -239,11 +239,11 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
             U(), phi(), laminarTransport_
         )
     ),
-    kappaEff_
+    alphaEff_
     (
         IOobject
         (
-            "kappaEff",
+            "alphaEff",
             runTime.timeName(),
             mesh(),
             IOobject::NO_READ,
@@ -364,7 +364,7 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchHeatFlux
     );
 
     thF() =
-        kappaEff_.boundaryField()[patchID]
+        alphaEff_.boundaryField()[patchID]
       * rho_.value()*C_.value()
       * T_.boundaryField()[patchID].snGrad();
 
@@ -399,7 +399,7 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchKappaDelta
     );
 
     tKD() =
-        kappaEff_.boundaryField()[patchID]
+        alphaEff_.boundaryField()[patchID]
       * rho_.value()*C_.value()
       * mesh().boundary()[patchID].deltaCoeffs();
 
