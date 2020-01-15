@@ -10,7 +10,7 @@ FoamFile
     version     2.0;
     format      ascii;
     class       volScalarField;
-    object      p;
+    object      p_rgh;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -22,37 +22,37 @@ boundaryField
 {
     interface
     {
-        type extrapolatedPressure;
-        value uniform 0;
+        type   extrapolatedPressure;
+        value  uniform 0;
     }
     outlet
     {
-         type fixedValue;
+         type  fixedValue;
          value uniform 0;
     }
     inlet
     {
-        type extrapolatedPressure;
-        value uniform 0;
+        type   extrapolatedPressure;
+        value  uniform 0;
     }
     bottom
     {
-        type extrapolatedPressure;
-        value uniform 0;
+        type   extrapolatedPressure;
+        value  uniform 0;
     }
     top
     {
-        type extrapolatedPressure;
-        value uniform 0;
+        type   extrapolatedPressure;
+        value  uniform 0;
     }
     left
     {
-        type extrapolatedPressure;
-        value uniform 0;
+        type   extrapolatedPressure;
+        value  uniform 0;
     }
     symmetry
     {
-        type symmetryPlane;
+        type   symmetryPlane;
     }
 }
 

@@ -16,7 +16,7 @@ FoamFile
 
 solvers
 {
-    "p|pFinal"
+    "p_rgh|p_rghFinal"
     {
         solver          GAMG;
         tolerance       1e-06;
@@ -74,9 +74,9 @@ solvers
 
 PIMPLE
 {
+    nOuterCorrectors 1;
     nCorrectors 3;
     nNonOrthogonalCorrectors 1;
-    nOuterCorrectors 1;
 }
 
 // ************************************************************************* //
