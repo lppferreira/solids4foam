@@ -107,8 +107,8 @@ tmp<fvVectorMatrix> buoyantBoussinesqPimpleFluid::solveUEqn()
 
 void buoyantBoussinesqPimpleFluid::solveTEqn()
 {
-    alphaEff_ =
-        turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_;
+    alphaEff_ = turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_;
+    alphaEff_.correctBoundaryConditions();
 
     fvScalarMatrix TEqn
     (
