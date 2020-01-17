@@ -252,7 +252,7 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
         turbulence_->nu()/Pr_ + turbulence_->nut()/Prt_
     ),
     rho_(laminarTransport_.lookup("rho")),
-    C_(laminarTransport_.lookup("C")),
+    Cp_(laminarTransport_.lookup("Cp")),
     g_
     (
         IOobject
@@ -365,7 +365,7 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchHeatFlux
 
     thF() =
         alphaEff_.boundaryField()[patchID]
-      * rho_.value()*C_.value()
+      * rho_.value()*Cp_.value()
       * T_.boundaryField()[patchID].snGrad();
 
     return thF;
@@ -400,7 +400,7 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchKappaDelta
 
     tKD() =
         alphaEff_.boundaryField()[patchID]
-      * rho_.value()*C_.value()
+      * rho_.value()*Cp_.value()
       * mesh().boundary()[patchID].deltaCoeffs();
 
     return tKD;

@@ -32,7 +32,7 @@ Pr              Pr [0 0 0 0 0 0 0] 0.7;
 // Turbulent Prandtl number
 Prt             Prt [0 0 0 0 0 0 0] 0.9;
 
-// Heat capacity
-C               C [ 0 2 -2 -1 0 0 0 ] 4182;
+// Specific heat capacity
+Cp              Cp [0 2 -2 -1 0 0 0] 4182;
 
 // ************************************************************************* //

@@ -117,7 +117,7 @@ class buoyantBoussinesqPimpleFluid
         dimensionedScalar rho_;
 
         //- Specific heat capacity
-        dimensionedScalar C_;
+        dimensionedScalar Cp_;
 
         //- Gravitional acceleration
         const uniformDimensionedVectorField g_;
