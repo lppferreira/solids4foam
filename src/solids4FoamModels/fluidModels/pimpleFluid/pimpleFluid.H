@@ -69,6 +69,14 @@ class pimpleFluid
         //- Turbulence model
         autoPtr<incompressible::turbulenceModel> turbulence_;
 
+#if FOAMEXTEND > 40
+        //- rAU field
+        volScalarField rAU_;
+#else
+        //- aU field
+        volScalarField aU_;
+#endif
+
         //- Density
         dimensionedScalar rho_;
 

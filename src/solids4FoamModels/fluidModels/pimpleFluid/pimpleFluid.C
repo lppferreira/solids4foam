@@ -65,6 +65,32 @@ pimpleFluid::pimpleFluid
             U(), phi(), laminarTransport_
         )
     ),
+#if FOAMEXTEND > 40
+    rAU_
+#else
+    aU_
+#endif
+    (
+        IOobject
+        (
+#if FOAMEXTEND > 40
+            "rAU",
+#else
+            "aU",
+#endif
+            runTime.timeName(),
+            mesh(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
+        ),
+        mesh(),
+#if FOAMEXTEND > 40
+        runTime.deltaT(),
+#else
+        1/runTime.deltaT(),
+#endif
+        zeroGradientFvPatchScalarField::typeName
+    ),
     rho_
     (
         IOdictionary
@@ -171,39 +197,63 @@ bool pimpleFluid::evolve()
           + turbulence_->divDevReff()
         );
 
+#if FOAMEXTEND < 41
+        // Get under-relaxation factor
+        scalar UUrf =
+            mesh.solutionDict().equationRelaxationFactor
+            (
+                U().select(pimple().finalIter())
+            );
+#endif
+
         if (pimple().momentumPredictor())
         {
 #if FOAMEXTEND > 40
             solve(relax(ddtUEqn + HUEqn) == -fvc::grad(p()));
 #else
-            fvVectorMatrix ddtUEqnHUEqn = ddtUEqn + HUEqn;
-            ddtUEqnHUEqn.relax();
-            solve(ddtUEqnHUEqn == -fvc::grad(p()));
+            solve
+            (
+                ddtUEqn
+              + relax(HUEqn, UUrf)
+             ==
+              - fvc::grad(p()),
+                mesh.solutionDict().solver((U().select(pimple().finalIter())))
+            );
 #endif
+        }
+        else
+        {
+            // Explicit update
+            U() = (ddtUEqn.H() + HUEqn.H() - fvc::grad(p()))/(HUEqn.A() + ddtUEqn.A());
+            U().correctBoundaryConditions();
         }
 
         // --- PISO loop
-
-#if FOAMEXTEND > 40
-        // Prepare clean 1/a_p without time derivative contribution
-        volScalarField rAU = 1.0/HUEqn.A();
-#else
-        volScalarField rAU = 1.0/(HUEqn.A() + ddtUEqn.A());
-        surfaceScalarField rAUf("rAUf", fvc::interpolate(rAU));
-#endif
-
         while (pimple().correct())
         {
+            p().boundaryField().updateCoeffs();
+
 #if FOAMEXTEND > 40
+            // Prepare clean 1/a_p without time derivative and under-relaxation
+            // contribution
+            rAU_ = 1.0/HUEqn.A();
+
             // Calculate U from convection-diffusion matrix
-            U() = rAU*HUEqn.H();
+            U() = rAU_*HUEqn.H();
 
             // Consistently calculate flux
-            pimple().calcTransientConsistentFlux(phi(), U(), rAU, ddtUEqn);
+            pimple().calcTransientConsistentFlux(phi(), U(), rAU_, ddtUEqn);
 #else
-            // Calculate U from convection-diffusion matrix
-            U() = rAU*(HUEqn.H() + ddtUEqn.H());
+            // Prepare clean Ap without time derivative contribution and
+            // without contribution from under-relaxation
+            // HJ, 26/Oct/2015
+            aU_ = HUEqn.A();
 
+            // Store velocity under-relaxation point before using U for the flux
+            // precursor
+            U().storePrevIter();
+
+            U() = HUEqn.H()/aU_;
             phi() = (fvc::interpolate(U()) & mesh.Sf());
 #endif
 
@@ -217,11 +267,11 @@ bool pimpleFluid::evolve()
                     fvm::laplacian
                     (
 #if FOAMEXTEND > 40
-                        fvc::interpolate(rAU)/pimple().aCoeff(U().name()),
+                        fvc::interpolate(rAU_)/pimple().aCoeff(U().name()),
                         p(),
                         "laplacian(rAU," + p().name() + ')'
 #else
-                        rAUf, p(), "laplacian((1|A(U)),p)"
+                        1/aU_, p(), "laplacian((1|A(U)),p)"
 #endif
                     )
                  == fvc::div(phi())
@@ -256,12 +306,19 @@ bool pimpleFluid::evolve()
 #if FOAMEXTEND > 40
             // Consistently reconstruct velocity after pressure equation.
             // Note: flux is made relative inside the function
-            pimple().reconstructTransientVelocity(U(), phi(), ddtUEqn, rAU, p());
+            pimple().reconstructTransientVelocity(U(), phi(), ddtUEqn, rAU_, p());
 #else
             // Make the fluxes relative to the mesh motion
             fvc::makeRelative(phi(), U());
 
-            U() -= rAU*gradp();
+            U() = UUrf*
+                (
+                    1.0/(aU_ + ddtUEqn.A())*
+                    (
+                        U()*aU_ - fvc::grad(p()) + ddtUEqn.H()
+                    )
+                )
+              + (1 - UUrf)*U().prevIter();
             U().correctBoundaryConditions();
 #endif
 
