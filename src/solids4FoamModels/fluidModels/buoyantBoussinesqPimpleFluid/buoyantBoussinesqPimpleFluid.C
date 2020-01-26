@@ -162,6 +162,8 @@ void buoyantBoussinesqPimpleFluid::solvePEqn
             mesh().solutionDict().solver(p_rgh_.select(pimple().finalInnerIter()))
         );
 
+        gradp() = fvc::grad(p());
+
         if (pimple().finalNonOrthogonalIter())
         {
             // Calculate the conservative fluxes
@@ -295,8 +297,9 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
     UisRequired();
 
     // Reset p dimensions
-    Info<< "Resetting the dimensions of p" << endl;
+    Info<< "Resetting the dimensions of p and its gradient" << endl;
     p().dimensions().reset(dimPressure/dimDensity);
+    gradp().dimensions().reset(dimPressure/dimDensity/dimLength);
     p() = p_rgh_ + rhok_*gh_;
 
     setRefCell(p(), pimple().dict(), pRefCell_, pRefValue_);
