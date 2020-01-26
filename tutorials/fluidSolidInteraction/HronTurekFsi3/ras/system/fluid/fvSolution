@@ -73,7 +73,7 @@ solvers
         mergeLevels     1;
     }
 
-    U
+    "U|UFinal"
     {
         solver          PBiCG;
         preconditioner  DILU;
@@ -131,6 +131,7 @@ PIMPLE
 relaxationFactors
 {
     U 1;
+    UFinal 1;
     p 0.9;
     k 0.9;
     omega 0.9;
