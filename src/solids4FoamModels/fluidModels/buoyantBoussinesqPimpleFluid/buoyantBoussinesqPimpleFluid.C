@@ -127,14 +127,14 @@ void buoyantBoussinesqPimpleFluid::solveTEqn()
 
 void buoyantBoussinesqPimpleFluid::solvePEqn
 (
-    tmp<fvVectorMatrix>& UEqn
+    const fvVectorMatrix& UEqn
 )
 {
-    volScalarField rUA("rUA", 1.0/UEqn().A());
+    volScalarField rUA("rUA", 1.0/UEqn.A());
     surfaceScalarField rUAf("rUAf", fvc::interpolate(rUA));
 
     volVectorField HbyA("HbyA", U());
-    HbyA = rUA*UEqn().H();
+    HbyA = rUA*UEqn.H();
 
     surfaceScalarField phig(-rUAf*ghf_*fvc::snGrad(rhok_)*mesh().magSf());
 
@@ -456,7 +456,7 @@ bool buoyantBoussinesqPimpleFluid::evolve()
     while (pimple().loop())
     {
         // Momentum equation
-        tmp<fvVectorMatrix> UEqn = solveUEqn();
+        tmp<fvVectorMatrix> tUEqn = solveUEqn();
 
         // Temperature equation
         solveTEqn();
@@ -464,13 +464,13 @@ bool buoyantBoussinesqPimpleFluid::evolve()
         // --- Pressure corrector loop
         while (pimple().correct())
         {
-            solvePEqn(UEqn);
+            solvePEqn(tUEqn());
         }
 
         // Make the fluxes relative to the mesh motion
         fvc::makeRelative(phi(), U());
 
-        UEqn.clear();
+        tUEqn.clear();
 
         gradU() = fvc::grad(U());
 

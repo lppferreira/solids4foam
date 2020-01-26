@@ -158,7 +158,7 @@ class buoyantBoussinesqPimpleFluid
         //- Solve pressure equation
         void solvePEqn
         (
-            tmp<fvVectorMatrix>& UEqn
+            const fvVectorMatrix& UEqn
         );
 
         //- Disallow default bitwise copy construct
