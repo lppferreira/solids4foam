@@ -71,7 +71,11 @@ mixedTemperatureFvPatchScalarField::mixedTemperatureFvPatchScalarField
 )
 :
     mixedFvPatchScalarField(p, iF, dict),
+#ifdef OPENFOAMESIORFOUNDATION
+    fieldName_(internalField().name())
+#else
     fieldName_(dimensionedInternalField().name())
+#endif
 {}
 
 

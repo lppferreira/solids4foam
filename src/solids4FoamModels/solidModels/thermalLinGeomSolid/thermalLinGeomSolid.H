@@ -110,7 +110,7 @@ class thermalLinGeomSolid
             const int iCorr,
 #ifdef OPENFOAMESIORFOUNDATION
             const SolverPerformance<vector>& solverPerfD,
-            const SolverPerformance<scalar>& solverPerfp,
+            const SolverPerformance<scalar>& solverPerfT,
 #else
             const lduSolverPerformance& solverPerfD,
             const lduSolverPerformance& solverPerfT,

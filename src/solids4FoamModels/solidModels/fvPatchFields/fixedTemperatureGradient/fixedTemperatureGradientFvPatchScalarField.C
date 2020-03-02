@@ -55,7 +55,11 @@ fixedTemperatureGradientFvPatchScalarField
 )
 :
     fixedGradientFvPatchScalarField(p, iF, dict),
+#ifdef OPENFOAMESIORFOUNDATION
+    fieldName_(internalField().name())
+#else
     fieldName_(dimensionedInternalField().name())
+#endif
 {}
 
 
@@ -168,7 +172,11 @@ void fixedTemperatureGradientFvPatchScalarField::write(Ostream& os) const
 {
     fixedGradientFvPatchScalarField::write(os);
 
+#ifdef OPENFOAMFOUNDATION
+    writeEntry(os, "value", *this);
+#else
     writeEntry("value", os);
+#endif
 }
 
 
