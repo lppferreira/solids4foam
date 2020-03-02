@@ -452,6 +452,20 @@ public:
                 return DD_;
             }
 
+            //- Return const temperature field
+            virtual const volScalarField& T() const
+            {
+                notImplemented("solidModel::T() const");
+                return volScalarField::null();
+            }
+
+            //- Return temperature field
+            virtual volScalarField& T()
+            {
+                notImplemented("solidModel::T()");
+                return const_cast<volScalarField&>(volScalarField::null());
+            }
+
             //- Return non-const reference to U
             virtual volVectorField& U()
             {
@@ -531,6 +545,36 @@ public:
             //  solution variable
             virtual volVectorField& solutionD() = 0;
 
+            //- Patch heat flux (W/m2)
+            virtual tmp<scalarField> patchHeatFlux
+            (
+                const label patchID
+            ) const
+            {
+                notImplemented("solidModel::patchHeatFlux() const");
+                return tmp<scalarField>(new scalarField());
+            }
+
+            //- Patch temperature (K)
+            virtual tmp<scalarField> patchTemperature
+            (
+                const label patchID
+            ) const
+            {
+                notImplemented("solidModel::patchTemperature() const");
+                return tmp<scalarField>(new scalarField());
+            }
+
+            //- Patch kappa*delta
+            virtual tmp<scalarField> patchKappaDelta
+            (
+                const label patchID
+            ) const
+            {
+                notImplemented("solidModel::patchKappaDelta() const");
+                return tmp<scalarField>(new scalarField());
+            }
+
             //- Face zone point displacement increment
             virtual tmp<vectorField> faceZonePointDisplacementIncrement
             (
@@ -545,6 +589,24 @@ public:
 
             //- Face zone acceleration
             virtual tmp<vectorField> faceZoneAcceleration
+            (
+                const label interfaceI
+            ) const;
+
+            //- Face zone heat flux (W/m2)
+            virtual tmp<scalarField> faceZoneHeatFlux
+            (
+                const label interfaceI
+            ) const;
+
+            //- Face zone temperature (K)
+            virtual tmp<scalarField> faceZoneTemperature
+            (
+                const label interfaceI
+            ) const;
+
+            //- Face zone kappa*delta
+            virtual tmp<scalarField> faceZoneKappaDelta
             (
                 const label interfaceI
             ) const;
@@ -610,6 +672,15 @@ public:
                 const scalarField& pressure
             );
 
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                fvPatchScalarField& temperaturePatch,
+                const scalarField& temperature,
+                const scalarField& kappaDelta
+            );
+
             virtual void setTraction
             (
                 const label interfaceI,
@@ -623,6 +694,15 @@ public:
                 const label interfaceI,
                 const label patchID,
                 const scalarField& faceZonePressure
+            );
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label interfaceI,
+                const label patchID,
+                const scalarField& nbrFaceZoneTemperature,
+                const scalarField& nbrFaceZoneKappaDelta
             );
 
             //- Check if solid model is diverging using the Jacobian field

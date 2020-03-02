@@ -73,6 +73,26 @@ bool Foam::fluidSolidInterface::updateCoupled()
 }
 
 
+bool Foam::fluidSolidInterface::updateConjugate()
+{
+    if (conjugateStartTime_ > SMALL && !conjugate_)
+    {
+        if (runTime().value() > (conjugateStartTime_ - SMALL))
+        {
+            InfoIn("fluidSolidInterface::updateConjugate()")
+                << "Enabling fluid-solid energy coupling" << endl;
+
+            // Enable thermal coupling
+            conjugate_ = true;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 void Foam::fluidSolidInterface::calcInterfaceToInterfaceList() const
 {
     if (interfaceToInterfaceList_.size())
@@ -278,9 +298,17 @@ Foam::fluidSolidInterface::fluidSolidInterface
     (
         fsiProperties_.lookupOrDefault<Switch>("coupled", true)
     ),
+    conjugate_
+    (
+        fsiProperties_.lookupOrDefault<Switch>("conjugate", false)
+    ),
     couplingStartTime_
     (
         fsiProperties_.lookupOrDefault<scalar>("couplingStartTime", -1.0)
+    ),
+    conjugateStartTime_
+    (
+        fsiProperties_.lookupOrDefault<scalar>("conjugateStartTime", -1.0)
     ),
     predictor_(fsiProperties_.lookupOrDefault<Switch>("predictor", false)),
     interfaceDeformationLimit_
@@ -321,6 +349,20 @@ Foam::fluidSolidInterface::fluidSolidInterface
                 << endl;
 
             coupled_ = false;
+        }
+    }
+
+    // Check if conjugateStartTime is specified
+    if (conjugateStartTime_ > SMALL)
+    {
+        if (conjugate_)
+        {
+            WarningIn(type + "::fsiProperties(...)")
+                << "When using the conjugateStartTime option, the conjugate "
+                << "option should be set to off: resetting conjugate to off"
+                << endl;
+
+            conjugate_ = false;
         }
     }
 
@@ -1225,6 +1267,142 @@ Foam::scalar Foam::fluidSolidInterface::updateResidual()
     }
 
     return maxResidual;
+}
+
+
+void Foam::fluidSolidInterface::updateSolidTemperature()
+{
+    // Check if energy coupling switch needs to be updated
+    if (!conjugate_)
+    {
+        updateConjugate();
+    }
+
+    if (conjugate())
+    {
+        for (label interfaceI = 0; interfaceI < nGlobalPatches_; interfaceI++)
+        {
+            // Take references to zones
+            const standAlonePatch& fluidZone =
+                fluid().globalPatches()[interfaceI].globalPatch();
+            const standAlonePatch& solidZone =
+                solid().globalPatches()[interfaceI].globalPatch();
+
+            const scalarField fluidZoneTemperature =
+                fluid().faceZoneTemperature(interfaceI);
+
+            const scalarField fluidZoneKappaDelta =
+                fluid().faceZoneKappaDelta(interfaceI);
+
+            scalarField nbrSolidZoneTemperature =
+                scalarField
+                (
+                    solid().globalPatches()[interfaceI].globalPatch().size(),
+                    scalar(0)
+                );
+
+            // Transfer the field frm the fluid interface to the solid interface
+            interfaceToInterfaceList()[interfaceI].transferFacesZoneToZone
+            (
+                fluidZone,                 // from zone
+                solidZone,                 // to zone
+                fluidZoneTemperature,      // from field
+                nbrSolidZoneTemperature    // to field
+            );
+
+            scalarField nbrSolidZoneKappaDelta =
+                scalarField
+                (
+                    solid().globalPatches()[interfaceI].globalPatch().size(),
+                    scalar(0)
+                );
+
+            // Transfer the field frm the fluid interface to the solid interface
+            interfaceToInterfaceList()[interfaceI].transferFacesZoneToZone
+            (
+                fluidZone,                // from zone
+                solidZone,                // to zone
+                fluidZoneKappaDelta,      // from field
+                nbrSolidZoneKappaDelta    // to field
+            );
+
+            solid().setTemperature
+            (
+                interfaceI,
+                solidPatchIndices()[interfaceI],
+                nbrSolidZoneTemperature,
+                nbrSolidZoneKappaDelta
+            );
+        }
+    }
+}
+
+
+void Foam::fluidSolidInterface::updateFluidTemperature()
+{
+    // Check if energy coupling switch needs to be updated
+    if (!conjugate_)
+    {
+        updateConjugate();
+    }
+
+    if (conjugate())
+    {
+        for (label interfaceI = 0; interfaceI < nGlobalPatches_; interfaceI++)
+        {
+            // Take references to zones
+            const standAlonePatch& fluidZone =
+                fluid().globalPatches()[interfaceI].globalPatch();
+            const standAlonePatch& solidZone =
+                solid().globalPatches()[interfaceI].globalPatch();
+
+            const scalarField solidZoneTemperature =
+                solid().faceZoneTemperature(interfaceI);
+
+            const scalarField solidZoneKappaDelta =
+                solid().faceZoneKappaDelta(interfaceI);
+
+            scalarField nbrFluidZoneTemperature =
+                scalarField
+                (
+                    fluid().globalPatches()[interfaceI].globalPatch().size(),
+                    scalar(0)
+                );
+
+            // Transfer the field frm the fluid interface to the solid interface
+            interfaceToInterfaceList()[interfaceI].transferFacesZoneToZone
+            (
+                solidZone,                 // from zone
+                fluidZone,                 // to zone
+                solidZoneTemperature,      // from field
+                nbrFluidZoneTemperature    // to field
+            );
+
+            scalarField nbrFluidZoneKappaDelta =
+                scalarField
+                (
+                    fluid().globalPatches()[interfaceI].globalPatch().size(),
+                    scalar(0)
+                );
+
+            // Transfer the field frm the fluid interface to the solid interface
+            interfaceToInterfaceList()[interfaceI].transferFacesZoneToZone
+            (
+                solidZone,                // from zone
+                fluidZone,                // to zone
+                solidZoneKappaDelta,      // from field
+                nbrFluidZoneKappaDelta    // to field
+            );
+
+            fluid().setTemperature
+            (
+                interfaceI,
+                fluidPatchIndices()[interfaceI],
+                nbrFluidZoneTemperature,
+                nbrFluidZoneKappaDelta
+            );
+        }
+    }
 }
 
 

@@ -17,6 +17,7 @@ solidModels/nonLinGeomTotalLagSolid/nonLinGeomTotalLagSolid.C
 solidModels/nonLinGeomTotalLagTotalDispSolid/nonLinGeomTotalLagTotalDispSolid.C
 solidModels/poroLinGeomSolid/poroLinGeomSolid.C
 solidModels/thermalLinGeomSolid/thermalLinGeomSolid.C
+solidModels/thermalSolid/thermalSolid.C
 solidModels/unsLinGeomSolid/unsLinGeomSolid.C
 solidModels/unsNonLinGeomUpdatedLagSolid/unsNonLinGeomUpdatedLagSolid.C
 solidModels/unsNonLinGeomTotalLagSolid/unsNonLinGeomTotalLagSolid.C
@@ -54,6 +55,7 @@ fluidSolidInterfaces/fixedRelaxationCouplingInterface/fixedRelaxationCouplingInt
 fluidSolidInterfaces/IQNILSCouplingInterface/IQNILSCouplingInterface.C
 fluidSolidInterfaces/oneWayCouplingInterface/oneWayCouplingInterface.C
 fluidSolidInterfaces/weakCouplingInterface/weakCouplingInterface.C
+fluidSolidInterfaces/thermoCouplingInterface/thermoCouplingInterface.C
 
 interfaceToInterface = fluidSolidInterfaces/fluidSolidInterface/interfaceToInterfaceMapping
 $(interfaceToInterface)/interfaceToInterfaceMapping/interfaceToInterfaceMapping.C
@@ -104,8 +106,11 @@ $(solidFvPatchFields)/fixedDisplacement/fixedDisplacementFvPatchVectorField.C
 /*
 $(solidFvPatchFields)/fixedDisplacementZeroShear/fixedDisplacementZeroShearFvPatchVectorField.C
 $(solidFvPatchFields)/fixedRotation/fixedRotationFvPatchVectorField.C
+*/
 $(solidFvPatchFields)/fixedTemperature/fixedTemperatureFvPatchScalarField.C
 $(solidFvPatchFields)/fixedTemperatureGradient/fixedTemperatureGradientFvPatchScalarField.C
+$(solidFvPatchFields)/mixedTemperature/mixedTemperatureFvPatchScalarField.C
+/*
 $(solidFvPatchFields)/linearSpatialDisplacement/linearSpatialDisplacementFvPatchVectorField.C
 $(solidFvPatchFields)/linearDisplacement/linearDisplacementFvPatchVectorField.C
 $(solidFvPatchFields)/normalDisplacement/normalDisplacementFvPatchVectorField.C

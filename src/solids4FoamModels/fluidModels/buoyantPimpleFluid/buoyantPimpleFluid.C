@@ -474,6 +474,68 @@ tmp<scalarField> buoyantPimpleFluid::patchPressureForce
 }
 
 
+tmp<scalarField> buoyantPimpleFluid::patchHeatFlux
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> thF
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+    tmp<volScalarField> talphat (turbulence_->alphat());
+    const volScalarField& alphat = talphat();
+
+    scalarField palphat = alphat.boundaryField()[patchID];
+
+    thF.ref() =
+        thermo_.kappaEff(palphat, patchID)
+      * T().boundaryField()[patchID].snGrad();
+
+    return thF;
+}
+
+
+tmp<scalarField> buoyantPimpleFluid::patchTemperature
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> tT
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+    tT.ref() = T().boundaryField()[patchID].patchInternalField();
+
+    return tT;
+}
+
+
+tmp<scalarField> buoyantPimpleFluid::patchKappaDelta
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> tKD
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+    tmp<volScalarField> talphat (turbulence_->alphat());
+    const volScalarField& alphat = talphat();
+
+    scalarField palphat = alphat.boundaryField()[patchID];
+
+    tKD.ref() =
+        thermo_.kappaEff(palphat, patchID)
+      * mesh().boundary()[patchID].deltaCoeffs();
+
+    return tKD;
+}
+
+
 bool buoyantPimpleFluid::evolve()
 {
     Info<< "Evolving fluid model: " << this->type() << endl;

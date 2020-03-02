@@ -34,6 +34,7 @@ License
 #include "EulerDdtScheme.H"
 #include "CrankNicolsonDdtScheme.H"
 #include "backwardDdtScheme.H"
+#include "mixedFvPatchFields.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -647,6 +648,42 @@ Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZonePressureForce
 }
 
 
+Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneHeatFlux
+(
+    const label interfaceI
+) const
+{
+    const scalarField patchHF =
+        patchHeatFlux(globalPatches()[interfaceI].patch().index());
+
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchHF);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneTemperature
+(
+    const label interfaceI
+) const
+{
+    const scalarField patchT =
+        patchTemperature(globalPatches()[interfaceI].patch().index());
+
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchT);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::fluidModel::faceZoneKappaDelta
+(
+    const label interfaceI
+) const
+{
+    const scalarField patchKD =
+        patchKappaDelta(globalPatches()[interfaceI].patch().index());
+
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchKD);
+}
+
+
 void Foam::fluidModel::UisRequired()
 {
 #ifdef OPENFOAMESIORFOUNDATION
@@ -753,6 +790,78 @@ void Foam::fluidModel::setDeltaT(Time& runTime)
 
         Info<< "deltaT = " <<  runTime.deltaT().value() << endl;
     }
+}
+
+
+void Foam::fluidModel::setTemperature
+(
+    const label patchID,
+    fvPatchScalarField& temperaturePatch,
+    const scalarField& temperature,
+    const scalarField& kappaDelta
+)
+{
+    if
+    (
+        temperaturePatch.type()
+     != mixedFvPatchScalarField::typeName
+    )
+    {
+        FatalErrorIn
+        (
+            "void fluidModel::setTemperature\n"
+            "(\n"
+            "    fvPatchScalarField&,\n"
+            "    const scalarField&,\n"
+            "    const scalarField&\n"
+            ")"
+        )
+            << "Bounary condition on " << T().name() <<  " is "
+            << temperaturePatch.type()
+            << " for patch " << temperaturePatch.patch().name()
+            << ", instead of "
+            << mixedFvPatchScalarField::typeName
+            << abort(FatalError);
+    }
+
+    mixedFvPatchScalarField& patchT =
+        refCast<mixedFvPatchScalarField>(temperaturePatch);
+
+    patchT.refValue() = temperature;
+    patchT.refGrad() = 0.0;
+
+    patchT.valueFraction() =
+        kappaDelta/(kappaDelta + patchKappaDelta(patchID));
+
+    patchT.updateCoeffs();
+}
+
+
+void Foam::fluidModel::setTemperature
+(
+    const label interfaceI,
+    const label patchID,
+    const scalarField& nbrFaceZoneTemperature,
+    const scalarField& nbrFaceZoneKappaDelta
+)
+{
+    const scalarField patchTemperature =
+        globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneTemperature);
+
+    const scalarField patchKappaDelta =
+        globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneKappaDelta);
+
+    setTemperature
+    (
+        patchID,
+#ifdef OPENFOAMESIORFOUNDATION
+        T().boundaryFieldRef()[patchID],
+#else
+        T().boundaryField()[patchID],
+#endif
+        patchTemperature,
+        patchKappaDelta
+    );
 }
 
 

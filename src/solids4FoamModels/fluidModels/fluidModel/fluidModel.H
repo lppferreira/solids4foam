@@ -348,6 +348,20 @@ public:
                 return p_;
             }
 
+            //- Return const temperature field
+            virtual const volScalarField& T() const
+            {
+                notImplemented("fluidModel::T() const");
+                return volScalarField::null();
+            }
+
+            //- Return temperature field
+            virtual volScalarField& T()
+            {
+                notImplemented("fluidModel::T()");
+                return const_cast<volScalarField&>(volScalarField::null());
+            }
+
             //- Return const velocity gradient field
             virtual const volTensorField& gradU() const
             {
@@ -408,6 +422,36 @@ public:
                 const label patchID
             ) const = 0;
 
+            //- Patch heat flux (W/m2)
+            virtual tmp<scalarField> patchHeatFlux
+            (
+                const label patchID
+            ) const
+            {
+                notImplemented("fluidModel::patchHeatFlux() const");
+                return tmp<scalarField>(new scalarField());
+            }
+
+            //- Patch temperature (K)
+            virtual tmp<scalarField> patchTemperature
+            (
+                const label patchID
+            ) const
+            {
+                notImplemented("fluidModel::patchTemperature() const");
+                return tmp<scalarField>(new scalarField());
+            }
+
+            //- Patch kappa*delta
+            virtual tmp<scalarField> patchKappaDelta
+            (
+                const label patchID
+            ) const
+            {
+                notImplemented("fluidModel::patchKappaDelta() const");
+                return tmp<scalarField>(new scalarField());
+            }
+
             //- Face zone viscous force (N/m2)
             virtual tmp<vectorField> faceZoneViscousForce
             (
@@ -416,6 +460,24 @@ public:
 
             //- Face zone pressure force (N/m2)
             virtual tmp<scalarField> faceZonePressureForce
+            (
+                const label interfaceI
+            ) const;
+
+            //- Face zone heat flux (W/m2)
+            virtual tmp<scalarField> faceZoneHeatFlux
+            (
+                const label interfaceI
+            ) const;
+
+            //- Face zone temperature (K)
+            virtual tmp<scalarField> faceZoneTemperature
+            (
+                const label interfaceI
+            ) const;
+
+            //- Face zone kappa*delta
+            virtual tmp<scalarField> faceZoneKappaDelta
             (
                 const label interfaceI
             ) const;
@@ -439,6 +501,24 @@ public:
 
             //- Update the size of the time-step
             virtual void setDeltaT(Time& runTime);
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label patchID,
+                fvPatchScalarField& temperaturePatch,
+                const scalarField& temperature,
+                const scalarField& kappaDelta
+            );
+
+            //- Set temperature and flux at specified patch
+            virtual void setTemperature
+            (
+                const label interfaceI,
+                const label patchID,
+                const scalarField& nbrFaceZoneTemperature,
+                const scalarField& nbrFaceZoneKappaDelta
+            );
 
             //- Evolve the fluid model
             virtual bool evolve() = 0;

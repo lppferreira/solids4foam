@@ -106,8 +106,14 @@ class fluidSolidInterface
         //- Fsi coupling on/off
         Switch coupled_;
 
+        //- thermal coupling on/off
+        Switch conjugate_;
+
         //- Optional: enable coupling after specified time
         const scalar couplingStartTime_;
+
+        //- Optional: enable conjugate after specified time
+        const scalar conjugateStartTime_;
 
         //- Predictor on/off
         const Switch predictor_;
@@ -168,6 +174,9 @@ class fluidSolidInterface
 
         //- Update the coupled switch based on the couplingStartTime
         bool updateCoupled();
+
+        //- Update the conjugate switch based on the conjugateStartTime
+        bool updateConjugate();
 
         //- Calculate interface-to-interface list
         void calcInterfaceToInterfaceList() const;
@@ -351,6 +360,18 @@ public:
                 return coupled_;
             }
 
+            //- Is it fluid and solid thermaly coupled?
+            const Switch& conjugate() const
+            {
+                return conjugate_;
+            }
+
+            //- Is it fluid and solid thermaly coupled?
+            Switch& conjugate()
+            {
+                return conjugate_;
+            }
+
             //- Return predictor switch
             const Switch& predictor() const
             {
@@ -487,6 +508,12 @@ public:
 
             //- Update interface force
             virtual scalar updateResidual();
+
+            //- Update interface temperature and heat flux
+            virtual void updateSolidTemperature();
+
+            //- Update interface temperature and heat flux
+            virtual void updateFluidTemperature();
 
             //- Update movingWallPressure boundary condition acceleration, if
             //  found

@@ -185,6 +185,18 @@ public:
 
         // Access
 
+            //- Return const temperature field
+            virtual const volScalarField& T() const
+            {
+                return thermo_.T();
+            }
+
+            //- Return temperature field
+            virtual volScalarField& T()
+            {
+                return thermo_.T();
+            }
+
             //- Patch viscous force (N/m2)
             virtual tmp<vectorField> patchViscousForce
             (
@@ -193,6 +205,24 @@ public:
 
             //- Patch pressure force (N/m2)
             virtual tmp<scalarField> patchPressureForce
+            (
+                const label patchID
+            ) const;
+
+            //- Patch heat flux (W/m2)
+            virtual tmp<scalarField> patchHeatFlux
+            (
+                const label patchID
+            ) const;
+
+            //- Patch temperature (K)
+            virtual tmp<scalarField> patchTemperature
+            (
+                const label patchID
+            ) const;
+
+            //- Patch kappa*delta
+            virtual tmp<scalarField> patchKappaDelta
             (
                 const label patchID
             ) const;

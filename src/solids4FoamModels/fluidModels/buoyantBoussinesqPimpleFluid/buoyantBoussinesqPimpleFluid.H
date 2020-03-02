@@ -105,6 +105,9 @@ class buoyantBoussinesqPimpleFluid
         //- Fluid density [kg/m3]
         dimensionedScalar rho_;
 
+        //- Specific heat capacity [m2/s2-K]
+        dimensionedScalar Cp_;
+
         //- Thermal expansion coefficient [1/K]
         dimensionedScalar beta_;
 
@@ -206,6 +209,18 @@ public:
 
         // Access
 
+            //- Return const temperature field
+            virtual const volScalarField& T() const
+            {
+                return T_;
+            }
+
+            //- Return temperature field
+            virtual volScalarField& T()
+            {
+                return T_;
+            }
+
             //- Patch viscous force (N/m2)
             virtual tmp<vectorField> patchViscousForce
             (
@@ -214,6 +229,24 @@ public:
 
             //- Patch pressure force (N/m2)
             virtual tmp<scalarField> patchPressureForce
+            (
+                const label patchID
+            ) const;
+
+            //- Patch heat flux (W/m2)
+            virtual tmp<scalarField> patchHeatFlux
+            (
+                const label patchID
+            ) const;
+
+            //- Patch temperature (K)
+            virtual tmp<scalarField> patchTemperature
+            (
+                const label patchID
+            ) const;
+
+            //- Patch kappa*delta
+            virtual tmp<scalarField> patchKappaDelta
             (
                 const label patchID
             ) const;

@@ -37,6 +37,7 @@ License
 #endif
 #include "fvcGradf.H"
 #include "wedgePolyPatch.H"
+#include "mixedTemperatureFvPatchScalarField.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -1191,6 +1192,42 @@ Foam::tmp<Foam::vectorField> Foam::solidModel::faceZoneAcceleration
 }
 
 
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneHeatFlux
+(
+    const label interfaceI
+) const
+{
+    const scalarField patchHF =
+        patchHeatFlux(globalPatches()[interfaceI].patch().index());
+
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchHF);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneTemperature
+(
+    const label interfaceI
+) const
+{
+    const scalarField patchT =
+        patchTemperature(globalPatches()[interfaceI].patch().index());
+
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchT);
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::solidModel::faceZoneKappaDelta
+(
+    const label interfaceI
+) const
+{
+    const scalarField patchKD =
+        patchKappaDelta(globalPatches()[interfaceI].patch().index());
+
+    return globalPatches()[interfaceI].patchFaceToGlobal(patchKD);
+}
+
+
 void Foam::solidModel::updateTotalFields()
 {
     mechanical().updateTotalFields();
@@ -1358,6 +1395,50 @@ void Foam::solidModel::setPressure
 }
 
 
+void Foam::solidModel::setTemperature
+(
+    const label patchID,
+    fvPatchScalarField& temperaturePatch,
+    const scalarField& temperature,
+    const scalarField& kappaDelta
+)
+{
+    if
+    (
+        temperaturePatch.type()
+     != mixedTemperatureFvPatchScalarField::typeName
+    )
+    {
+        FatalErrorIn
+        (
+            "void solidModel::setTemperature\n"
+            "(\n"
+            "    fvPatchScalarField&,\n"
+            "    const scalarField&,\n"
+            "    const scalarField&\n"
+            ")"
+        )
+            << "Bounary condition on " << T().name() <<  " is "
+            << temperaturePatch.type()
+            << " for patch " << temperaturePatch.patch().name()
+            << ", instead of "
+            << mixedTemperatureFvPatchScalarField::typeName
+            << abort(FatalError);
+    }
+
+    mixedTemperatureFvPatchScalarField& patchT =
+        refCast<mixedTemperatureFvPatchScalarField>(temperaturePatch);
+
+    patchT.refValue() = temperature;
+    patchT.refGrad() = 0.0;
+
+    patchT.valueFraction() =
+        kappaDelta/(kappaDelta + patchKappaDelta(patchID));
+
+    patchT.updateCoeffs();
+}
+
+
 void Foam::solidModel::setTraction
 (
     const label interfaceI,
@@ -1391,6 +1472,34 @@ void Foam::solidModel::setPressure
 #else
     setPressure(solutionD().boundaryField()[patchID], patchPressure);
 #endif
+}
+
+
+void Foam::solidModel::setTemperature
+(
+    const label interfaceI,
+    const label patchID,
+    const scalarField& nbrFaceZoneTemperature,
+    const scalarField& nbrFaceZoneKappaDelta
+)
+{
+    const scalarField patchTemperature =
+        globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneTemperature);
+
+    const scalarField patchKappaDelta =
+        globalPatches()[interfaceI].globalFaceToPatch(nbrFaceZoneKappaDelta);
+
+    setTemperature
+    (
+        patchID,
+#ifdef OPENFOAMESIORFOUNDATION
+        T().boundaryFieldRef()[patchID],
+#else
+        T().boundaryField()[patchID],
+#endif
+        patchTemperature,
+        patchKappaDelta
+    );
 }
 
 

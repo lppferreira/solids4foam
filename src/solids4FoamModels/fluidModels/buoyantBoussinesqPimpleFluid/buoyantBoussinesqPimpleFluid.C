@@ -273,6 +273,7 @@ buoyantBoussinesqPimpleFluid::buoyantBoussinesqPimpleFluid
     ),
     laminarTransport_(U(), phi()),
     rho_(laminarTransport_.lookup("rho")),
+    Cp_(laminarTransport_.lookup("Cp")),
     beta_(laminarTransport_.lookup("beta")),
     TRef_(laminarTransport_.lookup("TRef")),
     Pr_(laminarTransport_.lookup("Pr")),
@@ -461,6 +462,71 @@ tmp<scalarField> buoyantBoussinesqPimpleFluid::patchPressureForce
         rho_.value()*p().boundaryField()[patchID];
 
     return tpF;
+}
+
+
+tmp<scalarField> buoyantBoussinesqPimpleFluid::patchHeatFlux
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> thF
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+#ifdef OPENFOAMESIORFOUNDATION
+    thF.ref() =
+#else
+    thF() =
+#endif
+        alphaEff_.boundaryField()[patchID]*rho_.value()
+      * Cp_.value()*T_.boundaryField()[patchID].snGrad();
+
+    return thF;
+}
+
+
+tmp<scalarField> buoyantBoussinesqPimpleFluid::patchTemperature
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> tT
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+#ifdef OPENFOAMESIORFOUNDATION
+    tT.ref() =
+#else
+    tT() =
+#endif
+        T_.boundaryField()[patchID].patchInternalField();
+
+    return tT;
+}
+
+
+tmp<scalarField> buoyantBoussinesqPimpleFluid::patchKappaDelta
+(
+    const label patchID
+) const
+{
+    tmp<scalarField> tKD
+    (
+        new scalarField(mesh().boundary()[patchID].size(), 0)
+    );
+
+#ifdef OPENFOAMESIORFOUNDATION
+    tKD.ref() =
+#else
+    tKD() =
+#endif
+        alphaEff_.boundaryField()[patchID]*rho_.value()
+      * Cp_.value()*mesh().boundary()[patchID].deltaCoeffs();
+
+    return tKD;
 }
 
 
