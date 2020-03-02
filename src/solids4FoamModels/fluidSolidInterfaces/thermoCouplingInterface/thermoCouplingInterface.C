@@ -61,11 +61,14 @@ thermoCouplingInterface::thermoCouplingInterface
 {
     if (fluidMesh().type() != staticFvMesh::typeName)
     {
-        FatalErrorIn("thermoCouplingInterface(Time&, const word&)")
-            << fluidMesh().type() <<  " is selected instead of "
-                << staticFvMesh::typeName << "!\n"
-                << "This coupling interface only supports "
-                << "coupled temperature field without dynamic mesh.\n"
+        FatalErrorIn
+        (
+            "thermoCouplingInterface(Time&, const word&)"
+        )
+            << "dynamicFvMesh type is " << fluidMesh().type()
+                << " instead of " << staticFvMesh::typeName << ".\n"
+                << "The current coupling interface " << typeName
+                << " does not support any type of mesh motion."
                 << abort(FatalError);
     }
 }
@@ -85,16 +88,12 @@ bool thermoCouplingInterface::evolve()
         Info<< "Time = " << fluid().runTime().timeName()
             << ", iteration: " << outerCorr() << endl;
 
-        // Transfer temperature and flux from the solid to the fluid
         updateFluidTemperature();
 
-        // Solve fluid
         fluid().evolve();
 
-        // Transfer temperature and flux from the fluid to the solid
         updateSolidTemperature();
 
-        // Solve solid
         solid().evolve();
     }
     while (outerCorr() < nOuterCorr());

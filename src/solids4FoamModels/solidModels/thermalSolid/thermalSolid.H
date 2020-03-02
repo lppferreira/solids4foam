@@ -26,8 +26,8 @@ Class
     thermalSolid
 
 Description
-
-    The heat transfer solver for solid models.
+    Mathematical model to solve the heat equation in solid region.
+    Note: mesh motion is not supported.
 
 Author
     Danial Khazaei, NIT.  All rights reserved.
@@ -86,6 +86,9 @@ class thermalSolid
 
 
     // Private Member Functions
+
+        //- Calculate solid region Diffusion number
+        void solidRegionDiffNo();
 
         //- Check if the momentum equation is converged
         bool converged

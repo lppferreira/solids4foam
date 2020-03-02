@@ -49,6 +49,26 @@ addToRunTimeSelectionTable(solidModel, thermalSolid, dictionary);
 
 // * * * * * * * * * * *  Private Member Functions * * * * * * * * * * * * * //
 
+void thermalSolid::solidRegionDiffNo()
+{
+    surfaceScalarField kapparhoCpbyDelta
+    (
+        sqr(mesh().surfaceInterpolation::deltaCoeffs())
+       *fvc::interpolate(kappa_)
+       /fvc::interpolate(C_*rho_)
+    );
+
+    const scalar DiNum =
+        max(kapparhoCpbyDelta).value()*runTime().deltaTValue();
+
+    const scalar meanDiNum =
+        average(kapparhoCpbyDelta).value()*runTime().deltaTValue();
+
+    Info<< "Diffusion Number mean: " << meanDiNum
+        << " max: " << DiNum << endl;
+}
+
+
 bool thermalSolid::converged
 (
     const int iCorr,
@@ -269,6 +289,8 @@ bool thermalSolid::evolve()
     int iCorr = 0;
     lduSolverPerformance solverPerfT;
     blockLduMatrix::debug = 0;
+
+    solidRegionDiffNo();
 
     // energy equation outer loop
     do

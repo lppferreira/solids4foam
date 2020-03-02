@@ -26,8 +26,8 @@ Class
     thermoCouplingInterface
 
 Description
-    An interface for temperature field coupling only.
-    Dynamic mesh is not supported.
+    Fluid-Solid interface to provide conjugate heat transfer procedure.
+    Note: mesh motion is not supported.
 
 Author
     Danial Khazaei, NIT. All rights reserved.
@@ -51,7 +51,7 @@ namespace fluidSolidInterfaces
 {
 
 /*---------------------------------------------------------------------------*\
-                 Class thermoCouplingInterface Declaration
+                   Class thermoCouplingInterface Declaration
 \*---------------------------------------------------------------------------*/
 
 class thermoCouplingInterface
