@@ -72,7 +72,11 @@ void thermalSolid::solidRegionDiffNo()
 bool thermalSolid::converged
 (
     const int iCorr,
+#ifdef OPENFOAMESIORFOUNDATION
+    const SolverPerformance<scalar>& solverPerfT,
+#else
     const lduSolverPerformance& solverPerfT,
+#endif
     const volScalarField& T
 )
 {
@@ -81,16 +85,29 @@ bool thermalSolid::converged
 
     // Calculate relative residuals
     const scalar absResidualT =
+#ifdef OPENFOAMESIORFOUNDATION
+        gMax(mag(T.primitiveField() - T.oldTime().primitiveField()));
+#else
         gMax(mag(T.internalField() - T.oldTime().internalField()));
+#endif
     const scalar residualT =
         gMax
         (
+#ifdef OPENFOAMESIORFOUNDATION
+            mag(T.primitiveField() - T.prevIter().primitiveField())
+           /max
+            (
+                gMax(mag(T.primitiveField() - T.oldTime().primitiveField())),
+                SMALL
+            )
+#else
             mag(T.internalField() - T.prevIter().internalField())
            /max
             (
                 gMax(mag(T.internalField() - T.oldTime().internalField())),
                 SMALL
             )
+#endif
         );
 
     // If one of the residuals has converged to an order of magnitude
@@ -287,8 +304,13 @@ bool thermalSolid::evolve()
     Info<< "Evolving thermal solid solver" << endl;
 
     int iCorr = 0;
+#ifdef OPENFOAMESIORFOUNDATION
+    SolverPerformance<scalar> solverPerfT;
+    SolverPerformance<scalar>::debug = 0;
+#else
     lduSolverPerformance solverPerfT;
     blockLduMatrix::debug = 0;
+#endif
 
     solidRegionDiffNo();
 
@@ -326,7 +348,9 @@ bool thermalSolid::evolve()
     Info<< "Solid temperature min/max(T) = " << min(T_).value()
 	<< ", " << max(T_).value() << " [K]" << endl;
 
+#ifndef OPENFOAMESIORFOUNDATION
     blockLduMatrix::debug = 1;
+#endif
 
     return true;
 }
