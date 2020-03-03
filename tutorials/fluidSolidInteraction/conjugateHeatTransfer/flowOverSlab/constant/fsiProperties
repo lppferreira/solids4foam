@@ -1,0 +1,55 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.extend-project.de       |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fsiProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+fluidSolidInterface    thermoCoupling;
+
+thermoCouplingCoeffs
+{
+    // Solid interface patch list
+    solidPatch           interface;
+
+    // Fluid interface patch list
+    fluidPatch           interface;
+
+    // Maximum number of outer energy loop within each time-step
+    nOuterCorr           2;
+
+    // Enable/disable coupling from the start
+    coupled              no;
+
+    // Enable/disable energy coupling from the start
+    conjugate            yes;
+
+    // Method for transferring information between the interfaces
+    interfaceTransferMethod directMap;
+    // interfaceTransferMethod RBF;
+    // interfaceTransferMethod GGI;
+    // interfaceTransferMethod AMI;
+
+    // Optional: if conjugate is set to "no", then the conjugateStartTime allows
+    // you to enable conjugate at a specified time
+    // Defaults to 0.0
+    // conjugateStartTime    2.0;
+
+    // Frequency of time-step at which the fluid-solid interface interpolation
+    // weights are updated
+    // 0 means there will be no interpolator update during simulation, whereas
+    // 10 means the interpolator will be updated every 10 time-steps
+    // Defaults to 0
+    // interpolatorUpdateFrequency 0;
+}
+
+// ************************************************************************* //

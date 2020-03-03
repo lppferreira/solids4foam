@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Source tutorial clean functions
+. $WM_PROJECT_DIR/bin/tools/CleanFunctions
+
+foamClearPolyMesh -region fluid
+foamClearPolyMesh -region solid
+
+cleanCase
+cleanCase fluid
+cleanCase solid
+
+\rm -rf history
+\rm -rf case.foam
