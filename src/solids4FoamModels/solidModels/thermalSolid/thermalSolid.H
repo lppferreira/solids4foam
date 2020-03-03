@@ -44,6 +44,7 @@ SourceFiles
 #include "thermalModel.H"
 #ifdef OPENFOAMESIORFOUNDATION
     #include "SolverPerformance.H"
+    #include "fvOptions.H"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -86,6 +87,11 @@ class thermalSolid
 
         //- Absolute temperature tolerance (in degrees)
         const scalar absTTol_;
+
+#ifdef OPENFOAMESIORFOUNDATION
+        //- Create finite volume options
+        fv::options& fvOptions_;
+#endif
 
 
     // Private Member Functions

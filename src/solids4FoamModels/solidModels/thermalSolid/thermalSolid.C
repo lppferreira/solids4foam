@@ -226,9 +226,21 @@ thermalSolid::thermalSolid
             1e-06
         )
     )
+#ifdef OPENFOAMESIORFOUNDATION
+    ,
+    fvOptions_(fv::options::New(mesh()))
+#endif
 {
     // Store T old time
     T_.oldTime();
+
+#ifdef OPENFOAMESIORFOUNDATION
+    // Check if any finite volume option is present
+    if (!fvOptions_.optionList::size())
+    {
+        Info << "No finite volume options present\n" << endl;
+    }
+#endif
 }
 
 
@@ -325,13 +337,25 @@ bool thermalSolid::evolve()
         (
             fvm::ddt(rho_*C_, T_)
           - fvm::laplacian(kappa_, T_, "laplacian(kappa,T)")
+#ifdef OPENFOAMESIORFOUNDATION
+          ==
+            fvOptions_(rho_*C_, T_)
+#endif
         );
 
         // Under-relaxation the linear system
         TEqn.relax();
 
+#ifdef OPENFOAMESIORFOUNDATION
+        fvOptions_.constrain(TEqn);
+#endif
+
         // Solve the linear system
         solverPerfT = TEqn.solve();
+
+#ifdef OPENFOAMESIORFOUNDATION
+        fvOptions_.correct(T_);
+#endif
 
         // Under-relax the field
         T_.relax();
