@@ -257,6 +257,7 @@ bool poroLinGeomSolid::evolve()
     SolverPerformance<vector> solverPerfD;
     SolverPerformance<scalar> solverPerfp;
     SolverPerformance<vector>::debug = 0;
+    SolverPerformance<scalar>::debug = 0;
 #else
     lduSolverPerformance solverPerfD;
     lduSolverPerformance solverPerfp;
@@ -355,7 +356,10 @@ bool poroLinGeomSolid::evolve()
     // Increment of point displacement
     pointDD() = pointD() - pointD().oldTime();
 
-#ifndef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAMESIORFOUNDATION
+    SolverPerformance<vector>::debug = 1;
+    SolverPerformance<scalar>::debug = 1;
+#else
     blockLduMatrix::debug = 1;
 #endif
 

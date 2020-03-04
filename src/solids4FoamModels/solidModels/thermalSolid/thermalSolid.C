@@ -372,7 +372,9 @@ bool thermalSolid::evolve()
     Info<< "Solid temperature min/max(T) = " << min(T_).value()
 	<< ", " << max(T_).value() << " [K]\n" << endl;
 
-#ifndef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAMESIORFOUNDATION
+    SolverPerformance<scalar>::debug = 1;
+#else
     blockLduMatrix::debug = 1;
 #endif
 

@@ -280,6 +280,7 @@ bool thermalLinGeomSolid::evolve()
     SolverPerformance<vector> solverPerfD;
     SolverPerformance<scalar> solverPerfT;
     SolverPerformance<vector>::debug = 0;
+    SolverPerformance<scalar>::debug = 0;
 #else
     lduSolverPerformance solverPerfD;
     lduSolverPerformance solverPerfT;
@@ -379,7 +380,10 @@ bool thermalLinGeomSolid::evolve()
     // Increment of point displacement
     pointDD() = pointD() - pointD().oldTime();
 
-#ifndef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAMESIORFOUNDATION
+    SolverPerformance<vector>::debug = 1;
+    SolverPerformance<scalar>::debug = 1;
+#else
     blockLduMatrix::debug = 1;
 #endif
 

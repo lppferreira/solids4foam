@@ -235,7 +235,7 @@ bool weakThermalLinGeomSolid::evolve()
     int iCorr = 0;
 #ifdef OPENFOAMESIORFOUNDATION
     SolverPerformance<scalar> solverPerfT;
-    SolverPerformance<vector>::debug = 0;
+    SolverPerformance<scalar>::debug = 0;
 #else
     lduSolverPerformance solverPerfT;
     blockLduMatrix::debug = 0;
