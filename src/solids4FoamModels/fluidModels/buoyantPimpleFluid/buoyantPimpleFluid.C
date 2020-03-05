@@ -388,7 +388,20 @@ buoyantPimpleFluid::buoyantPimpleFluid
 #ifdef OPENFOAMFOUNDATION
     radiation_(radiationModel::New(thermo_.T())),
 #endif
-    pressureControl_(p(), rho_, pimple().dict(), false),
+    pressureControl_
+    (
+        p(), rho_, pimple().dict(), thermo_.incompressible()
+    ),
+    // Updated to use pressureControl with p_rgh support.
+    // Note: replaces above method in next OpenFOAM release, e.g. 8
+    // pressureControl_
+    // (
+    //     p(),
+    //     p_rgh_,
+    //     rho_,
+    //     pimple().dict(),
+    //     thermo_.incompressible()
+    // ),
     cumulativeContErr_(0)
 {
     UisRequired();
