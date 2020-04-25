@@ -297,7 +297,7 @@ void Foam::fluidModel::continuityErrs()
         << endl;
 }
 
-#if FOAMEXTEND > 40 
+#if FOAMEXTEND > 40
 void Foam::fluidModel::oversetContinuityErrs()
 {
     const volScalarField contErr = osMesh().gamma()*fvc::div(phi());
@@ -368,13 +368,23 @@ Foam::uniformDimensionedVectorField Foam::fluidModel::readG() const
     // from disk
     IOobject wavePropertiesHeader
     (
-        "waveProperties", mesh().time().constant(), mesh(), IOobject::MUST_READ
+        "waveProperties",
+        runTime().caseConstant(),
+        mesh(),
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE,
+        false // do not register
     );
 
     // Check if g exists on disk
     IOobject gHeader
     (
-        "g", mesh().time().constant(), mesh(), IOobject::MUST_READ
+        "g",
+        runTime().caseConstant(),
+        mesh(),
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE,
+        false // do not register
     );
 
 #ifdef OPENFOAMESIORFOUNDATION
@@ -410,7 +420,7 @@ Foam::uniformDimensionedVectorField Foam::fluidModel::readG() const
 #ifdef OPENFOAMESI
         return meshObjects::gravity
         (
-            mesh().time(),
+            runTime(),
 #else
         return uniformDimensionedVectorField
         (
@@ -418,7 +428,7 @@ Foam::uniformDimensionedVectorField Foam::fluidModel::readG() const
             IOobject
             (
                 "g",
-                mesh().time().constant(),
+                runTime().caseConstant(),
                 mesh(),
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE
@@ -432,11 +442,11 @@ Foam::uniformDimensionedVectorField Foam::fluidModel::readG() const
 #ifdef OPENFOAMESI
         return meshObjects::gravity
         (
-            mesh().time(),
+            runTime(),
             IOobject
             (
                 "g",
-                mesh().time().constant(),
+                runTime().caseConstant(),
                 mesh(),
                 IOobject::NO_READ,
                 IOobject::NO_WRITE
@@ -448,7 +458,7 @@ Foam::uniformDimensionedVectorField Foam::fluidModel::readG() const
             IOobject
             (
                 "g",
-                mesh().time().constant(),
+                runTime().caseConstant(),
                 mesh(),
                 IOobject::NO_READ,
                 IOobject::NO_WRITE

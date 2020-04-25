@@ -303,17 +303,6 @@ Foam::mechanicalModel& Foam::solidModel::mechanical()
 }
 
 
-const Foam::volScalarField& Foam::solidModel::rho() const
-{
-    if (rhoPtr_.empty())
-    {
-        makeRho();
-    }
-
-    return rhoPtr_();
-}
-
-
 Foam::volScalarField& Foam::solidModel::rho()
 {
     if (rhoPtr_.empty())
@@ -954,6 +943,16 @@ Foam::solidModel::~solidModel()
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+const Foam::volScalarField& Foam::solidModel::rho() const
+{
+    if (rhoPtr_.empty())
+    {
+        makeRho();
+    }
+
+    return rhoPtr_();
+}
 
 const Foam::thermalModel& Foam::solidModel::thermal() const
 {
