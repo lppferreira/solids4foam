@@ -11,31 +11,13 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "constant";
-    object      solidProperties;
+    object      physicsProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-solidModel     nonLinearGeometryUpdatedLagrangian;
-// solidModel     nonLinearGeometryTotalLagrangian;
-//solidModel     nonLinearGeometryTotalLagrangianTotalDisplacement;
-//solidModel     unsNonLinearGeometryUpdatedLagrangian;
+// type    fluid;
+type    solid;
+// type    fluidSolidInteraction;
 
-"nonLinearGeometryUpdatedLagrangianCoeffs|unsNonLinearGeometryUpdatedLagrangianCoeffs|nonLinearGeometryTotalLagrangianTotalDisplacementCoeffs"
-{
-    // Maximum number of momentum correctors
-    nCorrectors             2000;
-
-    // Solution tolerance for displacement
-    solutionTolerance       1e-06;
-
-    // Alternative solution tolerance for displacement
-    alternativeTolerance    1e-06;
-
-    // Material law solution tolerance
-    materialTolerance       1e-06;
-
-    // Write frequency for the residuals
-    infoFrequency           100;
-}
 
 // ************************************************************************* //
