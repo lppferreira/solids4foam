@@ -2,6 +2,7 @@
 cd ${0%/*} || exit 1    # run from this directory
 
 wmake all solvers
+(cd scripts && ./Allwmake)
 
 if [ "$WM_PROJECT" = "foam" ]
 then
