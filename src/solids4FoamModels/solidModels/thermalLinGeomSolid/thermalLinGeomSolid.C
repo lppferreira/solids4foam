@@ -280,6 +280,7 @@ bool thermalLinGeomSolid::evolve()
     SolverPerformance<vector> solverPerfD;
     SolverPerformance<scalar> solverPerfT;
     SolverPerformance<vector>::debug = 0;
+    SolverPerformance<scalar>::debug = 0;
 #else
     lduSolverPerformance solverPerfD;
     lduSolverPerformance solverPerfT;

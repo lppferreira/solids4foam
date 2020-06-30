@@ -73,6 +73,12 @@ function solids4Foam::convertCaseFormat()
         find "${CASE_DIR}" -name "p" | xargs sed -i 's\symmetryPlane\symmetry\g'
     fi
 
+    echo "Changing symmetryPlane to symmetry in T"; echo
+    if [[ -n $(find "${CASE_DIR}" -name "T") ]]
+    then
+        find "${CASE_DIR}" -name "T" | xargs sed -i 's\symmetryPlane\symmetry\g'
+    fi
+
     echo "Changing symmetryPlane to symmetry in pointMotionU"; echo
     if [[ -n $(find "${CASE_DIR}" -name "pointMotionU") ]]
     then
@@ -165,6 +171,12 @@ function solids4Foam::convertCaseFormatFoamExtend()
     if [[ -n $(find "${CASE_DIR}" -name "p") ]]
     then
         find "${CASE_DIR}" -name "p" | xargs sed -i 's\symmetry;\symmetryPlane;\g'
+    fi
+
+    echo "Changing symmetry to symmetryPlane in T"; echo
+    if [[ -n $(find "${CASE_DIR}" -name "T") ]]
+    then
+        find "${CASE_DIR}" -name "T" | xargs sed -i 's\symmetry;\symmetryPlane;\g'
     fi
 
     echo "Changing symmetry to symmetryPlane in pointMotionU"; echo

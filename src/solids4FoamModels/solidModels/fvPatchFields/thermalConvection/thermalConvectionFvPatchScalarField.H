@@ -39,7 +39,9 @@ SourceFiles
 #ifndef thermalConvectionFvPatchScalarFields_H
 #define thermalConvectionFvPatchScalarFields_H
 
-#include "foamTime.H"
+#ifdef FOAMEXTEND
+    #include "foamTime.H"
+#endif
 #include "fvPatchFields.H"
 #include "fixedValueFvPatchFields.H"
 #include "Switch.H"
@@ -147,7 +149,11 @@ public:
         //- Evaluate the patch field
         virtual void evaluate
         (
-            const Pstream::commsTypes commsType=Pstream::blocking
+#ifdef OPENFOAMESIORFOUNDATION
+            const Pstream::commsTypes commsType = Pstream::commsTypes::blocking
+#else
+            const Pstream::commsTypes commsType = Pstream::blocking
+#endif
         );
 
         //- Return the matrix diagonal coefficients corresponding to the

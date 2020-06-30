@@ -69,8 +69,13 @@ solidSymmetryFvPatchScalarField::solidSymmetryFvPatchScalarField
         )   << "\n    patch type '" << p.type()
             << "' not constraint type '" << typeName << "'"
             << "\n    for patch " << p.name()
-            << " of field " << this->dimensionedInternalField().name()
-            << " in file " << this->dimensionedInternalField().objectPath()
+#ifdef OPENFOAMESIORFOUNDATION
+            << " of field " << internalField().name()
+            << " in file " << internalField().objectPath()
+#else
+            << " of field " << dimensionedInternalField().name()
+            << " in file " << dimensionedInternalField().objectPath()
+#endif
             << exit(FatalIOError);
     }
 }
@@ -103,8 +108,13 @@ solidSymmetryFvPatchScalarField::solidSymmetryFvPatchScalarField
         )   << "\n    patch type '" << p.type()
             << "' not constraint type '" << typeName << "'"
             << "\n    for patch " << p.name()
-            << " of field " << this->dimensionedInternalField().name()
-            << " in file " << this->dimensionedInternalField().objectPath()
+#ifdef OPENFOAMESIORFOUNDATION
+            << " of field " << internalField().name()
+            << " in file " << internalField().objectPath()
+#else
+            << " of field " << dimensionedInternalField().name()
+            << " in file " << dimensionedInternalField().objectPath()
+#endif
             << exit(FatalIOError);
     }
 }
@@ -132,56 +142,80 @@ solidSymmetryFvPatchScalarField::solidSymmetryFvPatchScalarField
 // return gradient at boundary
 tmp<Field<scalar> > solidSymmetryFvPatchScalarField::snGrad() const
 {
-    vectorField nHat = this->patch().nf();
+    // Unit normals
+    const vectorField nHat = patch().nf();
 
-    vectorField delta = patch().delta();
-    vectorField k = delta - nHat*(nHat&delta);
+    // Delta vectors
+    const vectorField delta = patch().delta();
 
-    const fvPatchField<vector>& gradU =
+    // Non-orthogonal correction vectors
+    const vectorField k = ((I - sqr(nHat)) & delta);
+
+    // Lookup the gradient of displacement field
+    const fvPatchField<vector>& gradD =
         patch().lookupPatchField<volVectorField, vector>
         (
-            "grad(" + this->dimensionedInternalField().name() + ")"
+#ifdef OPENFOAMESIORFOUNDATION
+            "grad(" + internalField().name() + ")"
+#else
+            "grad(" + dimensionedInternalField().name() + ")"
+#endif
         );
 
-    scalarField UP = this->patchInternalField();
-    UP += (k&gradU.patchInternalField());
+    // Calculate the corrected patch internal field
+    const scalarField DP =
+        patchInternalField()
+      + (k & gradD.patchInternalField());
 
     return
     (
-        transform(I - 2.0*sqr(nHat), UP)
-      - UP
-    )*(this->patch().deltaCoeffs()/2.0);
+            transform(I - 2.0*sqr(nHat), DP)
+          - DP
+    )*(patch().deltaCoeffs()/2.0);
 }
 
 
 // Evaluate the field on the patch
-void solidSymmetryFvPatchScalarField::
-evaluate(const Pstream::commsTypes)
+void solidSymmetryFvPatchScalarField::evaluate
+(
+    const Pstream::commsTypes
+)
 {
     if (!this->updated())
     {
         this->updateCoeffs();
     }
 
-    vectorField nHat = this->patch().nf();
+    // Unit normals
+    const vectorField nHat = patch().nf();
 
-    vectorField delta = patch().delta();
-    vectorField k = delta - nHat*(nHat&delta);
+    // Delta vectors
+    const vectorField delta = patch().delta();
 
-    const fvPatchField<vector>& gradU =
+    // Non-orthogonal correction vectors
+    const vectorField k = ((I - sqr(nHat)) & delta);
+
+    // Lookup the gradient of displacement field
+    const fvPatchField<vector>& gradD =
         patch().lookupPatchField<volVectorField, vector>
         (
-            "grad(" + this->dimensionedInternalField().name() + ")"
+#ifdef OPENFOAMESIORFOUNDATION
+            "grad(" + internalField().name() + ")"
+#else
+            "grad(" + dimensionedInternalField().name() + ")"
+#endif
         );
 
-    scalarField UP = this->patchInternalField();
-    UP += (k&gradU.patchInternalField());
+    // Calculate the corrected patch internal field
+    const scalarField DP =
+        patchInternalField()
+      + (k & gradD.patchInternalField());
 
     Field<scalar>::operator=
     (
         (
-            UP
-          + transform(I - 2.0*sqr(nHat), UP)
+            DP
+          + transform(I - 2.0*sqr(nHat), DP)
         )/2.0
     );
 }
