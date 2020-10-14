@@ -756,7 +756,8 @@ Foam::solidModel::solidModel
             "sigma",
             runTime.timeName(),
             mesh(),
-            IOobject::NO_READ,
+//            IOobject::NO_READ, commented by saber
+            IOobject::READ_IF_PRESENT,
             IOobject::AUTO_WRITE
         ),
         mesh(),

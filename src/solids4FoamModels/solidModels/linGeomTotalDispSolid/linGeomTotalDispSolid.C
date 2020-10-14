@@ -55,8 +55,9 @@ addToRunTimeSelectionTable(solidModel, linGeomTotalDispSolid, dictionary);
 void linGeomTotalDispSolid::predict()
 {
     Info<< "Linear predictor using DD" << endl;
-
-    // Predict D using the increment of displacement field from the previous
+  
+ 
+  // Predict D using the increment of displacement field from the previous
     // time-step
     D() = D().oldTime() + U()*runTime().deltaT();
 
@@ -74,17 +75,30 @@ linGeomTotalDispSolid::linGeomTotalDispSolid
 (
     Time& runTime,
     const word& region
+
 )
 :
+
+
     solidModel(typeName, runTime, region),
     impK_(mechanical().impK()),
     impKf_(mechanical().impKf()),
     rImpK_(1.0/impK_),
     predictor_(solidModelDict().lookupOrDefault<Switch>("predictor", false))
+
+
 {
+
     DisRequired();
 
-    if (predictor_)
+   volVectorField D_0_0comp = D().oldTime().oldTime();
+   Info<<"max(mag(D().oldTime())):"<<max(mag(D().oldTime()))<<endl;
+   Info<<"D_0_0[First Cell]:"<< D_0_0comp[0]<<endl;
+   D().oldTime().oldTime().writeOpt() = IOobject::AUTO_WRITE;
+   DD().oldTime().oldTime().writeOpt() = IOobject::AUTO_WRITE;
+   mechanical().grad(D(), gradD());  
+
+   if (predictor_)
     {
         // Check ddt scheme for D is not steadyState
         const word ddtDScheme
@@ -101,7 +115,6 @@ linGeomTotalDispSolid::linGeomTotalDispSolid
     }
 }
 
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 
@@ -109,7 +122,8 @@ bool linGeomTotalDispSolid::evolve()
 {
     Info<< "Evolving solid solver" << endl;
 
-    if (predictor_)
+  
+   if (predictor_)
     {
         predict();
     }
@@ -123,11 +137,13 @@ bool linGeomTotalDispSolid::evolve()
 
         Info<< "Solving the momentum equation for D" << endl;
 
-        // Momentum equation loop
+
+            // Momentum equation loop
         do
         {
             // Store fields for under-relaxation and residual calculation
-            D().storePrevIter();
+
+           D().storePrevIter();
 
             // Linear momentum equation total displacement form
             fvVectorMatrix DEqn
@@ -140,6 +156,7 @@ bool linGeomTotalDispSolid::evolve()
               + stabilisation().stabilisation(D(), gradD(), impK_)
             );
 
+           
             // Under-relaxation the linear system
             DEqn.relax();
 

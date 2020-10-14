@@ -74,9 +74,10 @@ icoFluid::icoFluid
     pRefCell_(0),
     pRefValue_(0)
 {
+
     UisRequired();
     pisRequired();
-    
+   
     setRefCell(p(), piso().dict(), pRefCell_, pRefValue_);
     mesh().schemesDict().setFluxRequired(p().name());
 }
