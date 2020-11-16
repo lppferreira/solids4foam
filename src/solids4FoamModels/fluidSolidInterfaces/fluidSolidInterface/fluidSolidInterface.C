@@ -304,6 +304,10 @@ Foam::fluidSolidInterface::fluidSolidInterface
         fsiProperties_.lookupOrDefault<Switch>("writeResidualsToFile", false)
     ),
     residualFilePtr_(),
+    writeInterfaceData_
+    (
+        fsiProperties_.lookupOrDefault<Switch>("writeInterfaceData", false)
+    ),
     interpolatorUpdateFrequency_
     (
         fsiProperties_.lookupOrDefault<int>("interpolatorUpdateFrequency", 0)

@@ -116,6 +116,38 @@ bool AitkenCouplingInterface::evolve()
                 << outerCorr() << " "
                 << residualNorm << endl;
         }
+
+        // Optional: write interface data
+        if (writeInterfaceData() && Pstream::master())
+        {
+            // Only works for one FSI interface
+            if (fluidZonesPointsDispls().size() != 1)
+            {
+                FatalErrorIn(type() + "::evolve()")
+                    << "writeInterfaceData can ony be active when there is one"
+                    << " interface" << abort(FatalError);
+            }
+
+            // Make IOField from Field and write data to disk
+            const fileName fName
+            (
+                "fluidInterfacePointDisplacement_" + Foam::name(outerCorr())
+            );
+            Info<< "Writing " << fName << " to " << runTime().timeName() << endl;
+            vectorIOField dataToWrite
+            (
+                IOobject
+                (
+                    fName,
+                    runTime().timeName(),
+                    runTime(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+                fluidZonesPointsDispls()[0]
+            );
+            dataToWrite.write();
+        }
     }
     while (residualNorm > outerCorrTolerance() && outerCorr() < nOuterCorr());
 
