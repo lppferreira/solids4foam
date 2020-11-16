@@ -128,25 +128,52 @@ bool AitkenCouplingInterface::evolve()
                     << " interface" << abort(FatalError);
             }
 
-            // Make IOField from Field and write data to disk
-            const fileName fName
-            (
-                "fluidInterfacePointDisplacement_" + Foam::name(outerCorr())
-            );
-            Info<< "Writing " << fName << " to " << runTime().timeName() << endl;
-            vectorIOField dataToWrite
-            (
-                IOobject
+            // Write fluid interface point displacement
+            {
+                const fileName fName
                 (
-                    fName,
-                    runTime().timeName(),
-                    runTime(),
-                    IOobject::NO_READ,
-                    IOobject::AUTO_WRITE
-                ),
-                fluidZonesPointsDispls()[0]
-            );
-            dataToWrite.write();
+                    "fluidInterfacePointDisplacement_iteration" + Foam::name(outerCorr())
+                );
+                Info<< "Writing " << fName << " to " << runTime().timeName() << endl;
+                vectorIOField dataToWrite
+                (
+                    IOobject
+                    (
+                        fName,
+                        runTime().timeName(),
+                        runTime(),
+                        IOobject::NO_READ,
+                        IOobject::AUTO_WRITE
+                    ),
+                    fluidZonesPointsDispls()[0]
+                );
+                dataToWrite.write();
+            }
+
+            // Write fluid interface point coordinates
+            {
+                const fileName fName
+                (
+                    "fluidInterfacePointCoords_iteration" + Foam::name(outerCorr())
+                );
+                Info<< "Writing " << fName << " to " << runTime().timeName() << endl;
+                vectorIOField dataToWrite
+                (
+                    IOobject
+                    (
+                        fName,
+                        runTime().timeName(),
+                        runTime(),
+                        IOobject::NO_READ,
+                        IOobject::AUTO_WRITE
+                    ),
+                    interfaceToInterfaceList()
+                    [
+                        0
+                    ].globalPatchA().patch().localPoints()
+                );
+                dataToWrite.write();
+            }
         }
     }
     while (residualNorm > outerCorrTolerance() && outerCorr() < nOuterCorr());
