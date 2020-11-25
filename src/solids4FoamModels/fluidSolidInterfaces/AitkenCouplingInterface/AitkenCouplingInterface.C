@@ -174,6 +174,28 @@ bool AitkenCouplingInterface::evolve()
                 );
                 dataToWrite.write();
             }
+
+            // Write fluid interface face tractions
+            {
+                const fileName fName
+                (
+                    "fluidInterfaceFaceTractions_iteration" + Foam::name(outerCorr())
+                );
+                Info<< "Writing " << fName << " to " << runTime().timeName() << endl;
+                vectorIOField dataToWrite
+                (
+                    IOobject
+                    (
+                        fName,
+                        runTime().timeName(),
+                        runTime(),
+                        IOobject::NO_READ,
+                        IOobject::AUTO_WRITE
+                    ),
+                    fluidZonesTraction()[0] // 1st interface
+                );
+                dataToWrite.write();
+            }
         }
     }
     while (residualNorm > outerCorrTolerance() && outerCorr() < nOuterCorr());

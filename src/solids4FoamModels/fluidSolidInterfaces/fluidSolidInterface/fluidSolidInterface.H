@@ -136,6 +136,9 @@ class fluidSolidInterface
         //- List of interfaces ref. point displacements
         List<vectorField> interfacesPointsDisplsPrev_;
 
+        //- List of fluid zone tractions
+        List<vectorField> fluidZonesTraction_;
+
         //- List of current FSI residuals
         List<vectorField> residuals_;
 
@@ -412,6 +415,12 @@ public:
             List<vectorField>& interfacesPointsDisplsPrev()
             {
                 return interfacesPointsDisplsPrev_;
+            }
+
+            //- Return current fluid zone face tractions
+            List<vectorField>& fluidZonesTraction()
+            {
+                return fluidZonesTraction_;
             }
 
             //- Return current fsi residuals

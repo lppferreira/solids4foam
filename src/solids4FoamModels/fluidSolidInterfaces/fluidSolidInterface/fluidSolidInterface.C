@@ -294,6 +294,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     solidZonesPointsDisplsRef_(),
     interfacesPointsDispls_(),
     interfacesPointsDisplsPrev_(),
+    fluidZonesTraction_(),
     residuals_(),
     residualsPrev_(),
     maxResidualsNorm_(),
@@ -434,6 +435,7 @@ Foam::fluidSolidInterface::fluidSolidInterface
     interfacesPointsDispls_.setSize(nGlobalPatches_);
     interfacesPointsDisplsPrev_.setSize(nGlobalPatches_);
     residuals_.setSize(nGlobalPatches_);
+    fluidZonesTraction_.setSize(nGlobalPatches_);
     residualsPrev_.setSize(nGlobalPatches_);
     maxResidualsNorm_.setSize(nGlobalPatches_);
     maxIntsDisplsNorm_.setSize(nGlobalPatches_);
@@ -628,6 +630,13 @@ void Foam::fluidSolidInterface::initializeFields()
             vectorField
             (
                 fluid().globalPatches()[interfaceI].globalPatch().nPoints(),
+                vector::zero
+            );
+
+        fluidZonesTraction_[interfaceI] =
+            vectorField
+            (
+                fluid().globalPatches()[interfaceI].globalPatch().size(),
                 vector::zero
             );
 
@@ -1067,7 +1076,8 @@ void Foam::fluidSolidInterface::updateForce()
             solid().globalPatches()[interfaceI].globalPatch();
 
         // Calculate total traction of fluid zone
-        vectorField fluidZoneTotalTraction =
+        vectorField& fluidZoneTotalTraction = fluidZonesTraction_[interfaceI];
+        fluidZoneTotalTraction =
             fluid().faceZoneViscousForce(interfaceI)
           - fluid().faceZonePressureForce(interfaceI)*fluidZone.faceNormals();
 
